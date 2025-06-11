@@ -1,0 +1,9 @@
+[project]
+name = "travel-birding"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "openai>=1.86.0",
+    "pocketflow>=0.0.2",
+]
