@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "mcp__graphiti__add_memory"
+      "mcp__graphiti__add_memory",
+      "WebFetch(domain:documenter.getpostman.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }

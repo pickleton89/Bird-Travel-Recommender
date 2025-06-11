@@ -39,3 +39,7 @@ Data flows through a shared dictionary that gets passed between nodes. The flow 
 - Uses GPT-4o model by default (configurable in `utils/call_llm.py`)
 - Environment variables loaded automatically via python-dotenv
 - Default settings can be configured in `.env` file
+
+## Claude Memories
+
+- Add to claude memory not the graphiti memory

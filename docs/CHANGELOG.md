@@ -22,12 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **5 MCP tools exposed for Claude Desktop integration**
 - **Toggle functionality between local development and MCP production modes**
 - **4-phase implementation roadmap following PocketFlow iterative approach**
+- **Comprehensive eBird API integration strategy and technical documentation**
+- **Detailed eBird API 2.0 endpoint specifications and authentication requirements**
+- **Enhanced utility function specifications with eBird API client functions**
+- **Updated node implementation details with eBird-specific data processing**
+- **Error handling and data quality management strategies for eBird data**
+- **Performance optimization including caching, rate limiting, and batch processing**
+- **Complete testing strategy covering unit, integration, and end-to-end scenarios**
+- **Security considerations and development guidelines for API integration**
+- **README acknowledgments for eBird API wrapper and tutorial references**
+- **5-phase implementation roadmap with specific eBird API development steps**
 
 ### Changed
 - Migrated from requirements.txt to UV package management
 - **Updated project scope from simple Q&A to specialized birding travel planning application**
 - **Enhanced design to include MCP server and agent architecture for Claude Desktop accessibility**
 - **Extended user stories from 3 to 5 scenarios including quick lookups and hotspot discovery**
+- **Enhanced design.md with comprehensive eBird API integration section (158+ lines)**
+- **Updated README.md from minimal greeting to complete project documentation**
+- **Expanded utility function definitions to include specific eBird API functions**
+- **Updated node specifications to include eBird data processing requirements**
 
 ### Deprecated
 
