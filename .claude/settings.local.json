@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__graphiti__add_memory"
+    ],
+    "deny": []
+  }
+}

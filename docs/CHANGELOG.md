@@ -17,10 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **7-node birding travel recommender architecture specification**
 - **Complete shared store schema for bird sighting data pipeline**
 - **Utility function specifications for eBird API, geospatial calculations, and route optimization**
+- **Model Context Protocol (MCP) integration design with dual architecture**
+- **3-node MCP agent pattern for natural language interface**
+- **5 MCP tools exposed for Claude Desktop integration**
+- **Toggle functionality between local development and MCP production modes**
+- **4-phase implementation roadmap following PocketFlow iterative approach**
 
 ### Changed
 - Migrated from requirements.txt to UV package management
 - **Updated project scope from simple Q&A to specialized birding travel planning application**
+- **Enhanced design to include MCP server and agent architecture for Claude Desktop accessibility**
+- **Extended user stories from 3 to 5 scenarios including quick lookups and hotspot discovery**
 
 ### Deprecated
 
