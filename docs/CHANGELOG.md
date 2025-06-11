@@ -55,6 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Professional birding guide prompting for itinerary generation with species-specific advice**
 - **Expert ornithologist prompting for species validation with seasonal and behavioral context**
 - **Birding expert evaluation prompting for location scoring with habitat and timing considerations**
+- **Species validation logic optimization: direct eBird taxonomy lookup first, LLM fallback for fuzzy matching**
+- **Data enrichment-in-place strategy replacing separate filtered data lists with constraint flags**
+- **Agent orchestration enhanced to default to granular tool chaining over monolithic tool execution**
 
 ### Deprecated
 

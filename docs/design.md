@@ -230,13 +230,13 @@ User query: "{user_query}"
 
 Available tools: {available_tools}
 
-Based on your birding expertise:
-1. Understand the user's intent (species lookup, trip planning, hotspot discovery)
-2. Consider birding context (seasons, regions, species behaviors)
-3. Select the most appropriate tool and parameters
-4. Account for birding best practices and timing
+Agent Orchestration Strategy:
+1. **Default to Granular Tools**: For complex queries, orchestrate multiple smaller tools sequentially (validate_species → fetch_sightings → find_hotspots → optimize_route)
+2. **Monolithic Tool as Shortcut**: Use plan_complete_trip only for simple, unambiguous requests
+3. **Inspect and Adapt**: Chain tools while inspecting outputs, handle errors gracefully, ask for clarification when needed
+4. **Birding Context**: Consider seasons, regions, species behaviors in tool selection and sequencing
 
-Choose the tool that best serves their birding goals.
+Choose the orchestration strategy that best serves their birding goals and allows for intelligent error handling.
 """
 ```
 
@@ -535,10 +535,9 @@ birding_shared = {
         }
     },
     "validated_species": [],        # eBird codes and common names
-    "all_sightings": {},           # Raw API responses by species
-    "filtered_sightings": [],      # After applying constraints
-    "hotspot_clusters": [],        # Grouped nearby locations
-    "scored_locations": [],        # Ranked by species diversity
+    "all_sightings": [],           # Raw API responses with enrichment flags (instead of separate filtered lists)
+    "hotspot_clusters": [],        # Grouped locations with full sighting data (not just references)
+    "scored_locations": [],        # Ranked locations with complete data context
     "optimized_route": [],         # Final visiting order
     "itinerary_markdown": "",      # Generated output
     "processing_stats": {},        # Debugging metadata
@@ -585,13 +584,13 @@ birding_shared = {
    - *Steps*:
      - *prep*: Read species_list from shared["input"]
      - *exec*: 
-       1. **Enhanced LLM Validation**: Use call_llm with expert ornithologist prompting to standardize names and add seasonal context
-       2. **eBird Taxonomy Lookup**: Apply `ebird_get_taxonomy` tool patterns for species code validation
-       3. **Fuzzy Matching**: Implement fallback strategies for partial species name matches with birding knowledge
+       1. **Direct eBird Taxonomy Lookup**: First attempt exact match against eBird taxonomy API using `ebird_get_taxonomy` tool patterns (faster, cheaper, more reliable)
+       2. **LLM Fallback Only**: Use call_llm with expert ornithologist prompting ONLY for failed lookups requiring fuzzy matching or misspelling correction
+       3. **Enhanced Validation**: Add seasonal context and behavioral notes for successfully matched species
        4. **Caching Strategy**: Store successful name→code mappings with seasonal and behavioral context
-     - *post*: Write validated_species with both names, codes, and validation confidence scores to shared store
+     - *post*: Write validated_species with both names, codes, validation confidence scores, and lookup method used to shared store
    - *MCP Tool Integration*: Leverages `ebird_get_taxonomy` tool with flexible search parameters
-   - *Error Handling*: Invalid species names, API failures, empty taxonomy results, partial matches
+   - *Error Handling*: Invalid species names, API failures, empty taxonomy results, partial matches with graceful LLM fallback
 
 2. **FetchSightingsNode**
    - *Purpose*: Query eBird API for recent sightings using proven endpoint patterns
@@ -610,31 +609,32 @@ birding_shared = {
    - *Error Handling*: HTTP status codes, rate limits, API timeouts, invalid species codes, empty results
 
 3. **FilterConstraintsNode**
-   - *Purpose*: Apply user constraints (region, dates, distance) to sightings
+   - *Purpose*: Apply user constraints (region, dates, distance) to sightings using enrichment-in-place strategy
    - *Type*: Regular Node
    - *eBird Integration*: Processes eBird observation data with GPS coordinates and timestamps
    - *Steps*:
      - *prep*: Read all_sightings and constraints from shared store
      - *exec*: 
-       1. Geographic filtering using distance calculations from start_location
-       2. Temporal filtering by observation date within user's travel window
-       3. Data quality filtering (remove missing GPS coordinates)
-       4. Apply max_daily_distance_km constraints for feasible travel
-     - *post*: Write filtered_sightings with constraint compliance metadata to shared store
-   - *Data Quality*: Handle eBird location inconsistencies, duplicate observations, outdated data
+       1. **Enrichment-in-Place**: Add constraint compliance flags to original sighting records instead of creating separate lists
+       2. Geographic filtering: Add `distance_from_start`, `within_travel_radius` flags
+       3. Temporal filtering: Add `within_date_range`, `travel_day_feasible` flags
+       4. Data quality: Add `has_valid_gps`, `duplicate_filtered` flags
+       5. Travel feasibility: Add `daily_distance_compliant` flag
+     - *post*: Update all_sightings with enriched constraint metadata, ensuring later nodes have full data context
+   - *Data Quality*: Handle eBird location inconsistencies, duplicate observations, outdated data with flag-based tracking
 
 4. **ClusterHotspotsNode**
-   - *Purpose*: Group nearby locations using proven eBird hotspot discovery patterns
+   - *Purpose*: Group nearby locations using proven eBird hotspot discovery patterns with full data preservation
    - *Type*: Regular Node
    - *eBird Integration*: Implements ebird-mcp-server hotspot patterns with dual discovery methods
    - *Steps*:
-     - *prep*: Read filtered_sightings and extract unique locations with locId/GPS data
+     - *prep*: Read all_sightings (with constraint flags) and extract unique locations with locId/GPS data
      - *exec*: 
        1. **Dual Hotspot Discovery**: Use both `get_hotspots()` (regional) and `get_nearby_hotspots()` (coordinate-based) following ebird-mcp-server patterns
        2. **Location Deduplication**: Handle eBird's multiple location identifiers using proven normalization strategies
        3. **Distance-Based Clustering**: Apply geographic clustering with travel time optimization
-       4. **Hotspot Prioritization**: Weight known eBird hotspots higher than random observation points
-     - *post*: Write hotspot_clusters with location metadata, accessibility scores, and hotspot status
+       4. **Full Data Preservation**: Each cluster contains complete original sighting records (not just references) for later node access
+     - *post*: Write hotspot_clusters where each cluster object contains full sighting data with all enrichment flags
    - *MCP Tool Integration*: Leverages `ebird_get_hotspots` and `ebird_get_nearby_hotspots` tool patterns
    - *Challenges*: eBird location ambiguity, GPS coordinate variations, hotspot data quality
 
