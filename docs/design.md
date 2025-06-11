@@ -124,16 +124,20 @@ flowchart TB
    - Used by ValidateSpeciesNode, DecideBirdingToolNode, and GenerateItineraryNode
 
 2. **eBird API Client** (`utils/ebird_api.py`)
-   - *Primary Functions*:
-     - `fetch_recent_observations(region_code, days_back, api_key)` → List[dict]
-     - `fetch_species_sightings(species_code, region_code, days_back, api_key)` → List[dict]
-     - `fetch_nearby_observations(lat, lng, distance_km, days_back, api_key)` → List[dict]
-     - `lookup_species_taxonomy(species_codes, api_key)` → List[dict]
-     - `get_regional_hotspots(region_code, api_key)` → List[dict]
+   - *Core Architecture*: Centralized `make_request()` method with consistent error handling
+   - *Primary Functions* (based on ebird-mcp-server patterns):
+     - `get_recent_observations(region_code, days_back=7, species_code=None, include_provisional=False)` → List[dict]
+     - `get_nearby_observations(lat, lng, distance_km=25, days_back=7, species_code=None)` → List[dict]
+     - `get_notable_observations(region_code, days_back=7, detail="simple")` → List[dict]
+     - `get_species_observations(species_code, region_code, days_back=7, hotspot_only=False)` → List[dict]
+     - `get_hotspots(region_code, format="json")` → List[dict]
+     - `get_nearby_hotspots(lat, lng, distance_km=25)` → List[dict]
+     - `get_taxonomy(species_codes=None, format="json", locale="en")` → List[dict]
    - *Authentication*: Uses EBIRD_API_KEY environment variable with X-eBirdApiToken header
-   - *Error Handling*: Rate limiting, HTTP errors, empty results, invalid species/regions
-   - *Response Format*: Standardized observation records with GPS coordinates and metadata
-   - Used by ValidateSpeciesNode (taxonomy), FetchSightingsNode (observations), ClusterHotspotsNode (hotspots)
+   - *Error Handling*: HTTP status codes, rate limiting with exponential backoff, empty results gracefully handled
+   - *Request Patterns*: Promise-based async with configurable parameters and fallback mechanisms
+   - *Response Processing*: Consistent data normalization across different endpoint formats
+   - Used by all nodes requiring eBird data access with unified interface
 
 3. **Location Distance Calculator** (`utils/geo_utils.py`)
    - *Input*: lat1, lng1, lat2, lng2 (float)
@@ -179,18 +183,38 @@ flowchart TB
 - Maximum 30-day historical lookback period
 - Rate limits exist but are not clearly documented
 
-### Implementation Approach: Hybrid Strategy (Option 3)
+### Implementation Approach: Proven Pattern Adaptation
 
 **Decision Rationale:**
-- **Phase 1**: Use existing `ebird-api` wrapper patterns for rapid prototyping
-- **Phase 2**: Extract and customize only needed functions into `utils/ebird_api.py`
-- **Phase 3**: Own the code completely, no external dependency risk
+- **Foundation**: Use proven patterns from moonbirdai/ebird-mcp-server (JavaScript) as blueprint
+- **Adaptation**: Port successful architectural patterns to Python while maintaining simplicity
+- **Validation**: Leverage working tool schemas and parameter patterns from production MCP server
 
 **Operationalization:**
-1. Fetch wrapper code from GitHub during implementation (not stored locally)
-2. Adapt functions for specific pipeline node requirements
-3. Write custom, focused functions in `utils/ebird_api.py`
-4. Test with actual API key and project-specific data needs
+1. **Core Client Architecture**: Implement centralized `make_request()` pattern with consistent error handling
+2. **Tool Schema Alignment**: Match parameter names and response formats from working JavaScript implementation
+3. **Error Handling Patterns**: Adopt proven fallback mechanisms and graceful degradation strategies
+4. **Request Optimization**: Implement connection pooling and caching patterns for production deployment
+
+#### Proven Implementation Patterns from ebird-mcp-server
+
+**Core Client Design Patterns:**
+- **Centralized Request Handler**: Single `makeRequest()` method handles all HTTP interactions
+- **Consistent Parameter Patterns**: Standardized parameter names across all tool functions
+- **Graceful Error Handling**: HTTP errors returned as formatted messages rather than exceptions
+- **Flexible Response Processing**: Support for different detail levels and output formats
+
+**MCP Tool Integration Patterns:**
+- **Tool Discovery**: Automatic tool enumeration with schema validation
+- **Parameter Validation**: JSON schema validation for all tool inputs
+- **Response Formatting**: Consistent text formatting for Claude Desktop consumption
+- **Debug Support**: Configurable logging and error reporting for development
+
+**API Interaction Patterns:**
+- **Rate Limit Respect**: Built-in delays and exponential backoff for API throttling
+- **Connection Management**: HTTP connection reuse for multiple sequential requests
+- **Response Caching**: Optional caching for hotspot and taxonomy data (low change frequency)
+- **Fallback Mechanisms**: Alternative endpoints and data sources for failed requests
 
 ### eBird API Technical Specifications
 
@@ -231,7 +255,11 @@ EBIRD_API_KEY = "your_key_from_https://ebird.org/api/keygen"
 - **Purpose**: Get known birding locations
 - **Used by**: ClusterHotspotsNode, ScoreLocationsNode
 
-#### Response Data Structure
+#### Response Data Structures
+
+Based on ebird-mcp-server implementation patterns:
+
+**Standard Observation Record:**
 ```python
 observation_record = {
     "speciesCode": "norcar",           # eBird species identifier
@@ -239,10 +267,67 @@ observation_record = {
     "sciName": "Cardinalis cardinalis", # Scientific name
     "locName": "Location Name",        # Human-readable location
     "obsDt": "2024-01-15 10:30",      # Observation datetime
-    "howMany": 2,                     # Number of individuals
+    "howMany": 2,                     # Number of individuals (can be "X" for presence-only)
     "lat": 42.3601,                   # GPS latitude
     "lng": -71.0589,                  # GPS longitude
-    "locId": "L12345"                 # eBird location identifier
+    "locId": "L12345",                # eBird location identifier
+    "obsValid": True,                 # Observation validity flag
+    "obsReviewed": False,             # Review status for rare species
+    "locationPrivate": False,         # Location privacy flag
+    "subId": "S123456789"             # eBird checklist identifier
+}
+```
+
+**Hotspot Record:**
+```python
+hotspot_record = {
+    "locId": "L12345",                # eBird location identifier
+    "locName": "Central Park",        # Location name
+    "countryCode": "US",              # Country code
+    "subnational1Code": "US-NY",      # State/province code
+    "subnational2Code": "US-NY-061",  # County code
+    "lat": 40.7812,                   # GPS latitude
+    "lng": -73.9665,                  # GPS longitude
+    "latestObsDt": "2024-01-15",      # Most recent observation date
+    "numSpeciesAllTime": 245          # Total species count for location
+}
+```
+
+**Taxonomy Record:**
+```python
+taxonomy_record = {
+    "sciName": "Cardinalis cardinalis", # Scientific name
+    "comName": "Northern Cardinal",     # Common name
+    "speciesCode": "norcar",           # eBird species code
+    "category": "species",             # Taxonomic category
+    "taxonOrder": 40960.0,            # Taxonomic order
+    "bandingCodes": ["NOCA"],         # Bird banding codes
+    "comNameCodes": ["NOCA"],         # Common name codes
+    "sciNameCodes": ["CACA"],         # Scientific name codes
+    "order": "Passeriformes",         # Taxonomic order
+    "familyComName": "Cardinals",      # Family common name
+    "familySciName": "Cardinalidae"    # Family scientific name
+}
+```
+
+**Notable Observation Record:**
+```python
+notable_record = {
+    "speciesCode": "goshawk",          # eBird species identifier
+    "comName": "Northern Goshawk",     # Common name
+    "sciName": "Accipiter gentilis",   # Scientific name
+    "locName": "Rare Bird Location",   # Human-readable location
+    "obsDt": "2024-01-15 10:30",      # Observation datetime
+    "howMany": 1,                     # Number of individuals
+    "lat": 42.3601,                   # GPS latitude
+    "lng": -71.0589,                  # GPS longitude
+    "locId": "L12345",                # eBird location identifier
+    "obsValid": True,                 # Observation validity
+    "obsReviewed": True,              # Required for notable species
+    "locationPrivate": True,          # Often private for rare species
+    "subId": "S123456789",            # eBird checklist identifier
+    "exoticCategory": None,           # Exotic status if applicable
+    "userDisplayName": "eBird User"   # Observer name (when public)
 }
 ```
 
@@ -420,33 +505,35 @@ birding_shared = {
 #### Birding Pipeline Nodes (Business Logic)
 
 4. **ValidateSpeciesNode**
-   - *Purpose*: Convert common bird names to eBird species codes and validate
+   - *Purpose*: Convert common bird names to eBird species codes using proven taxonomy patterns
    - *Type*: Regular Node
-   - *eBird Integration*: Uses `lookup_species_taxonomy()` for species code validation
+   - *eBird Integration*: Implements ebird-mcp-server taxonomy validation with `get_taxonomy()` patterns
    - *Steps*:
      - *prep*: Read species_list from shared["input"]
      - *exec*: 
-       1. Call LLM to standardize common names to scientific names
-       2. Query eBird taxonomy API to get species codes
-       3. Handle cases where species are not found in eBird database
-       4. Cache successful name→code mappings for reuse
-     - *post*: Write validated_species with both names and codes to shared store
-   - *Error Handling*: Invalid species names, API failures, empty taxonomy results
+       1. **LLM Name Standardization**: Use call_llm to normalize common names to scientific names
+       2. **eBird Taxonomy Lookup**: Apply `ebird_get_taxonomy` tool patterns for species code validation
+       3. **Fuzzy Matching**: Implement fallback strategies for partial species name matches
+       4. **Caching Strategy**: Store successful name→code mappings following proven caching patterns
+     - *post*: Write validated_species with both names, codes, and validation confidence scores to shared store
+   - *MCP Tool Integration*: Leverages `ebird_get_taxonomy` tool with flexible search parameters
+   - *Error Handling*: Invalid species names, API failures, empty taxonomy results, partial matches
 
 2. **FetchSightingsNode**
-   - *Purpose*: Query eBird API for recent sightings of each species
+   - *Purpose*: Query eBird API for recent sightings using proven endpoint patterns
    - *Type*: BatchNode (parallel API calls for multiple species)
-   - *eBird Integration*: Uses `fetch_species_sightings()` with intelligent endpoint selection
+   - *eBird Integration*: Implements ebird-mcp-server patterns with intelligent endpoint selection
    - *Steps*:
      - *prep*: Return list of validated species codes from shared store
      - *exec*: 
-       1. Determine optimal API strategy (region-wide vs species-specific)
-       2. Execute parallel API calls with rate limiting and exponential backoff
-       3. Handle empty results for rare species gracefully
-       4. Normalize response data structure across different endpoints
-     - *post*: Aggregate all sightings into shared["all_sightings"] with metadata
-   - *Optimization*: Batch processing, connection pooling, response caching
-   - *Error Handling*: Rate limits, API timeouts, invalid species codes, empty results
+       1. **Smart Endpoint Selection**: Choose between region-wide, species-specific, or nearby observations based on query type
+       2. **Parallel Execution**: Use ebird-mcp-server patterns for concurrent API calls with proper rate limiting
+       3. **Response Normalization**: Apply consistent data formatting across different eBird endpoints
+       4. **Graceful Degradation**: Handle empty results for rare species with fallback strategies
+     - *post*: Aggregate all sightings into shared["all_sightings"] with endpoint metadata and query stats
+   - *MCP Tool Integration*: Supports all core eBird MCP tools (recent, nearby, notable, species-specific)
+   - *Optimization*: Connection pooling, response caching, batch processing following proven patterns
+   - *Error Handling*: HTTP status codes, rate limits, API timeouts, invalid species codes, empty results
 
 3. **FilterConstraintsNode**
    - *Purpose*: Apply user constraints (region, dates, distance) to sightings
@@ -463,17 +550,18 @@ birding_shared = {
    - *Data Quality*: Handle eBird location inconsistencies, duplicate observations, outdated data
 
 4. **ClusterHotspotsNode**
-   - *Purpose*: Group nearby locations to minimize travel between sites
+   - *Purpose*: Group nearby locations using proven eBird hotspot discovery patterns
    - *Type*: Regular Node
-   - *eBird Integration*: Uses `get_regional_hotspots()` and processes eBird location data
+   - *eBird Integration*: Implements ebird-mcp-server hotspot patterns with dual discovery methods
    - *Steps*:
      - *prep*: Read filtered_sightings and extract unique locations with locId/GPS data
      - *exec*: 
-       1. Merge observation locations with known eBird hotspots
-       2. Handle eBird's multiple location identifiers for same GPS coordinates
-       3. Use distance calculator to cluster nearby locations (minimize travel time)
-       4. Deduplicate locations based on proximity thresholds
-     - *post*: Write hotspot_clusters with location metadata and accessibility scores
+       1. **Dual Hotspot Discovery**: Use both `get_hotspots()` (regional) and `get_nearby_hotspots()` (coordinate-based) following ebird-mcp-server patterns
+       2. **Location Deduplication**: Handle eBird's multiple location identifiers using proven normalization strategies
+       3. **Distance-Based Clustering**: Apply geographic clustering with travel time optimization
+       4. **Hotspot Prioritization**: Weight known eBird hotspots higher than random observation points
+     - *post*: Write hotspot_clusters with location metadata, accessibility scores, and hotspot status
+   - *MCP Tool Integration*: Leverages `ebird_get_hotspots` and `ebird_get_nearby_hotspots` tool patterns
    - *Challenges*: eBird location ambiguity, GPS coordinate variations, hotspot data quality
 
 5. **ScoreLocationsNode**
@@ -509,65 +597,204 @@ birding_shared = {
 ## MCP Tools Specification
 
 > Notes for AI: These tools are exposed via the MCP server and callable from Claude Desktop
+> Updated based on proven patterns from moonbirdai/ebird-mcp-server implementation
 
-### Tool Definitions
+### Core eBird Data Tools (Direct API Access)
 
-1. **plan_complete_trip**
+Based on the ebird-mcp-server implementation, we expose foundational eBird tools that match proven usage patterns:
+
+1. **ebird_get_recent_observations**
+   - *Description*: Get recent bird observations in a region
+   - *Parameters*:
+     - `region_code`: str - eBird region code (e.g., "US-MA", "CA-ON")
+     - `days_back`: int - Days to look back (default: 7, max: 30)
+     - `species_code`: str - Optional specific species filter
+     - `include_provisional`: bool - Include unreviewed observations (default: false)
+   - *Returns*: List of recent observations with species, location, date, count
+   - *Pattern*: Direct eBird API `/v2/data/obs/{regionCode}/recent` endpoint
+   - *Invokes*: FetchSightingsNode with region-wide query
+
+2. **ebird_get_nearby_observations**
+   - *Description*: Get recent observations near specific coordinates
+   - *Parameters*:
+     - `lat`: float - Latitude coordinate
+     - `lng`: float - Longitude coordinate  
+     - `distance_km`: int - Search radius in kilometers (max: 50)
+     - `days_back`: int - Days to look back (default: 7, max: 30)
+     - `species_code`: str - Optional specific species filter
+   - *Returns*: List of nearby observations with distance calculations
+   - *Pattern*: Direct eBird API `/v2/data/obs/geo/recent` endpoint
+   - *Invokes*: FetchSightingsNode with coordinate-based query
+
+3. **ebird_get_notable_observations**
+   - *Description*: Get notable/rare bird observations in a region
+   - *Parameters*:
+     - `region_code`: str - eBird region code
+     - `days_back`: int - Days to look back (default: 7, max: 30)
+     - `detail`: str - Response detail level ("simple" or "full")
+   - *Returns*: List of notable sightings with rarity indicators
+   - *Pattern*: Direct eBird API `/v2/data/obs/{regionCode}/recent/notable` endpoint
+   - *Invokes*: FetchSightingsNode with notable filter
+
+4. **ebird_get_species_observations**
+   - *Description*: Get recent observations for a specific species
+   - *Parameters*:
+     - `species_code`: str - eBird species code (e.g., "norcar")
+     - `region_code`: str - eBird region code
+     - `days_back`: int - Days to look back (default: 7, max: 30)
+     - `hotspot_only`: bool - Restrict to eBird hotspots only (default: false)
+   - *Returns*: List of species-specific observations with location details
+   - *Pattern*: Direct eBird API `/v2/data/obs/{regionCode}/recent/{speciesCode}` endpoint
+   - *Invokes*: FetchSightingsNode with species-specific query
+
+5. **ebird_get_hotspots**
+   - *Description*: Get birding hotspots in a region
+   - *Parameters*:
+     - `region_code`: str - eBird region code
+     - `format`: str - Response format ("json" or "csv", default: "json")
+   - *Returns*: List of hotspots with coordinates and metadata
+   - *Pattern*: Direct eBird API `/v2/ref/hotspot/{regionCode}` endpoint
+   - *Invokes*: ClusterHotspotsNode for hotspot discovery
+
+6. **ebird_get_nearby_hotspots**
+   - *Description*: Get birding hotspots near specific coordinates
+   - *Parameters*:
+     - `lat`: float - Latitude coordinate
+     - `lng`: float - Longitude coordinate
+     - `distance_km`: int - Search radius in kilometers (default: 25, max: 50)
+   - *Returns*: List of nearby hotspots with distance calculations
+   - *Pattern*: Direct eBird API `/v2/ref/hotspot/geo` endpoint
+   - *Invokes*: ClusterHotspotsNode with coordinate-based discovery
+
+7. **ebird_get_taxonomy**
+   - *Description*: Get eBird taxonomy information
+   - *Parameters*:
+     - `species_codes`: List[str] - Optional list of species codes to filter
+     - `format`: str - Response format ("json" or "csv", default: "json")
+     - `locale`: str - Language locale (default: "en")
+   - *Returns*: Taxonomy data with species codes, common names, scientific names
+   - *Pattern*: Direct eBird API `/v2/ref/taxonomy/ebird` endpoint
+   - *Invokes*: ValidateSpeciesNode for species validation
+
+### High-Level Birding Tools (Business Logic)
+
+8. **plan_complete_trip**
    - *Description*: Generate a complete birding itinerary for target species
    - *Parameters*:
      - `species_list`: List[str] - Target bird species (common names)
      - `start_location`: dict - Starting point with lat/lng
      - `max_days`: int - Maximum trip duration
      - `max_daily_distance_km`: int - Daily travel limit
-     - `region`: str - Geographic region code (e.g., "US-MA")
+     - `region_code`: str - eBird region code (e.g., "US-MA")
+     - `days_back`: int - Historical data range (default: 7)
    - *Returns*: Complete markdown itinerary with route optimization
    - *Invokes*: Full 7-node birding pipeline
 
-2. **validate_species**
-   - *Description*: Validate and standardize bird species names
-   - *Parameters*:
-     - `species_list`: List[str] - Bird species to validate
-   - *Returns*: List of validated species with eBird codes
-   - *Invokes*: ValidateSpeciesNode only
-
-3. **fetch_recent_sightings**
-   - *Description*: Get recent sightings for specific species
-   - *Parameters*:
-     - `species_code`: str - eBird species code
-     - `region`: str - Geographic region
-     - `days_back`: int - Days to look back (default: 30)
-   - *Returns*: List of recent sightings with locations
-   - *Invokes*: FetchSightingsNode only
-
-4. **find_birding_hotspots**
-   - *Description*: Discover birding locations in an area
-   - *Parameters*:
-     - `location`: dict - Center point with lat/lng
-     - `radius_km`: int - Search radius in kilometers
-     - `species_filter`: List[str] - Optional species filter
-   - *Returns*: Ranked list of hotspots with species diversity
-   - *Invokes*: ClusterHotspotsNode + ScoreLocationsNode
-
-5. **optimize_birding_route**
-   - *Description*: Calculate optimal visiting order for locations
+9. **find_birding_route**
+   - *Description*: Calculate optimal visiting order for birding locations
    - *Parameters*:
      - `locations`: List[dict] - Birding locations with coordinates
      - `start_point`: dict - Starting location
-     - `constraints`: dict - Travel constraints
+     - `travel_constraints`: dict - Distance and time limits
    - *Returns*: Optimized route with distances and timing
-   - *Invokes*: OptimizeRouteNode only
+   - *Invokes*: OptimizeRouteNode + ScoreLocationsNode
 
 ### Tool Usage Examples
 
+Based on proven query patterns from the ebird-mcp-server:
+
 ```
+User: "What birds have been observed recently in New York state?"
+→ Calls: ebird_get_recent_observations(region_code="US-NY", days_back=7)
+
+User: "Show me recent cardinal sightings near Hartford"
+→ Calls: ebird_get_species_observations(species_code="norcar", region_code="US-CT", days_back=7)
+
+User: "What rare birds have been reported in California recently?"
+→ Calls: ebird_get_notable_observations(region_code="US-CA", days_back=14)
+
+User: "What birds have been spotted near Central Park?"
+→ Calls: ebird_get_nearby_observations(lat=40.7812, lng=-73.9665, distance_km=5, days_back=7)
+
+User: "Where have Bald Eagles been seen in Washington state this week?"
+→ Calls: ebird_get_species_observations(species_code="baleag", region_code="US-WA", days_back=7)
+
+User: "What are some good birding hotspots in Florida?"
+→ Calls: ebird_get_hotspots(region_code="US-FL")
+
+User: "Find birding spots near Boston within 25km"
+→ Calls: ebird_get_nearby_hotspots(lat=42.3601, lng=-71.0589, distance_km=25)
+
 User: "Plan a 3-day birding trip from Boston to see fall warblers"
-→ Calls: plan_complete_trip(species_list=["warbler species"], start_location={"lat": 42.3601, "lng": -71.0589}, max_days=3, region="US-MA")
+→ Calls: plan_complete_trip(species_list=["Yellow Warbler", "Black-throated Blue Warbler"], start_location={"lat": 42.3601, "lng": -71.0589}, max_days=3, region_code="US-MA")
+```
 
-User: "What are recent cardinal sightings near Hartford?"
-→ Calls: fetch_recent_sightings(species_code="norcar", region="US-CT", days_back=7)
+### MCP Tool JSON Schemas
 
-User: "Find the best birding spots within 50km of Albany"
-→ Calls: find_birding_hotspots(location={"lat": 42.6526, "lng": -73.7562}, radius_km=50)
+Based on ebird-mcp-server implementation, our MCP tools use these validated schemas:
+
+**ebird_get_recent_observations:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "region_code": {"type": "string", "description": "eBird region code (e.g., 'US-MA')"},
+    "days_back": {"type": "integer", "minimum": 1, "maximum": 30, "default": 7},
+    "species_code": {"type": "string", "description": "Optional species filter"},
+    "include_provisional": {"type": "boolean", "default": false}
+  },
+  "required": ["region_code"]
+}
+```
+
+**ebird_get_nearby_observations:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "lat": {"type": "number", "minimum": -90, "maximum": 90},
+    "lng": {"type": "number", "minimum": -180, "maximum": 180},
+    "distance_km": {"type": "integer", "minimum": 1, "maximum": 50, "default": 25},
+    "days_back": {"type": "integer", "minimum": 1, "maximum": 30, "default": 7},
+    "species_code": {"type": "string", "description": "Optional species filter"}
+  },
+  "required": ["lat", "lng"]
+}
+```
+
+**ebird_get_hotspots:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "region_code": {"type": "string", "description": "eBird region code"},
+    "format": {"type": "string", "enum": ["json", "csv"], "default": "json"}
+  },
+  "required": ["region_code"]
+}
+```
+
+**plan_complete_trip:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "species_list": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "start_location": {
+      "type": "object",
+      "properties": {
+        "lat": {"type": "number", "minimum": -90, "maximum": 90},
+        "lng": {"type": "number", "minimum": -180, "maximum": 180}
+      },
+      "required": ["lat", "lng"]
+    },
+    "max_days": {"type": "integer", "minimum": 1, "maximum": 14},
+    "max_daily_distance_km": {"type": "integer", "minimum": 50, "maximum": 1000},
+    "region_code": {"type": "string", "description": "eBird region code"},
+    "days_back": {"type": "integer", "minimum": 1, "maximum": 30, "default": 7}
+  },
+  "required": ["species_list", "start_location", "max_days", "region_code"]
+}
 ```
 
 ## Implementation Priority

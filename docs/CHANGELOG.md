@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Security considerations and development guidelines for API integration**
 - **README acknowledgments for eBird API wrapper and tutorial references**
 - **5-phase implementation roadmap with specific eBird API development steps**
+- **Enhanced MCP tool architecture based on proven ebird-mcp-server patterns**
+- **9 comprehensive MCP tools (7 core eBird + 2 business logic) with validated JSON schemas**
+- **Centralized eBird API client design with make_request() pattern and consistent error handling**
+- **Comprehensive data structure documentation for observations, hotspots, taxonomy, and notable records**
+- **Updated node architecture aligned with proven endpoint patterns and dual discovery methods**
 
 ### Changed
 - Migrated from requirements.txt to UV package management
@@ -42,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Updated README.md from minimal greeting to complete project documentation**
 - **Expanded utility function definitions to include specific eBird API functions**
 - **Updated node specifications to include eBird data processing requirements**
+- **Enhanced README acknowledgments to credit moonbirdai/ebird-mcp-server for proven MCP patterns**
+- **Updated MCP tool specifications from 5 to 9 tools based on working JavaScript implementation**
+- **Revised eBird API integration approach from hybrid strategy to proven pattern adaptation**
+- **Enhanced node implementations with smart endpoint selection and dual discovery methods**
 
 ### Deprecated
 

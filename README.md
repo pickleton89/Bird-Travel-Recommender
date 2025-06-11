@@ -33,9 +33,11 @@ For detailed design documentation, see [docs/design.md](docs/design.md).
 
 ## Acknowledgments
 
-This project's eBird API integration was developed with reference to the [ebird-api](https://github.com/ProjectBabbler/ebird-api) Python wrapper by ProjectBabbler, distributed under the MIT License. While we implement our own custom eBird API utilities following the hybrid approach outlined in our design documentation, the wrapper provided valuable insights into best practices for eBird API integration.
+This project's MCP tool architecture and eBird API integration patterns were significantly influenced by the [ebird-mcp-server](https://github.com/moonbirdai/ebird-mcp-server) by moonbirdai. Their working JavaScript implementation provided proven patterns for MCP tool schemas, eBird API endpoint strategies, and error handling approaches that we adapted for our Python-based PocketFlow architecture.
 
-We also acknowledge the comprehensive eBird API tutorial by Eric Nost from the University of Guelph's Digital Conservation project, which provided detailed implementation guidance and real-world usage patterns.
+We also reference the [ebird-api](https://github.com/ProjectBabbler/ebird-api) Python wrapper by ProjectBabbler, distributed under the MIT License. While we implement our own custom eBird API utilities following the hybrid approach outlined in our design documentation, both projects provided valuable insights into best practices for eBird API integration.
+
+Additional thanks to Eric Nost from the University of Guelph's Digital Conservation project for the comprehensive eBird API tutorial, which provided detailed implementation guidance and real-world usage patterns.
 
 ## License
 

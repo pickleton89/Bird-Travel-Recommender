@@ -3,7 +3,11 @@
     "allow": [
       "mcp__graphiti__add_memory",
       "WebFetch(domain:documenter.getpostman.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "mcp__graphiti__search_memory_facts",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)"
     ],
     "deny": []
   }
