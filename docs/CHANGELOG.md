@@ -51,6 +51,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Updated MCP tool specifications from 5 to 9 tools based on working JavaScript implementation**
 - **Revised eBird API integration approach from hybrid strategy to proven pattern adaptation**
 - **Enhanced node implementations with smart endpoint selection and dual discovery methods**
+- **Enhanced LLM prompting strategies with domain-specific birding expertise context**
+- **Professional birding guide prompting for itinerary generation with species-specific advice**
+- **Expert ornithologist prompting for species validation with seasonal and behavioral context**
+- **Birding expert evaluation prompting for location scoring with habitat and timing considerations**
 
 ### Deprecated
 

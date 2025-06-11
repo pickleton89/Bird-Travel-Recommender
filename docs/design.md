@@ -119,9 +119,10 @@ flowchart TB
 ### Core Birding Utilities
 
 1. **Call LLM** (`utils/call_llm.py`)
-   - *Input*: prompt (str)
+   - *Input*: prompt (str), context_type (str, optional)
    - *Output*: response (str)
-   - Used by ValidateSpeciesNode, DecideBirdingToolNode, and GenerateItineraryNode
+   - *Enhanced Prompting*: Domain-specific prompts with birding expertise context
+   - Used by ValidateSpeciesNode, DecideBirdingToolNode, and GenerateItineraryNode with specialized birding knowledge
 
 2. **eBird API Client** (`utils/ebird_api.py`)
    - *Core Architecture*: Centralized `make_request()` method with consistent error handling
@@ -165,6 +166,79 @@ flowchart TB
    - *Input*: USE_MCP boolean flag
    - *Output*: execution mode configuration
    - Used throughout application to switch between local and MCP execution
+
+### Enhanced LLM Prompting Strategies
+
+To leverage Claude's built-in birding knowledge without external data dependencies:
+
+**ValidateSpeciesNode Prompting:**
+```python
+species_validation_prompt = f"""
+You are an expert ornithologist with comprehensive knowledge of North American birds.
+Given these bird names: {species_list}
+
+For each name:
+1. Provide the correct common name (handle variations like "cardinal" → "Northern Cardinal")
+2. Include the scientific name
+3. Note any seasonal considerations (migration timing, breeding vs wintering range)
+4. Flag any names that might be ambiguous or incorrect
+
+Consider regional variations and colloquial names. Return structured data for eBird API lookup.
+"""
+```
+
+**GenerateItineraryNode Prompting:**
+```python
+itinerary_prompt = f"""
+You are a professional birding guide with extensive field experience.
+Create a detailed birding itinerary for: {target_species} in {region}
+
+Include expert advice on:
+- Best times of day for each species (feeding, activity patterns)
+- Habitat preferences and where to look within each location
+- Seasonal timing and migration considerations
+- Weather conditions that favor good sightings
+- Equipment recommendations and photography tips
+- Local birding etiquette and access considerations
+
+Format as a professional birding trip itinerary with specific actionable guidance.
+"""
+```
+
+**ScoreLocationsNode Prompting:**
+```python
+location_scoring_prompt = f"""
+You are an expert birder evaluating locations for observing: {species_list}
+
+For each location, consider:
+- Habitat suitability for target species
+- Seasonal timing and migration patterns
+- Time of day effectiveness
+- Weather condition preferences
+- Accessibility and birding logistics
+
+Rank locations by probability of successful sightings, explaining your reasoning
+based on species ecology and behavior patterns.
+"""
+```
+
+**DecideBirdingToolNode Prompting:**
+```python
+tool_selection_prompt = f"""
+You are an expert birding guide helping users plan bird observation trips.
+User query: "{user_query}"
+
+Available tools: {available_tools}
+
+Based on your birding expertise:
+1. Understand the user's intent (species lookup, trip planning, hotspot discovery)
+2. Consider birding context (seasons, regions, species behaviors)
+3. Select the most appropriate tool and parameters
+4. Account for birding best practices and timing
+
+Choose the tool that best serves their birding goals.
+"""
+```
 
 ## eBird API Integration Strategy
 
@@ -491,8 +565,8 @@ birding_shared = {
    - *Type*: Regular Node
    - *Steps*:
      - *prep*: Read user_query and available_tools from agent_shared
-     - *exec*: Use LLM to parse intent and select best tool with parameters
-     - *post*: Write selected_tool and tool_parameters to agent_shared
+     - *exec*: **Enhanced LLM Decision**: Use expert birding guide prompting to understand birding context and select optimal tool with domain-specific parameter recommendations
+     - *post*: Write selected_tool and tool_parameters with birding expertise context to agent_shared
 
 3. **ExecuteBirdingToolNode**
    - *Purpose*: Execute selected tool via MCP and format results
@@ -511,10 +585,10 @@ birding_shared = {
    - *Steps*:
      - *prep*: Read species_list from shared["input"]
      - *exec*: 
-       1. **LLM Name Standardization**: Use call_llm to normalize common names to scientific names
+       1. **Enhanced LLM Validation**: Use call_llm with expert ornithologist prompting to standardize names and add seasonal context
        2. **eBird Taxonomy Lookup**: Apply `ebird_get_taxonomy` tool patterns for species code validation
-       3. **Fuzzy Matching**: Implement fallback strategies for partial species name matches
-       4. **Caching Strategy**: Store successful name→code mappings following proven caching patterns
+       3. **Fuzzy Matching**: Implement fallback strategies for partial species name matches with birding knowledge
+       4. **Caching Strategy**: Store successful name→code mappings with seasonal and behavioral context
      - *post*: Write validated_species with both names, codes, and validation confidence scores to shared store
    - *MCP Tool Integration*: Leverages `ebird_get_taxonomy` tool with flexible search parameters
    - *Error Handling*: Invalid species names, API failures, empty taxonomy results, partial matches
@@ -573,9 +647,10 @@ birding_shared = {
      - *exec*: 
        1. Calculate species diversity scores per cluster (target species found)
        2. Weight by observation recency and frequency (eBird activity levels)
-       3. Factor in eBird hotspot popularity and accessibility ratings
-       4. Apply user preference weights (photography, rarity, accessibility)
-     - *post*: Write scored_locations with ranking rationale and confidence scores
+       3. **Enhanced LLM Scoring**: Use expert birder prompting to evaluate habitat suitability and seasonal timing
+       4. Factor in eBird hotspot popularity and accessibility ratings
+       5. Apply user preference weights (photography, rarity, accessibility)
+     - *post*: Write scored_locations with ranking rationale, confidence scores, and birding expertise insights
    - *Scoring Factors*: Species count, observation recency, eBird hotspot status, user preferences
 
 6. **OptimizeRouteNode**
@@ -586,13 +661,13 @@ birding_shared = {
      - *exec*: Use route optimizer utility for TSP-style optimization
      - *post*: Write optimized_route to shared store
 
-10. **GenerateItineraryNode**
-    - *Purpose*: Format final markdown itinerary with maps and metadata
+7. **GenerateItineraryNode**
+    - *Purpose*: Format final markdown itinerary with expert birding guidance
     - *Type*: Regular Node
     - *Steps*:
       - *prep*: Read optimized_route and all metadata from shared store
-      - *exec*: Call LLM to format professional itinerary with hotspot details
-      - *post*: Write itinerary_markdown to shared store
+      - *exec*: **Enhanced LLM Generation**: Use professional birding guide prompting to create detailed itinerary with species-specific advice, timing, and field techniques
+      - *post*: Write itinerary_markdown with comprehensive birding expertise to shared store
 
 ## MCP Tools Specification
 
