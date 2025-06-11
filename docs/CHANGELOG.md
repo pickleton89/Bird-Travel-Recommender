@@ -13,9 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenAI GPT-4o integration for question answering
 - UV package manager configuration
 - Project documentation (CLAUDE.md)
+- **Comprehensive design document (docs/design.md) following PocketFlow methodology**
+- **7-node birding travel recommender architecture specification**
+- **Complete shared store schema for bird sighting data pipeline**
+- **Utility function specifications for eBird API, geospatial calculations, and route optimization**
 
 ### Changed
 - Migrated from requirements.txt to UV package management
+- **Updated project scope from simple Q&A to specialized birding travel planning application**
 
 ### Deprecated
 
