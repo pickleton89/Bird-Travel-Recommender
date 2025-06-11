@@ -29,5 +29,13 @@ Data flows through a shared dictionary that gets passed between nodes. The flow 
 
 ## Environment Requirements
 
-- Requires `OPENAI_API_KEY` environment variable for LLM functionality
+### API Keys Setup
+1. Copy `.env.example` to `.env`: `cp .env.example .env`
+2. Fill in your actual API keys in the `.env` file:
+   - **OPENAI_API_KEY**: Get from https://platform.openai.com/api-keys
+   - **EBIRD_API_KEY**: Get from https://ebird.org/api/keygen
+
+### Configuration
 - Uses GPT-4o model by default (configurable in `utils/call_llm.py`)
+- Environment variables loaded automatically via python-dotenv
+- Default settings can be configured in `.env` file
