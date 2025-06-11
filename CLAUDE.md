@@ -12,20 +12,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a PocketFlow-based question-answering application that uses a node-based workflow architecture:
+This is a sophisticated PocketFlow-based Bird Travel Recommender system that leverages eBird API integration and expert birding knowledge. The architecture has evolved from a simple Q&A flow to a comprehensive birding travel planning system with 9 MCP tools and robust error handling.
 
-- **Main Entry Point**: `main.py` - Creates and runs the Q&A flow
-- **Flow Definition**: `flow.py` - Defines the workflow using PocketFlow nodes
-- **Node Implementation**: `nodes.py` - Contains custom node classes (GetQuestionNode, AnswerNode)
-- **Utilities**: `utils/call_llm.py` - OpenAI API integration for LLM calls
+- **Main Entry Point**: `main.py` - Creates and runs the birding recommendation flow
+- **Flow Definition**: `flow.py` - Defines the workflow using PocketFlow nodes with enhanced birding logic
+- **Node Implementation**: `nodes.py` - Contains custom node classes including DecideBirdingToolNode with expert birding knowledge
+- **Utilities**: `utils/call_llm.py` - OpenAI API integration optimized for birding domain expertise
 
-### Flow Architecture
+### Enhanced Flow Architecture
 
-The application follows a simple two-node workflow:
-1. **GetQuestionNode** - Captures user input question
-2. **AnswerNode** - Processes question through LLM and returns answer
+The system now features a comprehensive MCP tool architecture with:
 
-Data flows through a shared dictionary that gets passed between nodes. The flow uses PocketFlow's node connection syntax (`>>`) to chain processing steps.
+#### Core eBird Data Tools
+- **FetchSightingsNode** - Retrieves recent bird sightings data
+- **ClusterHotspotsNode** - Identifies optimal birding locations
+- **ValidateSpeciesNode** - Validates bird species with taxonomic lookup
+- **makeRequest() Pattern** - Centralized API request handling with robust error management
+
+#### Business Logic Tools
+- **DecideBirdingToolNode** - Enhanced with expert birding knowledge for species-specific advice, habitat assessment, and optimal observation timing
+- **Location Scoring** - Evaluates birding potential of destinations
+- **Itinerary Generation** - Creates detailed birding trip plans
+- **Species Validation** - Prioritizes direct taxonomy lookup over external dependencies
+
+#### Data Flow & Error Handling
+- **Enrichment-in-Place Strategy** - Embeds validation flags within original data structures
+- **Dual Discovery Methods** - Smart endpoint selection for optimal API performance  
+- **Bootstrap Statistical Models** - Negative binomial models for handling data overdispersion
+- **Comprehensive Schema Validation** - JSON schemas ensure data integrity
+
+The architecture leverages proven patterns from the moonbirdai/ebird-mcp-server JavaScript implementation, providing production-level reliability and scalability.
 
 ## Environment Requirements
 
@@ -40,6 +56,13 @@ Data flows through a shared dictionary that gets passed between nodes. The flow 
 - Environment variables loaded automatically via python-dotenv
 - Default settings can be configured in `.env` file
 
-## Claude Memories
-
-- Add to claude memory not the graphiti memory
+## Claude Memories & Context
+- Extensive project memories stored in Graphiti MCP knowledge graph including:
+  - Enhanced design document with moonbirdai/ebird-mcp-server integration patterns
+  - DecideBirdingToolNode improvements with expert birding knowledge
+  - MCP tool architecture expansion (5→9 tools) with robust error handling
+  - Centralized makeRequest() pattern for API interactions
+- Access to PocketFlow Docs MCP server for framework information
+- Documentation files located in the docs/ directory
+- .cursorrules contains PocketFlow framework documentation
+- **When starting new sessions**: Always check changelog.md and query stored memories for project context
