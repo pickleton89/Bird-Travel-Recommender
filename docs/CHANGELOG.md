@@ -58,6 +58,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Species validation logic optimization: direct eBird taxonomy lookup first, LLM fallback for fuzzy matching**
 - **Data enrichment-in-place strategy replacing separate filtered data lists with constraint flags**
 - **Agent orchestration enhanced to default to granular tool chaining over monolithic tool execution**
+- **Comprehensive error recovery strategy with flow-level retry logic and fallback mechanisms**
+- **Node type specifications added (Regular, BatchNode, Async) with performance and retry implications**
+- **MCP/Local execution mode parity validation framework for consistency testing**
+- **Enhanced testing strategy with unit, integration, and performance testing frameworks**
+- **Node ownership markers added for team collaboration and responsibility tracking**
+- **Flow retry diagram and error recovery patterns documented for production reliability**
 
 ### Deprecated
 

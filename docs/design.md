@@ -230,13 +230,30 @@ User query: "{user_query}"
 
 Available tools: {available_tools}
 
-Agent Orchestration Strategy:
-1. **Default to Granular Tools**: For complex queries, orchestrate multiple smaller tools sequentially (validate_species → fetch_sightings → find_hotspots → optimize_route)
-2. **Monolithic Tool as Shortcut**: Use plan_complete_trip only for simple, unambiguous requests
-3. **Inspect and Adapt**: Chain tools while inspecting outputs, handle errors gracefully, ask for clarification when needed
-4. **Birding Context**: Consider seasons, regions, species behaviors in tool selection and sequencing
+Tool Selection Logic:
+1. **Primary Strategy - Granular Tool Orchestration**:
+   - Default approach for all complex queries requiring multi-step processing
+   - Sequence: validate_species → fetch_sightings → find_hotspots → optimize_route
+   - Inspect each step output and adapt subsequent tool calls
+   - Stop orchestration and return partial results if critical steps fail (e.g., no species found, empty sightings)
+   
+2. **Fallback Strategy - Monolithic Tool**:
+   - Use plan_complete_trip ONLY when:
+     - Simple, unambiguous request with all parameters clear
+     - User explicitly requests "complete trip planning"
+     - Orchestration has failed 2+ times and user wants simplified approach
+   
+3. **Error Recovery Decision Points**:
+   - If validate_species fails: Ask user to clarify species names
+   - If fetch_sightings returns empty: Suggest alternative regions or time periods
+   - If optimize_route fails: Return unoptimized location list with distances
+   - If >50% of pipeline fails: Offer monolithic tool as fallback
 
-Choose the orchestration strategy that best serves their birding goals and allows for intelligent error handling.
+4. **Partial Result Strategy**:
+   - Always return useful partial results rather than complete failure
+   - Example: "Found 3 of 5 species, here are the best locations for those..."
+
+Choose the orchestration strategy that maximizes user value while handling failures gracefully.
 """
 ```
 
@@ -405,6 +422,62 @@ notable_record = {
 }
 ```
 
+## Flow-Level Error Recovery Strategy
+
+### Comprehensive Error Handling Architecture
+
+#### Node-Level Recovery Patterns
+
+```mermaid
+flowchart TB
+    subgraph "Error Recovery Flow"
+        A[Node Execution] --> B{Success?}
+        B -->|Yes| C[Continue to Next Node]
+        B -->|No| D{Retry Attempts < Max?}
+        D -->|Yes| E[Wait + Exponential Backoff]
+        E --> A
+        D -->|No| F{Critical Node?}
+        F -->|Yes| G[Escalate to Flow Recovery]
+        F -->|No| H[Log Error + Continue with Partial Data]
+        G --> I{Fallback Available?}
+        I -->|Yes| J[Execute Fallback Strategy]
+        I -->|No| K[Return Partial Results + Error Message]
+        J --> L{Fallback Success?}
+        L -->|Yes| C
+        L -->|No| K
+    end
+```
+
+#### Recovery Strategy by Node Type
+
+| Node | Max Retries | Retry Strategy | Fallback Action | Critical? |
+|------|-------------|----------------|-----------------|-----------|
+| **ValidateSpeciesNode** | 3 | Exponential backoff | LLM fuzzy matching | Yes |
+| **FetchSightingsNode** | 5 | Circuit breaker pattern | Cached data / expanded radius | Yes |
+| **FilterConstraintsNode** | 2 | Immediate retry | Relaxed constraints | No |
+| **ClusterHotspotsNode** | 2 | Linear backoff | Simple distance grouping | No |
+| **ScoreLocationsNode** | 1 | No retry | Basic scoring algorithm | No |
+| **OptimizeRouteNode** | 2 | Timeout handling | Nearest-neighbor algorithm | No |
+| **GenerateItineraryNode** | 3 | API retry | Template-based generation | No |
+
+#### Flow-Level Decision Logic
+
+**Critical Node Failure Recovery:**
+1. **ValidateSpeciesNode**: If <50% species validated → prompt user for clarification, else proceed with valid species
+2. **FetchSightingsNode**: If >80% species empty → expand search radius or use cached data
+
+**Non-Critical Node Failure Recovery:**
+1. **FilterConstraintsNode**: Use unfiltered data with warning
+2. **ClusterHotspotsNode**: Proceed with individual locations
+3. **ScoreLocationsNode**: Use chronological ordering
+4. **OptimizeRouteNode**: Return unoptimized route with distances
+5. **GenerateItineraryNode**: Return structured data without narrative
+
+**Escalation Triggers:**
+- 2+ critical nodes fail → offer monolithic tool fallback
+- 3+ total nodes fail → return diagnostic information + partial results
+- API rate limit exceeded → implement exponential backoff with jitter
+
 ### Implementation Details by Node
 
 #### ValidateSpeciesNode Enhancements
@@ -484,22 +557,100 @@ def fetch_species_sightings_batch(validated_species, region_code, days_back, api
 - **Data Filtering**: Apply constraints early to reduce processing overhead
 - **Memory Management**: Stream large result sets instead of loading entirely
 
-### Testing Strategy
+## Testing Strategy
 
-#### Unit Tests
-- **Mock API Responses**: Test node logic without hitting live API
-- **Error Condition Testing**: Verify handling of API failures
-- **Data Validation**: Test species code validation and filtering logic
+### Unit Testing Framework
 
-#### Integration Tests
-- **Live API Testing**: Test with actual eBird API using test data
-- **End-to-End Pipeline**: Validate full workflow with real user scenarios
-- **Performance Testing**: Measure API response times and rate limits
+#### Mock API Response Testing
+```python
+# Test ValidateSpeciesNode with mocked eBird API
+@patch('utils.ebird_api.get_taxonomy')
+def test_validate_species_node(mock_taxonomy):
+    mock_taxonomy.return_value = [
+        {"comName": "Northern Cardinal", "speciesCode": "norcar"},
+        {"comName": "Blue Jay", "speciesCode": "blujay"}
+    ]
+    
+    node = ValidateSpeciesNode()
+    result = node.execute({"species_list": ["cardinal", "blue jay"]})
+    
+    assert len(result["validated_species"]) == 2
+    assert result["validated_species"][0]["species_code"] == "norcar"
+```
 
-#### Test Data Management
-- **Sample Responses**: Store representative API responses for testing
-- **Edge Case Data**: Include rare species, empty results, malformed data
-- **Regional Variations**: Test with different geographic regions
+#### Error Condition Testing
+```python
+def test_fetch_sightings_api_failure():
+    """Test FetchSightingsNode handles API failures gracefully"""
+    with patch('requests.get') as mock_get:
+        mock_get.side_effect = requests.exceptions.RequestException("API Error")
+        
+        node = FetchSightingsNode()
+        result = node.execute({"validated_species": [{"species_code": "norcar"}]})
+        
+        assert "error" in result
+        assert result["retry_attempted"] == True
+```
+
+### Integration Testing
+
+#### Live API Testing
+- **Endpoint Validation**: Test all eBird API endpoints with real keys
+- **Rate Limit Compliance**: Verify respectful API usage patterns
+- **Response Handling**: Test with various response sizes and formats
+
+#### End-to-End Pipeline Testing
+```python
+def test_complete_pipeline():
+    """Test full 7-node pipeline with realistic user scenario"""
+    input_data = {
+        "species_list": ["Northern Cardinal", "Blue Jay", "American Robin"],
+        "constraints": {
+            "start_location": {"lat": 42.3601, "lng": -71.0589},
+            "max_days": 3,
+            "max_daily_distance_km": 150,
+            "region": "US-MA"
+        }
+    }
+    
+    result = run_birding_pipeline(input_data)
+    
+    assert "itinerary_markdown" in result
+    assert len(result["optimized_route"]) > 0
+    assert result["processing_stats"]["success"] == True
+```
+
+### Performance Testing
+
+#### API Response Time Measurement
+- **Baseline Metrics**: Establish acceptable response time thresholds
+- **Batch Processing**: Verify parallel API calls improve performance
+- **Caching Effectiveness**: Measure cache hit rates and speed improvements
+
+#### Load Testing
+- **Concurrent Users**: Test MCP server with multiple simultaneous requests
+- **Memory Usage**: Monitor memory consumption with large result sets
+- **Rate Limit Handling**: Verify graceful degradation under API throttling
+
+### Test Data Management
+
+#### Sample Response Libraries
+```python
+# Store representative API responses for testing
+EBIRD_SAMPLE_RESPONSES = {
+    "recent_observations": {...},
+    "species_taxonomy": {...},
+    "regional_hotspots": {...},
+    "empty_results": {...},
+    "error_responses": {...}
+}
+```
+
+#### Edge Case Scenarios
+- **Rare Species**: No recent observations, empty API responses
+- **Invalid Regions**: Non-existent region codes, malformed coordinates  
+- **Large Result Sets**: High-diversity regions with 100+ species
+- **Network Issues**: Timeouts, intermittent connectivity, rate limiting
 
 ## Node Design
 
@@ -559,13 +710,13 @@ birding_shared = {
      - *exec*: Query MCP server for available birding tools and their schemas
      - *post*: Write available_tools list to agent_shared
 
-2. **DecideBirdingToolNode**
-   - *Purpose*: Analyze user query and select appropriate birding tool
+2. **DecideBirdingToolNode** #owner: ai-agent-logic
+   - *Purpose*: Analyze user query and select appropriate birding tool with comprehensive fallback logic
    - *Type*: Regular Node
    - *Steps*:
      - *prep*: Read user_query and available_tools from agent_shared
-     - *exec*: **Enhanced LLM Decision**: Use expert birding guide prompting to understand birding context and select optimal tool with domain-specific parameter recommendations
-     - *post*: Write selected_tool and tool_parameters with birding expertise context to agent_shared
+     - *exec*: **Enhanced LLM Decision**: Use expert birding guide prompting to understand birding context and select optimal tool with domain-specific parameter recommendations. Apply tool selection logic including orchestration vs monolithic fallback strategy.
+     - *post*: Write selected_tool, tool_parameters, orchestration_plan, and fallback_strategy to agent_shared
 
 3. **ExecuteBirdingToolNode**
    - *Purpose*: Execute selected tool via MCP and format results
@@ -577,9 +728,10 @@ birding_shared = {
 
 #### Birding Pipeline Nodes (Business Logic)
 
-4. **ValidateSpeciesNode**
+4. **ValidateSpeciesNode** #owner: data-validation
    - *Purpose*: Convert common bird names to eBird species codes using proven taxonomy patterns
    - *Type*: Regular Node
+   - *Retry Strategy*: 3 attempts with exponential backoff for API failures
    - *eBird Integration*: Implements ebird-mcp-server taxonomy validation with `get_taxonomy()` patterns
    - *Steps*:
      - *prep*: Read species_list from shared["input"]
@@ -591,10 +743,12 @@ birding_shared = {
      - *post*: Write validated_species with both names, codes, validation confidence scores, and lookup method used to shared store
    - *MCP Tool Integration*: Leverages `ebird_get_taxonomy` tool with flexible search parameters
    - *Error Handling*: Invalid species names, API failures, empty taxonomy results, partial matches with graceful LLM fallback
+   - *Recovery Strategy*: If <50% species validated, prompt user for clarification; if >50%, proceed with valid species only
 
-2. **FetchSightingsNode**
+2. **FetchSightingsNode** #owner: api-integration
    - *Purpose*: Query eBird API for recent sightings using proven endpoint patterns
    - *Type*: BatchNode (parallel API calls for multiple species)
+   - *Retry Strategy*: Per-species retry with circuit breaker pattern, 5 attempts max with exponential backoff
    - *eBird Integration*: Implements ebird-mcp-server patterns with intelligent endpoint selection
    - *Steps*:
      - *prep*: Return list of validated species codes from shared store
@@ -607,6 +761,7 @@ birding_shared = {
    - *MCP Tool Integration*: Supports all core eBird MCP tools (recent, nearby, notable, species-specific)
    - *Optimization*: Connection pooling, response caching, batch processing following proven patterns
    - *Error Handling*: HTTP status codes, rate limits, API timeouts, invalid species codes, empty results
+   - *Recovery Strategy*: If >80% species return empty, expand search radius; if API fails, use cached data if available
 
 3. **FilterConstraintsNode**
    - *Purpose*: Apply user constraints (region, dates, distance) to sightings using enrichment-in-place strategy
@@ -653,21 +808,27 @@ birding_shared = {
      - *post*: Write scored_locations with ranking rationale, confidence scores, and birding expertise insights
    - *Scoring Factors*: Species count, observation recency, eBird hotspot status, user preferences
 
-6. **OptimizeRouteNode**
+6. **OptimizeRouteNode** #owner: algorithms
    - *Purpose*: Calculate optimal visiting order to minimize total travel distance
    - *Type*: Regular Node
+   - *Retry Strategy*: Fallback to simple nearest-neighbor if TSP optimization fails
    - *Steps*:
      - *prep*: Read scored_locations and start_location from shared store
      - *exec*: Use route optimizer utility for TSP-style optimization
      - *post*: Write optimized_route to shared store
+   - *Error Handling*: If optimization fails (>50 locations, computational limits), use nearest-neighbor algorithm
+   - *Recovery Strategy*: Always return some route ordering, even if suboptimal
 
-7. **GenerateItineraryNode**
+7. **GenerateItineraryNode** #owner: content-generation
     - *Purpose*: Format final markdown itinerary with expert birding guidance
-    - *Type*: Regular Node
+    - *Type*: Async Node (remote LLM calls)
+    - *Retry Strategy*: 3 attempts for LLM calls, fallback to template-based generation
     - *Steps*:
       - *prep*: Read optimized_route and all metadata from shared store
       - *exec*: **Enhanced LLM Generation**: Use professional birding guide prompting to create detailed itinerary with species-specific advice, timing, and field techniques
       - *post*: Write itinerary_markdown with comprehensive birding expertise to shared store
+    - *Error Handling*: If LLM fails, generate basic itinerary using templates with available data
+    - *Recovery Strategy*: Always produce some itinerary output, even if simplified
 
 ## MCP Tools Specification
 
