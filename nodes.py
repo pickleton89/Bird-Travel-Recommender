@@ -378,30 +378,35 @@ class FetchSightingsNode(BatchNode):
         self.min_request_interval = 0.2  # 200ms between requests for rate limiting
         
     def prep(self, shared):
-        """Extract validated species and constraints from shared store."""
+        """
+        Extract validated species as individual items for BatchNode processing.
+        
+        BatchNode expects prep() to return a list of items to process in parallel.
+        Each item will be passed to exec() individually.
+        """
         validated_species = shared.get("validated_species", [])
         constraints = shared.get("input", {}).get("constraints", {})
         
         if not validated_species:
             raise ValueError("No validated species found in shared store")
         
-        return {
-            "validated_species": validated_species,
-            "constraints": constraints
-        }
+        # Store constraints for access during exec
+        self._constraints = constraints
+        
+        # Return list of species for BatchNode to process in parallel
+        return validated_species
     
-    def exec(self, prep_data: Dict[str, Any]) -> Dict[str, Any]:
+    def exec(self, species: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Fetch sightings for all validated species using parallel processing.
+        Fetch sightings for a single species (called by BatchNode for each species).
         
         Args:
-            prep_data: Dictionary with validated species and constraints
+            species: Single validated species dictionary
             
         Returns:
-            Dictionary with all sightings and processing statistics
+            Dictionary with sightings for this species
         """
-        validated_species = prep_data["validated_species"]
-        constraints = prep_data["constraints"]
+        constraints = self._constraints
         
         # Extract constraint parameters
         region_code = constraints.get("region", "US-MA")  # Default to Massachusetts
@@ -409,74 +414,23 @@ class FetchSightingsNode(BatchNode):
         start_location = constraints.get("start_location")
         max_distance_km = constraints.get("max_daily_distance_km", 200)
         
-        processing_stats = {
-            "total_species": len(validated_species),
-            "successful_fetches": 0,
-            "empty_results": 0,
-            "api_errors": 0,
-            "total_observations": 0,
-            "unique_locations": set(),
-            "fetch_method_stats": {}
-        }
+        logger.debug(f"Fetching sightings for {species['common_name']}")
         
-        all_sightings = []
+        # Create fetch task for this species
+        task = self._create_fetch_task(species, region_code, days_back, start_location, max_distance_km)
         
-        logger.info(f"Fetching sightings for {len(validated_species)} species using {self.max_workers} workers")
-        
-        # Determine fetch strategy for each species
-        fetch_tasks = []
-        for species in validated_species:
-            task = self._create_fetch_task(species, region_code, days_back, start_location, max_distance_km)
-            fetch_tasks.append(task)
-        
-        # Execute fetch tasks in parallel
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            # Submit all tasks
-            future_to_task = {
-                executor.submit(self._fetch_species_sightings, task): task 
-                for task in fetch_tasks
+        # Fetch sightings for this species
+        try:
+            result = self._fetch_species_sightings(task)
+            return result
+        except Exception as e:
+            logger.error(f"Unexpected error fetching sightings for {species['common_name']}: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "sightings": [],
+                "species_code": species["species_code"]
             }
-            
-            # Collect results as they complete
-            for future in as_completed(future_to_task):
-                task = future_to_task[future]
-                try:
-                    result = future.result()
-                    if result["success"]:
-                        all_sightings.extend(result["sightings"])
-                        processing_stats["successful_fetches"] += 1
-                        processing_stats["total_observations"] += len(result["sightings"])
-                        
-                        # Track unique locations
-                        for sighting in result["sightings"]:
-                            if sighting.get("locId"):
-                                processing_stats["unique_locations"].add(sighting["locId"])
-                        
-                        # Track fetch method statistics
-                        method = result["method"]
-                        processing_stats["fetch_method_stats"][method] = processing_stats["fetch_method_stats"].get(method, 0) + 1
-                        
-                        if len(result["sightings"]) == 0:
-                            processing_stats["empty_results"] += 1
-                    else:
-                        processing_stats["api_errors"] += 1
-                        logger.warning(f"Failed to fetch sightings for {task['species']['common_name']}: {result['error']}")
-                        
-                except Exception as e:
-                    processing_stats["api_errors"] += 1
-                    logger.error(f"Unexpected error fetching sightings for {task['species']['common_name']}: {e}")
-        
-        # Convert set to count for JSON serialization
-        processing_stats["unique_locations"] = len(processing_stats["unique_locations"])
-        
-        logger.info(f"Fetch completed: {processing_stats['successful_fetches']}/{processing_stats['total_species']} species, "
-                   f"{processing_stats['total_observations']} observations, "
-                   f"{processing_stats['unique_locations']} unique locations")
-        
-        return {
-            "all_sightings": all_sightings,
-            "processing_stats": processing_stats
-        }
     
     def _create_fetch_task(self, species: Dict, region_code: str, days_back: int, 
                           start_location: Optional[Dict], max_distance_km: int) -> Dict[str, Any]:
@@ -596,22 +550,69 @@ class FetchSightingsNode(BatchNode):
             }
     
     def post(self, shared, prep_res, exec_res):
-        """Store all sightings in shared store."""
-        shared["all_sightings"] = exec_res["all_sightings"]
-        shared["fetch_stats"] = exec_res["processing_stats"]
+        """
+        Aggregate results from BatchNode execution.
         
+        Args:
+            shared: Shared store
+            prep_res: List of species (from prep)
+            exec_res: List of results from each exec call
+        """
+        # Aggregate results from all species
+        all_sightings = []
+        successful_fetches = 0
+        total_observations = 0
+        unique_locations = set()
+        fetch_method_stats = {}
+        api_errors = 0
+        empty_results = 0
+        
+        for result in exec_res:
+            if result.get("success", False):
+                all_sightings.extend(result.get("sightings", []))
+                successful_fetches += 1
+                total_observations += len(result.get("sightings", []))
+                
+                # Track unique locations
+                for sighting in result.get("sightings", []):
+                    if sighting.get("locId"):
+                        unique_locations.add(sighting["locId"])
+                
+                # Track fetch method statistics
+                method = result.get("method", "unknown")
+                fetch_method_stats[method] = fetch_method_stats.get(method, 0) + 1
+                
+                if len(result.get("sightings", [])) == 0:
+                    empty_results += 1
+            else:
+                api_errors += 1
+        
+        # Create processing statistics
+        processing_stats = {
+            "total_species": len(prep_res),
+            "successful_fetches": successful_fetches,
+            "empty_results": empty_results,
+            "api_errors": api_errors,
+            "total_observations": total_observations,
+            "unique_locations": len(unique_locations),
+            "fetch_method_stats": fetch_method_stats
+        }
+        
+        # Store results in shared store
+        shared["all_sightings"] = all_sightings
+        shared["fetch_stats"] = processing_stats
+
         # Check if we got sufficient data
-        success_rate = exec_res["processing_stats"]["successful_fetches"] / exec_res["processing_stats"]["total_species"]
-        total_observations = exec_res["processing_stats"]["total_observations"]
+        success_rate = successful_fetches / len(prep_res) if prep_res else 0
         
         if success_rate < 0.5:
             logger.warning(f"Low fetch success rate: {success_rate:.1%}")
             return "fetch_failed"
-        
+
         if total_observations == 0:
             logger.warning("No observations found for any species")
             return "no_observations"
-        
+
         logger.info(f"Sightings fetch completed: {success_rate:.1%} success rate, "
                    f"{total_observations} total observations")
         return "default"
@@ -2188,7 +2189,7 @@ class OptimizeRouteNode(Node):
         return "default"
 
 
-class GenerateItineraryNode(AsyncNode):
+class GenerateItineraryNode(Node):
     """
     Generate detailed markdown itinerary with expert birding guidance using LLM enhancement.
     
@@ -2301,7 +2302,7 @@ class GenerateItineraryNode(AsyncNode):
             try:
                 itinerary_prompt = self._create_itinerary_prompt(prep_data)
                 
-                itinerary_response = call_llm(itinerary_prompt, context_type="itinerary_generation")
+                itinerary_response = call_llm(itinerary_prompt)
                 
                 # Validate and enhance the response
                 if self._validate_itinerary_response(itinerary_response):
@@ -2638,26 +2639,29 @@ Unfortunately, no birding locations could be optimized for your trip parameters.
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     def post(self, shared, prep_res, exec_res):
-        """Store generated itinerary in shared store."""
+        """
+        Store generated itinerary in shared store and return shared store.
+        
+        Since this is the final node in the pipeline, we return the shared store
+        instead of a control string so the flow can access the complete results.
+        """
         shared["itinerary_markdown"] = exec_res["itinerary_markdown"]
         shared["itinerary_generation_stats"] = exec_res["generation_stats"]
         
-        # Check generation success
+        # Log generation status for monitoring
         generation_method = exec_res["generation_stats"]["itinerary_method"]
         content_sections = exec_res["generation_stats"]["content_sections_generated"]
         
         if generation_method == "none":
             logger.warning("No itinerary was generated")
-            return "generation_failed"
-        
-        if exec_res["generation_stats"]["fallback_used"]:
+        elif exec_res["generation_stats"]["fallback_used"]:
             logger.warning("Itinerary generation fell back to template")
-            return "llm_failed"
-        
-        if content_sections < 3:
+        elif content_sections < 3:
             logger.warning(f"Itinerary appears incomplete: only {content_sections} sections")
-            return "incomplete_itinerary"
-        
-        logger.info(f"Itinerary generation successful: {generation_method} method, "
-                   f"{content_sections} content sections")
+        else:
+            logger.info(f"Itinerary generation successful: {generation_method} method, "
+                       f"{content_sections} content sections")
+
+        # Store shared store reference for flow access and return control string
+        shared["_final_result"] = shared.copy()  # Store a copy for flow access
         return "default"

@@ -10,7 +10,8 @@
       "WebFetch(domain:api.github.com)",
       "Bash(uv add:*)",
       "Bash(uv run:*)",
-      "mcp__graphiti__get_episodes"
+      "mcp__graphiti__get_episodes",
+      "Bash(python:*)"
     ],
     "deny": []
   }

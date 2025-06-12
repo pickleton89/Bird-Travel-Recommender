@@ -110,11 +110,17 @@ def run_birding_pipeline(input_data=None, debug=False):
     logger.info(f"Region: {input_data['input']['constraints']['region']}")
     
     try:
+        # Create a shared store to track state
+        shared_store = input_data.copy()
+        
         # Execute the flow
-        result = birding_flow.run(input_data)
+        flow_result = birding_flow.run(shared_store)
         
         logger.info("Birding pipeline completed successfully")
-        logger.info(f"Final result keys: {list(result.keys())}")
+        logger.info(f"Flow result: {flow_result}")
+        
+        # Access the final shared store
+        result = shared_store
         
         # Return comprehensive results
         return {
@@ -130,7 +136,7 @@ def run_birding_pipeline(input_data=None, debug=False):
                 "fetch_stats": result.get("fetch_stats", {}),
                 "filtering_stats": result.get("filtering_stats", {}),
                 "clustering_stats": result.get("clustering_stats", {}),
-                "location_scoring_stats": result.get("location_scoring_stats", {}),
+                "scoring_stats": result.get("scoring_stats", {}),
                 "route_optimization_stats": result.get("route_optimization_stats", {}),
                 "itinerary_generation_stats": result.get("itinerary_generation_stats", {})
             },

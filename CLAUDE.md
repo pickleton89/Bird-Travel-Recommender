@@ -58,3 +58,4 @@ The architecture leverages proven patterns from the moonbirdai/ebird-mcp-server 
 
 ## Memory Notes
 - When asked where we left off, check changelog, memory, and git commit
+- Always check changelog when asked "where did we leave off"
