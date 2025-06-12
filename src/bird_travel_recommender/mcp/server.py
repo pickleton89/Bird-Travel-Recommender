@@ -324,11 +324,11 @@ class BirdTravelMCPServer:
             ]
         
         @self.server.call_tool()
-        async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
+        async def handle_call_tool(name: str, arguments: dict):
             """Handle tool calls"""
             try:
-                tool_name = request.params.name
-                arguments = request.params.arguments or {}
+                tool_name = name
+                arguments = arguments or {}
                 
                 # Route to appropriate tool handler
                 if tool_name == "validate_species":
@@ -352,14 +352,11 @@ class BirdTravelMCPServer:
                 else:
                     raise ValueError(f"Unknown tool: {tool_name}")
                 
-                return CallToolResult(content=[TextContent(type="text", text=json.dumps(result, indent=2))])
+                return [TextContent(type="text", text=json.dumps(result, indent=2))]
                 
             except Exception as e:
-                logger.error(f"Error handling tool call {request.params.name}: {str(e)}")
-                return CallToolResult(
-                    content=[TextContent(type="text", text=f"Error: {str(e)}")],
-                    isError=True
-                )
+                logger.error(f"Error handling tool call {tool_name}: {str(e)}")
+                return [TextContent(type="text", text=f"Error: {str(e)}")]
     
     # Tool implementation methods
     async def _handle_validate_species(self, species_names: List[str], **kwargs):
@@ -368,7 +365,7 @@ class BirdTravelMCPServer:
             logger.info(f"Validating {len(species_names)} species")
             
             # Create mock shared store for node execution
-            shared_store = {"species_list": species_names}
+            shared_store = {"input": {"species_list": species_names}}
             
             # Execute ValidateSpeciesNode
             self.validate_species_node.prep(shared_store)
@@ -396,16 +393,36 @@ class BirdTravelMCPServer:
                 "validated_species": []
             }
     
-    async def _handle_fetch_sightings(self, validated_species: List[Dict], region: str, days_back: int = 14, **kwargs):
+    async def _handle_fetch_sightings(self, validated_species: List, region: str, days_back: int = 14, **kwargs):
         """Handle fetch_sightings tool"""
         try:
             logger.info(f"Fetching sightings for {len(validated_species)} species in {region}")
             
+            # Handle case where user passes strings instead of validated species objects
+            processed_species = []
+            for species in validated_species:
+                if isinstance(species, str):
+                    # Convert string to basic validated species format
+                    processed_species.append({
+                        "original_name": species,
+                        "common_name": species,
+                        "species_code": species.lower().replace(" ", "")[:6],  # Simple code generation
+                        "scientific_name": "Unknown",
+                        "validation_method": "string_input",
+                        "confidence": 0.5
+                    })
+                else:
+                    processed_species.append(species)
+            
             # Create mock shared store for node execution
             shared_store = {
-                "validated_species": validated_species,
-                "region": region,
-                "days_back": days_back
+                "validated_species": processed_species,
+                "input": {
+                    "constraints": {
+                        "region": region,
+                        "days_back": days_back
+                    }
+                }
             }
             
             # Execute FetchSightingsNode (BatchNode)

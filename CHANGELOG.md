@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Critical MCP Server Handler Issues**: Resolved multiple blocking issues preventing MCP tool execution in Claude Desktop
+  - **Handler Function Signatures**: Fixed `handle_call_tool` and `handle_list_tools` signatures to remove incorrect `**kwargs` parameters that caused "takes 1 positional argument but 2 were given" errors
+  - **Return Format**: Updated handlers to return list of TextContent objects instead of incorrectly wrapping in CallToolResult
+  - **Data Structure Compatibility**: Fixed ValidateSpeciesNode to expect data in `shared["input"]["species_list"]` format instead of `shared["species_list"]`
+  - **FetchSightingsNode Input Handling**: Added defensive handling to convert string inputs to proper validated species objects, resolving 'common_name' field errors
+  - **All 9 MCP Tools Operational**: validate_species, fetch_sightings, filter_constraints, cluster_hotspots, score_locations, optimize_route, generate_itinerary, plan_complete_trip, get_birding_advice now functional
+
 ### Added
 - **MCP Deployment Script**: Created `scripts/deploy_mcp.py` for automated MCP server deployment and configuration
 - **Safe MCP Configuration Merger**: Created `scripts/merge_mcp_config.py` for safe Claude Desktop configuration management with automatic backup and preview
