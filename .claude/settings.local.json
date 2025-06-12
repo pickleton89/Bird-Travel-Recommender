@@ -11,7 +11,8 @@
       "Bash(uv add:*)",
       "Bash(uv run:*)",
       "mcp__graphiti__get_episodes",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }

@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "bird-travel-recommender-dev": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "mcp_server.py",
+        "--debug"
+      ],
+      "cwd": "/Users/jeffkiefer/Documents/projects/Bird-Travel-Recommender",
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "EBIRD_API_KEY": "${EBIRD_API_KEY}",
+        "BIRD_TRAVEL_LOG_LEVEL": "DEBUG",
+        "BIRD_TRAVEL_CACHE_SIZE": "100",
+        "BIRD_TRAVEL_REQUEST_TIMEOUT": "60",
+        "BIRD_TRAVEL_MAX_RETRIES": "5"
+      },
+      "timeout": 120000,
+      "initializationOptions": {
+        "enableDebugLogging": true,
+        "maxConcurrentRequests": 5,
+        "cacheEnabled": false
+      }
+    }
+  }
+}
