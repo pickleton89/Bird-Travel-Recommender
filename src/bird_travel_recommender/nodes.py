@@ -633,7 +633,7 @@ class FilterConstraintsNode(Node):
     def __init__(self):
         super().__init__()
         # Import here to avoid circular imports
-        from utils.geo_utils import (
+        from .utils.geo_utils import (
             haversine_distance, validate_coordinates, is_within_date_range,
             is_within_radius, is_within_region, calculate_travel_time_estimate
         )
@@ -887,7 +887,7 @@ class ClusterHotspotsNode(Node):
         super().__init__()
         self.cluster_radius_km = cluster_radius_km
         # Import geo utilities
-        from utils.geo_utils import haversine_distance, validate_coordinates
+        from .utils.geo_utils import haversine_distance, validate_coordinates
         self.haversine_distance = haversine_distance
         self.validate_coordinates = validate_coordinates
         
@@ -1044,7 +1044,7 @@ class ClusterHotspotsNode(Node):
         hotspots = []
         
         try:
-            from utils.ebird_api import get_client
+            from .utils.ebird_api import get_client
             ebird_client = get_client()
             
             # Method 1: Regional hotspots
@@ -1413,7 +1413,7 @@ class ScoreLocationsNode(Node):
     def __init__(self):
         super().__init__()
         from datetime import datetime, timedelta
-        from utils.geo_utils import parse_ebird_datetime
+        from .utils.geo_utils import parse_ebird_datetime
         self.datetime = datetime
         self.timedelta = timedelta
         self.parse_ebird_datetime = parse_ebird_datetime
@@ -1786,7 +1786,7 @@ BEST_TIME: [optimal timing advice]
 TIPS: [specific observation tips for this location]
 """
         
-        from utils.call_llm import call_llm
+        from .utils.call_llm import call_llm
         llm_response = call_llm(location_scoring_prompt)
         
         return self._parse_llm_evaluation(llm_response)
@@ -2061,7 +2061,7 @@ class OptimizeRouteNode(Node):
             Optimization result dictionary
         """
         try:
-            from utils.route_optimizer import optimize_birding_route
+            from .utils.route_optimizer import optimize_birding_route
             
             result = optimize_birding_route(
                 start_location=start_location,
@@ -2093,7 +2093,7 @@ class OptimizeRouteNode(Node):
             List of route segment dictionaries
         """
         try:
-            from utils.route_optimizer import calculate_route_segments
+            from .utils.route_optimizer import calculate_route_segments
             return calculate_route_segments(start_location, route)
         except Exception as e:
             logger.error(f"Route segment calculation failed: {e}")
@@ -2113,7 +2113,7 @@ class OptimizeRouteNode(Node):
         if not locations:
             return 0.0
         
-        from utils.geo_utils import haversine_distance
+        from .utils.geo_utils import haversine_distance
         
         total_distance = 0.0
         current_lat, current_lng = start_location["lat"], start_location["lng"]
