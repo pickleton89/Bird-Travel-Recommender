@@ -56,3 +56,5 @@ The architecture leverages proven patterns from the moonbirdai/ebird-mcp-server 
 - Environment variables loaded automatically via python-dotenv
 - Default settings can be configured in `.env` file
 
+## Memory Notes
+- When asked where we left off, check changelog, memory, and git commit
