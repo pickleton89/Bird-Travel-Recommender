@@ -51,6 +51,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Complete eBird API mocking system with realistic response data for consistent testing**
 - **Test utilities including data generators, validators, and performance measurement tools**
 - **Testing documentation (tests/README.md) with usage examples and troubleshooting guide**
+- **Phase 2 implementation: Complete data processing pipeline with 4 additional production-ready nodes (June 2025)**
+- **ClusterHotspotsNode with dual hotspot discovery and location deduplication using coordinate-based normalization**
+- **ScoreLocationsNode with multi-criteria scoring (diversity 40%, recency 25%, hotspot 20%, accessibility 15%)**
+- **OptimizeRouteNode with TSP-style algorithms, 2-opt improvement, and nearest neighbor fallbacks**
+- **GenerateItineraryNode (AsyncNode) with LLM-enhanced professional birding itinerary generation**
+- **Route optimization utility (utils/route_optimizer.py) with traveling salesman algorithms and computational efficiency assessment**
+- **Complete 7-node birding pipeline flow with enrichment-in-place data strategy**
+- **Enhanced main.py CLI interface with argument parsing, file I/O, debug logging, and statistics reporting**
+- **Comprehensive error handling and graceful degradation throughout all pipeline nodes**
+- **LLM-enhanced habitat evaluation for top-scoring locations with expert birding guidance**
+- **Professional birding itinerary generation with equipment recommendations, timing advice, and field techniques**
+- **BatchNode parallel processing for API efficiency and AsyncNode retry logic for LLM reliability**
+- **Production-ready pipeline supporting both test data and custom JSON input files**
 
 ### Changed
 - Migrated from requirements.txt to UV package management
