@@ -24,7 +24,8 @@
       "Bash(grep:*)",
       "Bash(rg:*)",
       "Bash(git commit:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(timeout 3 uv run:*)"
     ],
     "deny": []
   }

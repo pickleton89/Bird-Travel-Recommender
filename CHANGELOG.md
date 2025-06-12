@@ -9,19 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **MCP Deployment Script**: Created `scripts/deploy_mcp.py` for automated MCP server deployment and configuration
+- **Safe MCP Configuration Merger**: Created `scripts/merge_mcp_config.py` for safe Claude Desktop configuration management with automatic backup and preview
 - **Comprehensive README Documentation**: Added detailed instructions for both standalone usage and Claude Desktop MCP integration
 - **MCP Configuration Generation**: Automated creation of environment-specific MCP configuration files
 - **Environment Validation**: Deployment script validates API keys, dependencies, and project structure before deployment
+- **Claude Desktop Documentation**: Added comprehensive Claude Desktop setup instructions in DEPLOYMENT.md
 
 ### Fixed
+- **Critical MCP Server Claude Desktop Integration**: Successfully resolved multiple blocking issues for production deployment
+  - **UV Environment Resolution**: Fixed `uv` project detection by using `--directory` flag instead of `cwd` in Claude Desktop configuration
+  - **Module Import Errors**: Resolved `ModuleNotFoundError` for `pocketflow` and `mcp` by ensuring correct project environment activation
+  - **Boolean Syntax Error**: Fixed Python syntax error `"name 'true' is not defined"` by changing JSON `true` to Python `True` in server.py:197
+  - **Async Execution**: Added missing `asyncio.run()` wrapper in `mcp_server.py` entry point for proper async server startup
 - **MCP Server Import Paths**: Fixed relative import errors in `src/bird_travel_recommender/mcp/server.py` 
 - **Deployment Script Paths**: Removed hardcoded paths in favor of dynamic relative paths using `Path(__file__).parent.parent`
 - **Environment Variable Loading**: Added automatic `.env` file loading in deployment script using python-dotenv
 - **MCP Server Testing**: Fixed deployment validation to properly test MCP server imports
 
 ### Changed
-- **Deployment Configuration**: MCP configurations now use relative paths (`.`) instead of absolute paths for better portability
-- **Deployment Command**: Must use `uv run python scripts/deploy_mcp.py` to ensure dependencies are available
+- **Claude Desktop Configuration Pattern**: Updated to use `uv run --directory /full/path python mcp_server.py` pattern for reliable dependency resolution
+- **MCP Server Entry Point**: Enhanced `mcp_server.py` with proper asyncio handling and error-resistant import patterns
+- **Deployment Configuration**: MCP configurations now use absolute paths with `--directory` flag for better reliability
+- **Documentation Structure**: Added dedicated Claude Desktop sections with troubleshooting for common deployment issues
 
 ## [2025-01-12]
 

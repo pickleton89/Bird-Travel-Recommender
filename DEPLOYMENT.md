@@ -1,6 +1,6 @@
 # Bird Travel Recommender MCP Server Deployment Guide
 
-This guide covers deploying the Bird Travel Recommender MCP server for use with Claude CLI.
+This guide covers deploying the Bird Travel Recommender MCP server for use with Claude CLI and Claude Desktop.
 
 ## Prerequisites
 
@@ -40,31 +40,52 @@ python deploy_mcp.py production
 python deploy_mcp.py local
 ```
 
-### 3. Configure Claude CLI
+### 3. Configure Claude Desktop or Claude CLI
 
-The deployment script will generate the appropriate configuration. Copy it to Claude CLI:
+#### Option A: Claude Desktop (Recommended)
+
+Use the safe merge script to add the MCP server to Claude Desktop:
+
+```bash
+# Preview changes without applying
+uv run python scripts/merge_mcp_config.py --dry-run
+
+# Apply changes with automatic backup
+uv run python scripts/merge_mcp_config.py --yes
+```
+
+The script will:
+- Automatically backup your existing configuration
+- Merge the bird-travel-recommender server with your existing MCP servers
+- Use the correct `uv` configuration with `--directory` flag
+- Preserve all your existing settings
+
+#### Option B: Claude CLI
+
+Copy the configuration to Claude CLI:
 
 ```bash
 # For development
-cp mcp_config_development.json ~/.claude/mcp_servers.json
+cp scripts/mcp_config_development.json ~/.claude/mcp_servers.json
 
-# For production
+# For production  
 cp mcp_config_production.json ~/.claude/mcp_servers.json
-
-# For local
-cp mcp_config.json ~/.claude/mcp_servers.json
 ```
 
-### 4. Restart Claude CLI
+### 4. Restart Claude
 
-Restart Claude CLI to load the new MCP server:
+#### For Claude Desktop:
+1. Quit Claude Desktop completely
+2. Restart Claude Desktop
+3. The bird-travel-recommender server should appear in your MCP servers list
 
+#### For Claude CLI:
 ```bash
 # Restart Claude CLI service (if running as daemon)
 claude restart
 
 # Or start a new session
-claude chat
+claude chat --server bird-travel-recommender
 ```
 
 ## Environment Configurations
@@ -142,6 +163,58 @@ claude chat --server bird-travel-recommender
 "Optimize a route between these birding locations: [locations]"
 ```
 
+## Claude Desktop Configuration
+
+### Safe Configuration Merging
+
+The project includes a safe merge script (`scripts/merge_mcp_config.py`) that preserves your existing Claude Desktop configuration:
+
+```bash
+# Preview what changes will be made
+uv run python scripts/merge_mcp_config.py --dry-run
+
+# Apply changes with automatic backup
+uv run python scripts/merge_mcp_config.py --yes
+
+# Apply without backup (not recommended)
+uv run python scripts/merge_mcp_config.py --no-backup
+```
+
+### Features:
+- **Automatic backup**: Creates timestamped backups in `~/Library/Application Support/Claude/claude_config_backups/`
+- **Conflict detection**: Warns if server names already exist
+- **Preview mode**: Shows exactly what will change before applying
+- **Safe merging**: Only adds new servers, never overwrites existing ones
+
+### Manual Configuration
+
+If you prefer to manually edit your Claude Desktop configuration:
+
+1. Open: `~/Library/Application Support/Claude/claude_desktop_config.json`
+2. Add the bird-travel-recommender server to the `mcpServers` section:
+
+```json
+{
+  "mcpServers": {
+    "bird-travel-recommender": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/your-username/path/to/Bird-Travel-Recommender",
+        "python",
+        "mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "src"
+      }
+    }
+  }
+}
+```
+
+**Important**: Use the `--directory` flag to ensure `uv` finds the correct project dependencies.
+
 ## Advanced Configuration
 
 ### Custom Environment Variables
@@ -186,13 +259,44 @@ Edit the MCP configuration files directly:
 2. **MCP Server Won't Start**
    ```bash
    # Test server manually
-   uv run python mcp_server.py
+   uv run --directory /path/to/Bird-Travel-Recommender python mcp_server.py
    
    # Check dependencies
    uv sync
    ```
 
-3. **Claude CLI Can't Find Server**
+3. **"Module not found" errors (pocketflow, mcp)**
+   This occurs when `uv` can't find the project dependencies. Fix with:
+   ```bash
+   # Use --directory flag to specify project path
+   # Update your Claude Desktop config to use:
+   "command": "uv",
+   "args": [
+     "run",
+     "--directory",
+     "/full/path/to/Bird-Travel-Recommender",
+     "python",
+     "mcp_server.py"
+   ]
+   ```
+
+4. **"name 'true' is not defined" error**
+   This is a Python syntax error. Ensure all JSON boolean values use Python syntax:
+   ```python
+   # Wrong (JSON syntax)
+   "default": true
+   
+   # Correct (Python syntax) 
+   "default": True
+   ```
+
+5. **MCP Server Disabled in Claude Desktop**
+   Check the Claude Desktop logs for errors. Common causes:
+   - Import errors (see #3 above)
+   - Syntax errors (see #4 above)
+   - Missing dependencies (`uv sync`)
+
+6. **Claude CLI Can't Find Server**
    ```bash
    # Verify configuration
    cat ~/.claude/mcp_servers.json

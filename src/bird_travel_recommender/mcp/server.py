@@ -194,7 +194,7 @@ class BirdTravelMCPServer:
                             "use_llm_enhancement": {
                                 "type": "boolean",
                                 "description": "Enable LLM habitat evaluation",
-                                "default": true
+                                "default": True
                             }
                         },
                         "required": ["hotspot_clusters", "target_species"]
