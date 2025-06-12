@@ -7,4 +7,5 @@ dependencies = [
     "openai>=1.86.0",
     "pocketflow>=0.0.2",
     "python-dotenv>=1.1.0",
+    "requests>=2.32.4",
 ]

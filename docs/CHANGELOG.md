@@ -37,6 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Centralized eBird API client design with make_request() pattern and consistent error handling**
 - **Comprehensive data structure documentation for observations, hotspots, taxonomy, and notable records**
 - **Updated node architecture aligned with proven endpoint patterns and dual discovery methods**
+- **Phase 1 implementation: Core pipeline foundation with 3 production-ready nodes (June 2025)**
+- **Centralized eBird API client (utils/ebird_api.py) with full taxonomy integration (17,415 species)**
+- **ValidateSpeciesNode with direct eBird taxonomy lookup and LLM fallback for fuzzy matching**
+- **FetchSightingsNode as BatchNode with parallel processing and smart endpoint selection**
+- **FilterConstraintsNode with enrichment-in-place strategy and comprehensive constraint validation**
+- **Geospatial utility functions (utils/geo_utils.py) with Haversine distance calculations**
+- **Comprehensive test suite with mock data and live API validation**
+- **requests dependency added for HTTP client functionality**
 
 ### Changed
 - Migrated from requirements.txt to UV package management
