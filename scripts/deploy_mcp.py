@@ -14,14 +14,20 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
+from dotenv import load_dotenv
 
 
 class MCPDeploymentManager:
     """Manages MCP server deployment configurations and setup"""
     
     def __init__(self, project_root: Optional[Path] = None):
-        self.project_root = project_root or Path(__file__).parent
-        self.config_dir = self.project_root
+        self.project_root = project_root or Path(__file__).parent.parent
+        self.config_dir = self.project_root / "scripts"
+        
+        # Load environment variables
+        env_path = self.project_root / ".env"
+        if env_path.exists():
+            load_dotenv(env_path)
         
     def get_config_path(self, environment: str) -> Path:
         """Get the configuration file path for the specified environment"""
@@ -49,8 +55,8 @@ class MCPDeploymentManager:
         config_path = self.get_config_path(environment)
         config = self.load_config(environment)
         
-        # Update the cwd path
-        target_path = new_path or str(self.project_root.absolute())
+        # Update the cwd path - use relative path by default
+        target_path = new_path or "."
         
         for server_name, server_config in config["mcpServers"].items():
             server_config["cwd"] = target_path
@@ -150,7 +156,7 @@ class MCPDeploymentManager:
         try:
             # Try to run the server with a quick test
             cmd = ["uv", "run", "python", "-c", 
-                   "from mcp_server import BirdTravelMCPServer; print('MCP server import successful')"]
+                   "import mcp_server; print('MCP server import successful')"]
             
             result = subprocess.run(cmd, cwd=self.project_root, 
                                   capture_output=True, text=True, timeout=30)

@@ -29,7 +29,7 @@ import mcp.types as types
 
 # Import our existing birding pipeline components
 from ..utils.ebird_api import EBirdClient
-from nodes import (
+from ..nodes import (
     ValidateSpeciesNode, 
     FetchSightingsNode, 
     FilterConstraintsNode,

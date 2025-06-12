@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "bird-travel-recommender": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "mcp_server.py"
+      ],
+      "cwd": ".",
+      "env": {
+        "PYTHONPATH": "src"
+      }
+    }
+  }
+}

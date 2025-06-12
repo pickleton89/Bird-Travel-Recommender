@@ -34,14 +34,122 @@ An advanced birding travel planning system with enhanced natural language unders
 
 ## 🚀 Quick Start
 
-1. **Install dependencies**: `uv sync`
-2. **Set up API keys**: Copy `config/.env.example` to `.env` and add your keys
-3. **Run the application**: `uv run python main.py`
+### Prerequisites
 
-For Claude Desktop integration:
+1. **Install dependencies**: 
+   ```bash
+   uv sync
+   ```
+
+2. **Set up API keys**: 
+   ```bash
+   cp config/.env.example .env
+   # Edit .env and add your API keys
+   ```
+
+### Standalone Usage (Without MCP)
+
+The Bird Travel Recommender can be used as a standalone command-line application:
+
 ```bash
-python scripts/deploy_mcp.py development
+# Run the main application
+uv run python main.py
+
+# Or run as a module
+uv run python -m bird_travel_recommender
 ```
+
+#### Interactive Mode
+
+When you run the application, you'll enter an interactive chat interface where you can:
+
+- Ask about recent bird sightings in specific locations
+- Request birding trip recommendations
+- Get information about specific bird species
+- Plan optimal birding routes
+
+**Example queries:**
+```
+> What birds have been seen in Central Park this week?
+> Plan a weekend birding trip to see warblers near San Francisco
+> Is the Painted Bunting found in Texas?
+> Find the best spots to see owls within 50 miles of Portland
+```
+
+#### Direct API Usage
+
+You can also import and use the components directly in your Python code:
+
+```python
+from bird_travel_recommender.flow import create_birding_flow
+from bird_travel_recommender.utils.ebird_api import EBirdClient
+
+# Create a birding flow
+flow = create_birding_flow()
+
+# Use the flow to process queries
+result = flow.run({
+    "query": "Find recent sightings of rare birds near Austin, Texas",
+    "location": "Austin, TX",
+    "radius": 25
+})
+
+# Or use individual components
+client = EBirdClient()
+sightings = client.get_recent_observations("US-TX", days_back=7)
+```
+
+## 🤖 Claude Desktop MCP Integration
+
+The Bird Travel Recommender can be integrated with Claude Desktop to provide birding tools directly in your Claude conversations.
+
+### Setup Instructions
+
+1. **Deploy the MCP server**:
+   ```bash
+   uv run python scripts/deploy_mcp.py development
+   ```
+
+2. **Copy the configuration to Claude Desktop**:
+   ```bash
+   cp scripts/mcp_config_development.json ~/Library/Application\ Support/Claude/claude_desktop_config.json
+   ```
+   
+   Or manually edit `~/Library/Application Support/Claude/claude_desktop_config.json` and add:
+   ```json
+   {
+     "mcpServers": {
+       "bird-travel-recommender": {
+         "command": "uv",
+         "args": ["run", "python", "mcp_server.py"],
+         "cwd": "/path/to/Bird-Travel-Recommender",
+         "env": {
+           "PYTHONPATH": "src"
+         }
+       }
+     }
+   }
+   ```
+
+3. **Restart Claude Desktop** to load the new MCP server
+
+4. **Verify the integration**: In Claude Desktop, you should now have access to 9 birding tools:
+   - `fetch_sightings` - Get recent bird sightings
+   - `validate_species` - Validate bird species names
+   - `cluster_hotspots` - Find optimal birding locations
+   - `score_locations` - Evaluate birding destinations
+   - `optimize_route` - Plan efficient birding routes
+   - `generate_itinerary` - Create detailed trip plans
+   - `filter_constraints` - Apply trip constraints
+   - `get_species_info` - Get detailed species information
+   - `search_hotspots` - Search for birding hotspots
+
+### Usage Example
+
+Once integrated, you can ask Claude Desktop questions like:
+- "Find recent sightings of Painted Bunting near Austin, Texas"
+- "Plan a 3-day birding trip to see warblers in Central Park"
+- "What rare birds have been spotted in San Francisco this week?"
 
 ## API Keys Required
 

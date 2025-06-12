@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **MCP Deployment Script**: Created `scripts/deploy_mcp.py` for automated MCP server deployment and configuration
+- **Comprehensive README Documentation**: Added detailed instructions for both standalone usage and Claude Desktop MCP integration
+- **MCP Configuration Generation**: Automated creation of environment-specific MCP configuration files
+- **Environment Validation**: Deployment script validates API keys, dependencies, and project structure before deployment
+
+### Fixed
+- **MCP Server Import Paths**: Fixed relative import errors in `src/bird_travel_recommender/mcp/server.py` 
+- **Deployment Script Paths**: Removed hardcoded paths in favor of dynamic relative paths using `Path(__file__).parent.parent`
+- **Environment Variable Loading**: Added automatic `.env` file loading in deployment script using python-dotenv
+- **MCP Server Testing**: Fixed deployment validation to properly test MCP server imports
+
+### Changed
+- **Deployment Configuration**: MCP configurations now use relative paths (`.`) instead of absolute paths for better portability
+- **Deployment Command**: Must use `uv run python scripts/deploy_mcp.py` to ensure dependencies are available
+
+## [2025-01-12]
+
 ### Fixed
 - **Critical Test Suite Stabilization**: Fixed major test failures affecting development workflow and CI/CD reliability
 - **API Mocking Architecture**: Corrected test mocking to patch EBirdClient class methods instead of module-level convenience functions, resolving test isolation issues
