@@ -1,5 +1,5 @@
 from pocketflow import Flow
-from nodes import (
+from .nodes import (
     ValidateSpeciesNode, 
     FetchSightingsNode, 
     FilterConstraintsNode,

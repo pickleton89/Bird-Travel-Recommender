@@ -8,7 +8,7 @@ computational constraints.
 
 import math
 from typing import List, Dict, Any, Optional, Tuple
-from utils.geo_utils import haversine_distance
+from .geo_utils import haversine_distance
 import logging
 
 logger = logging.getLogger(__name__)

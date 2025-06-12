@@ -31,14 +31,14 @@ cd Bird-Travel-Recommender
 uv sync
 
 # Copy environment template
-cp .env.example .env
+cp config/.env.example .env
 
 # Edit .env with your API keys
 # OPENAI_API_KEY=your_key_here
 # EBIRD_API_KEY=your_key_here
 
 # Verify setup
-uv run python check_api_keys.py
+uv run python scripts/check_api_keys.py
 ```
 
 ### Development Workflow
@@ -57,38 +57,50 @@ uv run pytest --cov=. --cov-report=html
 uv run python main.py
 
 # Run the MCP server
-uv run python mcp_server.py
+uv run python src/bird_travel_recommender/mcp/server.py
 
 # Deploy MCP server for Claude
-python deploy_mcp.py development
+python scripts/deploy_mcp.py development
 ```
 
 ## Project Structure
 
 ```
 Bird-Travel-Recommender/
-├── main.py                    # CLI entry point
-├── mcp_server.py             # MCP server with 9 tools
-├── flow.py                   # Original PocketFlow pipeline
-├── nodes.py                  # Core pipeline nodes
-├── agent_flow.py             # Basic agent pattern
-├── enhanced_agent_flow.py    # Enhanced NLP agent
-├── enhanced_process_results.py # Response formatting
-├── complete_enhanced_agent.py  # Full enhanced system
-│
-├── utils/
-│   ├── ebird_api.py          # eBird API client
-│   ├── call_llm.py           # OpenAI integration
-│   ├── enhanced_nlp.py       # NLP processing
-│   ├── response_formatter.py  # Response formatting
-│   ├── geo_utils.py          # Geographic utilities
-│   └── route_optimizer.py    # Route optimization
-│
+├── main.py                    # Development convenience entry point
+├── src/
+│   └── bird_travel_recommender/
+│       ├── __init__.py        # Package initialization
+│       ├── main.py            # Application entry point
+│       ├── flow.py            # PocketFlow pipeline definition
+│       ├── nodes.py           # Core pipeline nodes
+│       ├── utils/
+│       │   ├── __init__.py
+│       │   ├── ebird_api.py          # eBird API client
+│       │   ├── call_llm.py           # OpenAI integration
+│       │   ├── enhanced_nlp.py       # NLP processing
+│       │   ├── response_formatter.py  # Response formatting
+│       │   ├── geo_utils.py          # Geographic utilities
+│       │   └── route_optimizer.py    # Route optimization
+│       └── mcp/
+│           ├── __init__.py
+│           ├── server.py      # MCP server with 9 tools
+│           └── config/
+│               ├── base.json
+│               ├── development.json
+│               └── production.json
 ├── tests/
+│   ├── __init__.py
 │   ├── conftest.py           # Test fixtures
-│   ├── test_*.py             # Test files
+│   ├── unit/                 # Unit tests
+│   ├── integration/          # Integration tests
+│   ├── fixtures/             # Test fixtures
 │   └── README.md             # Testing guide
-│
+├── scripts/
+│   ├── check_api_keys.py     # API key validation
+│   └── deploy_mcp.py         # MCP deployment script
+├── config/
+│   └── .env.example          # Environment template
 └── docs/
     └── *.md                  # Documentation files
 ```
@@ -114,7 +126,7 @@ class MyNode(Node):
         shared["my_results"] = exec_data
 ```
 
-#### MCP Tools (`mcp_server.py`)
+#### MCP Tools (`src/bird_travel_recommender/mcp/server.py`)
 
 Tools are defined with JSON schemas:
 
@@ -183,7 +195,7 @@ Responses adapt to four experience levels:
 
 ### Adding a New MCP Tool
 
-1. **Define the tool in `mcp_server.py`**:
+1. **Define the tool in `src/bird_travel_recommender/mcp/server.py`**:
 
 ```python
 Tool(
@@ -387,7 +399,7 @@ def test_migration_tool_integration(mcp_server):
 Use mocks for external APIs:
 
 ```python
-@patch('utils.ebird_api.EBirdClient.get_migration_data')
+@patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_migration_data')
 def test_migration_with_mock(mock_migration):
     mock_migration.return_value = sample_migration_data
     # Test implementation
@@ -437,7 +449,7 @@ for batch in chunks(large_list, size=100):
 uv run python main.py --debug
 
 # Test specific components
-uv run python -m utils.enhanced_nlp "test query"
+uv run python -m bird_travel_recommender.utils.enhanced_nlp "test query"
 
 # Profile performance
 uv run python -m cProfile main.py

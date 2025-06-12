@@ -1,6 +1,6 @@
 from pocketflow import Node, BatchNode, AsyncNode
-from utils.call_llm import call_llm
-from utils.ebird_api import get_client, EBirdAPIError
+from .utils.call_llm import call_llm
+from .utils.ebird_api import get_client, EBirdAPIError
 from typing import List, Dict, Any, Optional
 import re
 import logging

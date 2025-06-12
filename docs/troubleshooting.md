@@ -59,7 +59,7 @@ import os
 os.environ["LOG_LEVEL"] = "DEBUG"
 
 # Check API responses
-from utils.ebird_api import EBirdClient
+from bird_travel_recommender.utils.ebird_api import EBirdClient
 client = EBirdClient()
 response = client.get_recent_observations("US-MA")
 print(f"API Response: {response}")
@@ -205,7 +205,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 1. **Increase timeout**:
 ```python
-# In utils/call_llm.py or environment
+# In src/bird_travel_recommender/utils/call_llm.py or environment
 os.environ["OPENAI_TIMEOUT"] = "60"  # 60 seconds
 ```
 
@@ -379,7 +379,7 @@ python deploy_mcp.py development --validate-only
 
 3. **Test server directly**:
 ```bash
-uv run python mcp_server.py
+uv run python src/bird_travel_recommender/mcp/server.py
 ```
 
 ### Claude Can't Connect
@@ -402,7 +402,7 @@ ps aux | grep mcp_server
 ```bash
 # Enable debug logging
 export LOG_LEVEL=DEBUG
-uv run python mcp_server.py
+uv run python src/bird_travel_recommender/mcp/server.py
 ```
 
 ### Tool Execution Failures
@@ -413,7 +413,7 @@ uv run python mcp_server.py
 
 1. **Test tool directly**:
 ```python
-from mcp_server import BirdTravelMCPServer
+from bird_travel_recommender.mcp.server import BirdTravelMCPServer
 server = BirdTravelMCPServer()
 
 # Test specific tool
@@ -497,7 +497,7 @@ logging.basicConfig(
 )
 
 # Set specific module levels
-logging.getLogger('utils.ebird_api').setLevel(logging.DEBUG)
+logging.getLogger('bird_travel_recommender.utils.ebird_api').setLevel(logging.DEBUG)
 logging.getLogger('httpx').setLevel(logging.INFO)  # Reduce noise
 ```
 

@@ -79,16 +79,17 @@ PROFILE_PERFORMANCE=false        # Default: false
 Different configurations for different environments:
 
 ```bash
-mcp_config.json              # Local/default configuration
-mcp_config_development.json  # Development with debug logging
-mcp_config_production.json   # Production optimized settings
+src/bird_travel_recommender/mcp/config/
+├── base.json        # Local/default configuration
+├── development.json # Development with debug logging
+└── production.json  # Production optimized settings
 ```
 
 ## API Configuration
 
 ### OpenAI API Settings
 
-Configure OpenAI behavior in `utils/call_llm.py`:
+Configure OpenAI behavior in `src/bird_travel_recommender/utils/call_llm.py`:
 
 ```python
 # Model selection
@@ -107,7 +108,7 @@ timeout = int(os.getenv("OPENAI_TIMEOUT", "30"))
 
 ### eBird API Settings
 
-Configure eBird API in `utils/ebird_api.py`:
+Configure eBird API in `src/bird_travel_recommender/utils/ebird_api.py`:
 
 ```python
 # Base configuration
@@ -243,7 +244,7 @@ LOGGING_CONFIG = {
 
 ### Development Configuration
 
-`mcp_config_development.json`:
+`src/bird_travel_recommender/mcp/config/development.json`:
 
 ```json
 {
@@ -253,7 +254,7 @@ LOGGING_CONFIG = {
       "args": [
         "run",
         "python",
-        "mcp_server.py"
+        "src/bird_travel_recommender/mcp/server.py"
       ],
       "env": {
         "LOG_LEVEL": "DEBUG",
@@ -268,7 +269,7 @@ LOGGING_CONFIG = {
 
 ### Production Configuration
 
-`mcp_config_production.json`:
+`src/bird_travel_recommender/mcp/config/production.json`:
 
 ```json
 {
@@ -278,7 +279,7 @@ LOGGING_CONFIG = {
       "args": [
         "run",
         "python",
-        "mcp_server.py"
+        "src/bird_travel_recommender/mcp/server.py"
       ],
       "env": {
         "LOG_LEVEL": "WARNING",
@@ -294,7 +295,7 @@ LOGGING_CONFIG = {
 
 ### Local Configuration
 
-`mcp_config.json`:
+`src/bird_travel_recommender/mcp/config/base.json`:
 
 ```json
 {
@@ -304,7 +305,7 @@ LOGGING_CONFIG = {
       "args": [
         "run",
         "python",
-        "mcp_server.py"
+        "src/bird_travel_recommender/mcp/server.py"
       ],
       "env": {
         "LOG_LEVEL": "INFO"

@@ -28,7 +28,7 @@ from mcp.types import (
 import mcp.types as types
 
 # Import our existing birding pipeline components
-from utils.ebird_api import EBirdClient
+from ..utils.ebird_api import EBirdClient
 from nodes import (
     ValidateSpeciesNode, 
     FetchSightingsNode, 
@@ -38,8 +38,8 @@ from nodes import (
     OptimizeRouteNode,
     GenerateItineraryNode
 )
-from utils.route_optimizer import optimize_birding_route
-from utils.geo_utils import haversine_distance
+from ..utils.route_optimizer import optimize_birding_route
+from ..utils.geo_utils import haversine_distance
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -755,7 +755,7 @@ class BirdTravelMCPServer:
             logger.info(f"Providing birding advice for query: {query[:100]}...")
             
             # Import LLM function for advice generation
-            from utils.call_llm import call_llm
+            from ..utils.call_llm import call_llm
             
             # Build context-aware prompt for expert birding advice
             context_info = ""

@@ -44,7 +44,8 @@ import os
 os.environ["PROFILE_PERFORMANCE"] = "true"
 
 # Run with profiling
-from utils.performance import profile_function
+# Example: Using profiling (hypothetical module)
+# from bird_travel_recommender.utils.call_llm import call_llm
 
 @profile_function
 def expensive_operation():

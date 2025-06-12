@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from enum import Enum
 import re
 
-from utils.call_llm import call_llm
+from .call_llm import call_llm
 
 logger = logging.getLogger(__name__)
 

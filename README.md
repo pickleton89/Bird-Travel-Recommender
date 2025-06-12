@@ -35,12 +35,12 @@ An advanced birding travel planning system with enhanced natural language unders
 ## 🚀 Quick Start
 
 1. **Install dependencies**: `uv sync`
-2. **Set up API keys**: Copy `.env.example` to `.env` and add your keys
+2. **Set up API keys**: Copy `config/.env.example` to `.env` and add your keys
 3. **Run the application**: `uv run python main.py`
 
 For Claude Desktop integration:
 ```bash
-python deploy_mcp.py development
+python scripts/deploy_mcp.py development
 ```
 
 ## API Keys Required

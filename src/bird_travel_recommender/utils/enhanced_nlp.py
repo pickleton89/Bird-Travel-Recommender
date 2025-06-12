@@ -11,7 +11,7 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-from utils.call_llm import call_llm
+from .call_llm import call_llm
 
 logger = logging.getLogger(__name__)
 
