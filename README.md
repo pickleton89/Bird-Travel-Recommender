@@ -1,5 +1,10 @@
 # Bird Travel Recommender
 
+# **WARNING**
+- **This server is still being tested. I am have errors with API.**
+
+
+
 An advanced birding travel planning system with enhanced natural language understanding. Features intelligent trip planning, species identification, and personalized recommendations through Claude Desktop integration.
 
 ## 🌟 Key Features
