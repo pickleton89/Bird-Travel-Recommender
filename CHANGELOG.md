@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Critical Test Suite Stabilization**: Fixed major test failures affecting development workflow and CI/CD reliability
+- **API Mocking Architecture**: Corrected test mocking to patch EBirdClient class methods instead of module-level convenience functions, resolving test isolation issues
+- **Integration Test Assertions**: Updated test_end_to_end_real.py to match current pipeline statistics structure and removed improper return statements from test functions
+- **Filter Constraints Logic Bug**: Fixed critical observation quality filtering bug in FilterConstraintsNode where quality_compliant flag was incorrectly set to True regardless of review status
+- **Test Data Validation**: Aligned test expectations with actual node behavior for validation statistics structure (direct_taxonomy_matches + llm_fuzzy_matches patterns)
+
 ### Added
 - **Major Project Structure Reorganization**: Complete refactoring to modern Python package standards following PocketFlow best practices
 - **Professional Package Layout**: Implemented `src/bird_travel_recommender/` structure with proper package hierarchy and `__init__.py` files

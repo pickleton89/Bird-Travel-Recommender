@@ -23,7 +23,8 @@
       "Bash(rm:*)",
       "Bash(grep:*)",
       "Bash(rg:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

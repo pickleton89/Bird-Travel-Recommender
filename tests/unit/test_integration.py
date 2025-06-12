@@ -12,7 +12,7 @@ Tests cover:
 import pytest
 from unittest.mock import patch
 import time
-from nodes import ValidateSpeciesNode, FetchSightingsNode, FilterConstraintsNode
+from bird_travel_recommender.nodes import ValidateSpeciesNode, FetchSightingsNode, FilterConstraintsNode
 from tests.test_utils import TestDataValidator, PerformanceTestHelper
 
 
@@ -162,7 +162,7 @@ class TestPipelineIntegration:
         shared = {"input": {"species_list": ["Northern Cardinal"]}}
         
         # Test with API errors
-        with patch('utils.ebird_api.get_taxonomy') as mock_taxonomy:
+        with patch('bird_travel_recommender.utils.ebird_api.get_taxonomy') as mock_taxonomy:
             mock_taxonomy.side_effect = Exception("API Error")
             
             validate_node = pipeline_nodes["validate"]

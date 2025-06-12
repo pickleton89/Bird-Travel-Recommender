@@ -5,7 +5,7 @@ Test script for FilterConstraintsNode to verify constraint filtering and enrichm
 
 import logging
 from datetime import datetime, timedelta
-from nodes import FilterConstraintsNode
+from bird_travel_recommender.nodes import FilterConstraintsNode
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

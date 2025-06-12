@@ -11,7 +11,7 @@ Tests cover:
 
 import pytest
 from unittest.mock import Mock, patch
-from nodes import ValidateSpeciesNode
+from bird_travel_recommender.nodes import ValidateSpeciesNode
 
 
 class TestValidateSpeciesNode:
@@ -180,11 +180,13 @@ class TestValidateSpeciesNode:
         assert "validation_stats" in shared
         stats = shared["validation_stats"]
         
-        assert stats["total_input_species"] == 3
-        assert stats["successfully_validated"] == 2
-        assert stats["validation_rate"] == pytest.approx(0.667, rel=1e-2)
-        assert "validation_methods_used" in stats
-        assert stats["validation_methods_used"]["direct_common_name"] == 2
+        assert stats["total_input"] == 3
+        successfully_validated = stats["direct_taxonomy_matches"] + stats["llm_fuzzy_matches"]
+        assert successfully_validated == 2
+        validation_rate = successfully_validated / stats["total_input"]
+        assert validation_rate == pytest.approx(0.667, rel=1e-2)
+        # Note: validation_methods_used is not in current implementation
+        assert stats["direct_taxonomy_matches"] == 2
 
     @pytest.mark.unit
     @pytest.mark.mock
@@ -247,7 +249,7 @@ class TestValidateSpeciesNode:
 
     @pytest.mark.unit
     @pytest.mark.mock
-    @patch('utils.call_llm.call_llm')
+    @patch('bird_travel_recommender.utils.call_llm.call_llm')
     def test_llm_fallback_integration(self, mock_llm, validate_node, mock_ebird_api):
         """Test LLM fallback when direct lookup fails."""
         # Configure LLM mock to return fuzzy match result

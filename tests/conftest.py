@@ -349,22 +349,33 @@ def mock_ebird_api_responses():
 
 @pytest.fixture
 def mock_ebird_api(mock_ebird_api_responses):
-    """Mock the entire eBird API client."""
-    with patch('utils.ebird_api.get_taxonomy') as mock_taxonomy, \
-         patch('utils.ebird_api.get_recent_observations') as mock_recent, \
-         patch('utils.ebird_api.get_species_observations') as mock_species, \
-         patch('utils.ebird_api.get_hotspots') as mock_hotspots:
+    """Mock the entire eBird API client by patching the EBirdClient class methods."""
+    with patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_taxonomy') as mock_taxonomy, \
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_recent_observations') as mock_recent, \
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_species_observations') as mock_species, \
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_hotspots') as mock_hotspots, \
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_observations') as mock_nearby, \
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_notable_observations') as mock_notable, \
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_hotspots') as mock_nearby_hotspots:
         
         mock_taxonomy.side_effect = mock_ebird_api_responses["get_taxonomy"]
         mock_recent.side_effect = mock_ebird_api_responses["get_recent_observations"]
         mock_species.side_effect = mock_ebird_api_responses["get_species_observations"]
         mock_hotspots.side_effect = mock_ebird_api_responses["get_hotspots"]
         
+        # Add mock responses for additional methods
+        mock_nearby.return_value = []
+        mock_notable.return_value = []
+        mock_nearby_hotspots.return_value = []
+        
         yield {
             "taxonomy": mock_taxonomy,
             "recent_observations": mock_recent,
-            "species_observations": mock_species,
-            "hotspots": mock_hotspots
+            "species_observations": mock_species, 
+            "hotspots": mock_hotspots,
+            "nearby_observations": mock_nearby,
+            "notable_observations": mock_notable,
+            "nearby_hotspots": mock_nearby_hotspots
         }
 
 
@@ -382,6 +393,33 @@ def sample_shared_store():
             }
         }
     }
+
+
+@pytest.fixture
+def large_species_dataset():
+    """Generate large species dataset for performance testing."""
+    valid_species = [
+        "Northern Cardinal", "Blue Jay", "American Robin", "House Sparrow",
+        "Mourning Dove", "Red-winged Blackbird", "American Goldfinch",
+        "Common Grackle", "European Starling", "Song Sparrow",
+        "Downy Woodpecker", "Hairy Woodpecker", "White-breasted Nuthatch",
+        "Carolina Wren", "House Finch", "Purple Finch", "Pine Siskin",
+        "Yellow Warbler", "Black-capped Chickadee", "Tufted Titmouse",
+        "Dark-eyed Junco", "White-throated Sparrow", "Chipping Sparrow",
+        "Field Sparrow", "Savannah Sparrow", "Swamp Sparrow", "Lincoln's Sparrow",
+        "Rose-breasted Grosbeak", "Indigo Bunting", "Painted Bunting",
+        "Scarlet Tanager", "Summer Tanager", "Baltimore Oriole", "Orchard Oriole",
+        "Red-eyed Vireo", "Warbling Vireo", "Yellow-throated Vireo",
+        "Cedar Waxwing", "Brown Thrasher", "Gray Catbird", "Northern Mockingbird",
+        "Ruby-throated Hummingbird", "Chimney Swift", "Belted Kingfisher",
+        "Red-bellied Woodpecker", "Pileated Woodpecker", "Northern Flicker",
+        "Eastern Phoebe", "Great Crested Flycatcher", "Eastern Kingbird"
+    ]
+    
+    # Add some invalid species to test error handling
+    invalid_species = ["Invalid Bird", "Made Up Species", "Nonexistent Fowl"]
+    
+    return valid_species + invalid_species
 
 
 @pytest.fixture(autouse=True)

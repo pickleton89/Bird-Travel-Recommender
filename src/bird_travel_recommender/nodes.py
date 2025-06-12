@@ -766,12 +766,12 @@ class FilterConstraintsNode(Node):
             location_private = sighting.get("locationPrivate", False)
             
             # Quality scoring
-            if min_observation_quality == "reviewed" and obs_reviewed:
+            if min_observation_quality == "reviewed":
+                quality_compliant = obs_reviewed
+            elif min_observation_quality == "valid":
+                quality_compliant = obs_valid
+            else:  # "any"
                 quality_compliant = True
-            elif min_observation_quality == "valid" and obs_valid:
-                quality_compliant = True
-            else:
-                quality_compliant = True  # "any" quality accepted
             
             enriched_sighting["quality_compliant"] = quality_compliant
             enriched_sighting["observation_valid"] = obs_valid

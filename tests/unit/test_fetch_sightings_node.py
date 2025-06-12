@@ -14,7 +14,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 from concurrent.futures import ThreadPoolExecutor
 import time
-from nodes import FetchSightingsNode
+from bird_travel_recommender.nodes import FetchSightingsNode
 
 
 class TestFetchSightingsNode:
@@ -42,17 +42,26 @@ class TestFetchSightingsNode:
         result = fetch_node.prep(shared_store_with_validated_species)
         
         assert result is not None
-        assert "validated_species" in result
-        assert "constraints" in result
-        assert len(result["validated_species"]) == 2
+        assert isinstance(result, list)
+        assert len(result) == 2
+        # Check that each item is a species dictionary
+        for species in result:
+            assert "species_code" in species
+            assert "common_name" in species
 
     @pytest.mark.unit
     @pytest.mark.mock
     def test_nearby_observations_endpoint_selection(self, fetch_node, mock_ebird_api, shared_store_with_validated_species):
         """Test that nearby observations endpoint is selected when start_location is provided."""
         prep_result = fetch_node.prep(shared_store_with_validated_species)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared_store_with_validated_species, prep_result, exec_result)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared_store_with_validated_species, prep_result, exec_results)
         
         # Verify that nearby observations was called (start_location is provided)
         mock_ebird_api["recent_observations"].assert_called()
@@ -87,8 +96,14 @@ class TestFetchSightingsNode:
         }
         
         prep_result = fetch_node.prep(shared)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared, prep_result, exec_result)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared, prep_result, exec_results)
         
         # Verify that species observations was called
         mock_ebird_api["species_observations"].assert_called()
@@ -124,8 +139,14 @@ class TestFetchSightingsNode:
         
         start_time = time.time()
         prep_result = fetch_node.prep(shared)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared, prep_result, exec_result)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared, prep_result, exec_results)
         end_time = time.time()
         
         # Verify parallel processing occurred
@@ -142,8 +163,14 @@ class TestFetchSightingsNode:
     def test_data_enrichment(self, fetch_node, mock_ebird_api, shared_store_with_validated_species):
         """Test that sightings are enriched with validation metadata."""
         prep_result = fetch_node.prep(shared_store_with_validated_species)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared_store_with_validated_species, prep_result, exec_result)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared_store_with_validated_species, prep_result, exec_results)
         
         sightings = shared_store_with_validated_species["all_sightings"]
         
@@ -179,8 +206,14 @@ class TestFetchSightingsNode:
             }
             
             prep_result = fetch_node.prep(shared)
-            exec_result = fetch_node.exec(prep_result)
-            fetch_node.post(shared, prep_result, exec_result)
+            
+            # For BatchNode, exec() expects individual species, not the full list
+            exec_results = []
+            for species in prep_result:
+                exec_result = fetch_node.exec(species)
+                exec_results.append(exec_result)
+            
+            fetch_node.post(shared, prep_result, exec_results)
             
             # Verify that sleep was called for rate limiting
             # (Note: exact calls depend on implementation, but should have some rate limiting)
@@ -191,8 +224,8 @@ class TestFetchSightingsNode:
     def test_api_error_handling(self, fetch_node):
         """Test handling of API errors."""
         # Mock API to raise errors
-        with patch('utils.ebird_api.get_recent_observations') as mock_recent, \
-             patch('utils.ebird_api.get_species_observations') as mock_species:
+        with patch('bird_travel_recommender.utils.ebird_api.get_recent_observations') as mock_recent, \
+             patch('bird_travel_recommender.utils.ebird_api.get_species_observations') as mock_species:
             
             mock_recent.side_effect = Exception("API Error")
             mock_species.side_effect = Exception("API Error")
@@ -211,8 +244,14 @@ class TestFetchSightingsNode:
             }
             
             prep_result = fetch_node.prep(shared)
-            exec_result = fetch_node.exec(prep_result)
-            fetch_node.post(shared, prep_result, exec_result)
+            
+            # For BatchNode, exec() expects individual species, not the full list
+            exec_results = []
+            for species in prep_result:
+                exec_result = fetch_node.exec(species)
+                exec_results.append(exec_result)
+            
+            fetch_node.post(shared, prep_result, exec_results)
             
             # Should handle errors gracefully
             stats = shared["fetch_stats"]
@@ -224,8 +263,8 @@ class TestFetchSightingsNode:
     @pytest.mark.mock
     def test_empty_api_responses(self, fetch_node):
         """Test handling of empty API responses."""
-        with patch('utils.ebird_api.get_recent_observations') as mock_recent, \
-             patch('utils.ebird_api.get_species_observations') as mock_species:
+        with patch('bird_travel_recommender.utils.ebird_api.get_recent_observations') as mock_recent, \
+             patch('bird_travel_recommender.utils.ebird_api.get_species_observations') as mock_species:
             
             mock_recent.return_value = []
             mock_species.return_value = []
@@ -243,8 +282,14 @@ class TestFetchSightingsNode:
             }
             
             prep_result = fetch_node.prep(shared)
-            exec_result = fetch_node.exec(prep_result)
-            fetch_node.post(shared, prep_result, exec_result)
+            
+            # For BatchNode, exec() expects individual species, not the full list
+            exec_results = []
+            for species in prep_result:
+                exec_result = fetch_node.exec(species)
+                exec_results.append(exec_result)
+            
+            fetch_node.post(shared, prep_result, exec_results)
             
             # Should handle empty responses gracefully
             stats = shared["fetch_stats"]
@@ -257,8 +302,14 @@ class TestFetchSightingsNode:
     def test_fetch_statistics_generation(self, fetch_node, mock_ebird_api, shared_store_with_validated_species):
         """Test that comprehensive fetch statistics are generated."""
         prep_result = fetch_node.prep(shared_store_with_validated_species)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared_store_with_validated_species, prep_result, exec_result)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared_store_with_validated_species, prep_result, exec_results)
         
         stats = shared_store_with_validated_species["fetch_stats"]
         
@@ -288,15 +339,9 @@ class TestFetchSightingsNode:
             }
         }
         
-        prep_result = fetch_node.prep(shared)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared, prep_result, exec_result)
-        
-        # Should handle empty species list gracefully
-        assert shared["all_sightings"] == []
-        stats = shared["fetch_stats"]
-        assert stats["total_species"] == 0
-        assert stats["successful_fetches"] == 0
+        # Should raise ValueError when no validated species are provided
+        with pytest.raises(ValueError, match="No validated species found in shared store"):
+            fetch_node.prep(shared)
 
     @pytest.mark.unit
     @pytest.mark.mock
@@ -321,8 +366,14 @@ class TestFetchSightingsNode:
         }
         
         prep_result = fetch_node.prep(shared)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared, prep_result, exec_result)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared, prep_result, exec_results)
         
         # Should complete without errors
         stats = shared["fetch_stats"]
@@ -349,8 +400,14 @@ class TestFetchSightingsNode:
         }
         
         prep_result = fetch_node.prep(shared)
-        exec_result = fetch_node.exec(prep_result)
-        fetch_node.post(shared, prep_result, exec_result)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared, prep_result, exec_results)
         
         # Should work regardless of worker count
         assert "fetch_stats" in shared

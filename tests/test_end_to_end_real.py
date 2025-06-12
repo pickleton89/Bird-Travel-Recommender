@@ -14,8 +14,8 @@ import os
 from datetime import datetime
 from typing import Dict, Any, List
 
-from flow import run_birding_pipeline, create_test_input
-from utils.ebird_api import get_client, EBirdAPIError
+from bird_travel_recommender.flow import run_birding_pipeline, create_test_input
+from bird_travel_recommender.utils.ebird_api import get_client, EBirdAPIError
 from tests.test_utils import PerformanceTestHelper
 import logging
 
@@ -174,7 +174,8 @@ class TestEndToEndRealAPI:
         
         # Log performance metrics
         logger.info(f"Pipeline execution completed in {duration:.2f} seconds")
-        logger.info(f"Species validated: {stats['validation_stats']['successful_validations']}")
+        successful_validations = stats['validation_stats']['direct_taxonomy_matches'] + stats['validation_stats']['llm_fuzzy_matches']
+        logger.info(f"Species validated: {successful_validations}")
         logger.info(f"Observations fetched: {stats['fetch_stats']['total_observations']}")
         logger.info(f"Clusters created: {stats['clustering_stats']['clusters_created']}")
         

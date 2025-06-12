@@ -4,7 +4,7 @@ Test script for FetchSightingsNode to verify eBird API integration and parallel 
 """
 
 import logging
-from nodes import ValidateSpeciesNode, FetchSightingsNode
+from bird_travel_recommender.nodes import ValidateSpeciesNode, FetchSightingsNode
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
