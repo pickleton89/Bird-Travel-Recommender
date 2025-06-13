@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **eBird API expansion implementation plan (docs/planning/ebird-api-expansion-plan.md) for 4 high-priority endpoints**
+- **Comprehensive API gap analysis identifying 19 missing eBird endpoints from technical research documentation**
+- **Detailed specifications for get_nearest_observations(), get_species_list(), get_region_info(), get_hotspot_info()**
+- **3-week implementation timeline with structured phases for API expansion, MCP integration, and testing**
+- **Quality assurance checklist and risk mitigation strategies for eBird API enhancement**
 - Initial project structure with PocketFlow-based Q&A workflow
 - Two-node workflow: GetQuestionNode and AnswerNode
 - OpenAI GPT-4o integration for question answering
