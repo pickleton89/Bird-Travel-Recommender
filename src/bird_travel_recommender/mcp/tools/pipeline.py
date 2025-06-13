@@ -127,5 +127,112 @@ PIPELINE_TOOLS = [
             },
             "required": ["data"]
         }
+    ),
+    Tool(
+        name="get_historic_observations",
+        description="Get historical observations for a specific date in a region for seasonal planning and trend analysis",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')"
+                },
+                "year": {
+                    "type": "integer",
+                    "description": "Year (e.g., 2023)"
+                },
+                "month": {
+                    "type": "integer",
+                    "description": "Month (1-12)"
+                },
+                "day": {
+                    "type": "integer",
+                    "description": "Day (1-31)"
+                },
+                "species_code": {
+                    "type": "string",
+                    "description": "Optional species code to filter results",
+                    "default": ""
+                },
+                "locale": {
+                    "type": "string",
+                    "description": "Language code for common names (default: 'en')",
+                    "default": "en"
+                },
+                "max_results": {
+                    "type": "integer",
+                    "description": "Maximum observations to return (default: 1000)",
+                    "default": 1000
+                }
+            },
+            "required": ["region", "year", "month", "day"]
+        }
+    ),
+    Tool(
+        name="get_seasonal_trends",
+        description="Analyze seasonal birding trends by aggregating historical observations across months",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')"
+                },
+                "species_code": {
+                    "type": "string",
+                    "description": "Optional species code for species-specific trends",
+                    "default": ""
+                },
+                "start_year": {
+                    "type": "integer",
+                    "description": "Starting year for analysis (default: 2020)",
+                    "default": 2020
+                },
+                "end_year": {
+                    "type": "integer",
+                    "description": "Ending year for analysis (default: current year)"
+                },
+                "locale": {
+                    "type": "string",
+                    "description": "Language code for common names (default: 'en')",
+                    "default": "en"
+                }
+            },
+            "required": ["region"]
+        }
+    ),
+    Tool(
+        name="get_yearly_comparisons",
+        description="Compare birding activity across multiple years for the same date/season",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')"
+                },
+                "reference_date": {
+                    "type": "string",
+                    "description": "Date in MM-DD format (e.g., '05-15' for May 15th)"
+                },
+                "years_to_compare": {
+                    "type": "array",
+                    "items": {"type": "integer"},
+                    "description": "List of years to compare (e.g., [2020, 2021, 2022, 2023])"
+                },
+                "species_code": {
+                    "type": "string",
+                    "description": "Optional species code for species-specific comparison",
+                    "default": ""
+                },
+                "locale": {
+                    "type": "string",
+                    "description": "Language code for common names (default: 'en')",
+                    "default": "en"
+                }
+            },
+            "required": ["region", "reference_date", "years_to_compare"]
+        }
     )
 ]

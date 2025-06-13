@@ -277,3 +277,145 @@ class PipelineHandlers:
                 "error": str(e),
                 "optimized_route": {}
             }
+    
+    async def handle_get_historic_observations(
+        self,
+        region: str,
+        year: int,
+        month: int,
+        day: int,
+        species_code: str = "",
+        locale: str = "en",
+        max_results: int = 1000
+    ):
+        """Handle get_historic_observations tool"""
+        try:
+            logger.info(f"Getting historical observations for {region} on {year}-{month:02d}-{day:02d}")
+            
+            # Convert empty string to None for the API call
+            species_code_param = species_code if species_code else None
+            
+            observations = self.ebird_api.get_historic_observations(
+                region=region,
+                year=year,
+                month=month,
+                day=day,
+                species_code=species_code_param,
+                locale=locale,
+                max_results=max_results
+            )
+            
+            return {
+                "success": True,
+                "region": region,
+                "date": {
+                    "year": year,
+                    "month": month,
+                    "day": day,
+                    "formatted": f"{year}-{month:02d}-{day:02d}"
+                },
+                "species_code": species_code,
+                "search_parameters": {
+                    "locale": locale,
+                    "max_results": max_results
+                },
+                "historic_observations": observations,
+                "observation_count": len(observations)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_historic_observations: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region": region,
+                "historic_observations": []
+            }
+    
+    async def handle_get_seasonal_trends(
+        self,
+        region: str,
+        species_code: str = "",
+        start_year: int = 2020,
+        end_year: int = None,
+        locale: str = "en"
+    ):
+        """Handle get_seasonal_trends tool"""
+        try:
+            logger.info(f"Generating seasonal trends for {region}")
+            
+            # Convert empty string to None for the API call
+            species_code_param = species_code if species_code else None
+            
+            trends = self.ebird_api.get_seasonal_trends(
+                region=region,
+                species_code=species_code_param,
+                start_year=start_year,
+                end_year=end_year,
+                locale=locale
+            )
+            
+            return {
+                "success": True,
+                "region": region,
+                "species_code": species_code,
+                "search_parameters": {
+                    "start_year": start_year,
+                    "end_year": end_year,
+                    "locale": locale
+                },
+                "seasonal_trends": trends
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_seasonal_trends: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region": region,
+                "seasonal_trends": {}
+            }
+    
+    async def handle_get_yearly_comparisons(
+        self,
+        region: str,
+        reference_date: str,
+        years_to_compare: List[int],
+        species_code: str = "",
+        locale: str = "en"
+    ):
+        """Handle get_yearly_comparisons tool"""
+        try:
+            logger.info(f"Generating yearly comparisons for {region} on {reference_date}")
+            
+            # Convert empty string to None for the API call
+            species_code_param = species_code if species_code else None
+            
+            comparisons = self.ebird_api.get_yearly_comparisons(
+                region=region,
+                reference_date=reference_date,
+                years_to_compare=years_to_compare,
+                species_code=species_code_param,
+                locale=locale
+            )
+            
+            return {
+                "success": True,
+                "region": region,
+                "reference_date": reference_date,
+                "years_compared": years_to_compare,
+                "species_code": species_code,
+                "search_parameters": {
+                    "locale": locale
+                },
+                "yearly_comparisons": comparisons
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_yearly_comparisons: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region": region,
+                "yearly_comparisons": {}
+            }

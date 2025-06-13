@@ -170,6 +170,12 @@ class BirdTravelMCPServer:
             return await self.handlers.pipeline_handlers.handle_score_locations(**arguments)
         elif tool_name == "optimize_route":
             return await self.handlers.pipeline_handlers.handle_optimize_route(**arguments)
+        elif tool_name == "get_historic_observations":
+            return await self.handlers.pipeline_handlers.handle_get_historic_observations(**arguments)
+        elif tool_name == "get_seasonal_trends":
+            return await self.handlers.pipeline_handlers.handle_get_seasonal_trends(**arguments)
+        elif tool_name == "get_yearly_comparisons":
+            return await self.handlers.pipeline_handlers.handle_get_yearly_comparisons(**arguments)
         
         # Planning tools
         elif tool_name == "generate_itinerary":
