@@ -1,26 +1,51 @@
 # Bird Travel Recommender API Reference
 
-This document provides a comprehensive reference for all 9 MCP tools available in the Bird Travel Recommender system.
+This document provides a comprehensive reference for all 32 MCP tools available in the Bird Travel Recommender system, organized into 6 specialized categories.
 
 ## Table of Contents
 
-- [Core eBird Tools](#core-ebird-tools)
+- [Species Tools (2)](#species-tools)
   - [validate_species](#validate_species)
+  - [get_regional_species_list](#get_regional_species_list)
+- [Location Tools (12)](#location-tools)
+  - [get_region_details](#get_region_details)
+  - [get_hotspot_details](#get_hotspot_details)
+  - [find_nearest_species](#find_nearest_species)
+  - [get_nearby_notable_observations](#get_nearby_notable_observations)
+  - [get_nearby_species_observations](#get_nearby_species_observations)
+  - [get_top_locations](#get_top_locations)
+  - [get_regional_statistics](#get_regional_statistics)
+  - [get_location_species_list](#get_location_species_list)
+  - [get_subregions](#get_subregions)
+  - [get_adjacent_regions](#get_adjacent_regions)
+  - [get_elevation_data](#get_elevation_data)
+- [Pipeline Tools (12)](#pipeline-tools)
   - [fetch_sightings](#fetch_sightings)
   - [filter_constraints](#filter_constraints)
   - [cluster_hotspots](#cluster_hotspots)
   - [score_locations](#score_locations)
   - [optimize_route](#optimize_route)
+  - [get_historic_observations](#get_historic_observations)
+  - [get_seasonal_trends](#get_seasonal_trends)
+  - [get_yearly_comparisons](#get_yearly_comparisons)
+  - [get_migration_data](#get_migration_data)
+  - [get_peak_times](#get_peak_times)
+  - [get_seasonal_hotspots](#get_seasonal_hotspots)
+- [Planning Tools (2)](#planning-tools)
   - [generate_itinerary](#generate_itinerary)
-- [Business Logic Tools](#business-logic-tools)
   - [plan_complete_trip](#plan_complete_trip)
+- [Advisory Tools (1)](#advisory-tools)
   - [get_birding_advice](#get_birding_advice)
+- [Community Tools (3)](#community-tools)
+  - [get_recent_checklists](#get_recent_checklists)
+  - [get_checklist_details](#get_checklist_details)
+  - [get_user_stats](#get_user_stats)
 - [Error Handling](#error-handling)
 - [Rate Limits](#rate-limits)
 
-## Core eBird Tools
+## Species Tools
 
-These tools provide direct access to eBird data and core birding functionality.
+Tools for species validation, identification, and regional species information.
 
 ### validate_species
 
@@ -64,11 +89,233 @@ Validate bird species names using eBird taxonomy with LLM fallback for fuzzy mat
 }
 ```
 
-#### Error Codes
+### get_regional_species_list
 
-- `INVALID_INPUT`: Empty or invalid species names array
-- `TAXONOMY_ERROR`: Failed to load eBird taxonomy
-- `VALIDATION_FAILED`: All species failed validation
+Get comprehensive species list for a specific region with recent activity data.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "days_back": 30
+}
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| region | string | Yes | - | Region code (e.g., 'US-MA', 'CA-ON') |
+| days_back | integer | No | 30 | Number of days to analyze for recent activity |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "region_species": [
+    {
+      "species_code": "norcar",
+      "common_name": "Northern Cardinal",
+      "scientific_name": "Cardinalis cardinalis",
+      "recent_observations": 45,
+      "last_seen": "2024-03-15",
+      "frequency": 0.85
+    }
+  ],
+  "total_species": 187,
+  "recent_activity_species": 156
+}
+```
+
+## Location Tools
+
+Tools for discovering, analyzing, and getting detailed information about birding locations.
+
+### get_region_details
+
+Get detailed information about a geographic region including birding statistics and characteristics.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA"
+}
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "region_info": {
+    "region_code": "US-MA",
+    "region_name": "Massachusetts",
+    "total_species": 425,
+    "total_hotspots": 1247,
+    "recent_checklists": 15420,
+    "top_birding_months": ["May", "September", "October"]
+  }
+}
+```
+
+### get_hotspot_details
+
+Get comprehensive information about a specific birding hotspot.
+
+#### Request Schema
+
+```json
+{
+  "hotspot_id": "L123456"
+}
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "hotspot": {
+    "hotspot_id": "L123456",
+    "name": "Fresh Pond",
+    "location": {"lat": 42.3736, "lng": -71.1106},
+    "total_species": 187,
+    "recent_checklists": 45,
+    "best_time": "early_morning",
+    "habitat_types": ["pond", "woodland", "grassland"]
+  }
+}
+```
+
+### find_nearest_species
+
+Find closest recent observations of specific species to given coordinates.
+
+#### Request Schema
+
+```json
+{
+  "species_code": "norcar",
+  "lat": 42.3601,
+  "lng": -71.0589,
+  "max_distance_km": 50
+}
+```
+
+### get_nearby_notable_observations
+
+Get rare or notable bird observations near specific coordinates.
+
+#### Request Schema
+
+```json
+{
+  "lat": 42.3601,
+  "lng": -71.0589,
+  "radius_km": 25,
+  "days_back": 7
+}
+```
+
+### get_nearby_species_observations
+
+Get recent observations of specific species near coordinates.
+
+#### Request Schema
+
+```json
+{
+  "species_codes": ["norcar", "blujay"],
+  "lat": 42.3601,
+  "lng": -71.0589,
+  "radius_km": 25
+}
+```
+
+### get_top_locations
+
+Get most active birding locations in a region based on recent activity.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "limit": 10,
+  "min_species": 20
+}
+```
+
+### get_regional_statistics
+
+Get species counts and birding activity statistics for a region.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "days_back": 30
+}
+```
+
+### get_location_species_list
+
+Get complete species list for a specific location or hotspot.
+
+#### Request Schema
+
+```json
+{
+  "location_id": "L123456",
+  "days_back": 365
+}
+```
+
+### get_subregions
+
+Get subregions within a geographic region for detailed area exploration.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA"
+}
+```
+
+### get_adjacent_regions
+
+Get neighboring regions for cross-border birding trip planning.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA"
+}
+```
+
+### get_elevation_data
+
+Get elevation information and habitat zone analysis for locations.
+
+#### Request Schema
+
+```json
+{
+  "lat": 42.3601,
+  "lng": -71.0589,
+  "radius_km": 10
+}
+```
+
+## Pipeline Tools
+
+Core data processing and analysis tools for building comprehensive birding workflows.
 
 ### fetch_sightings
 
@@ -88,14 +335,6 @@ Fetch recent bird sightings using parallel eBird API queries with smart endpoint
   "days_back": 14
 }
 ```
-
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| validated_species | array[object] | Yes | - | List of validated species from validate_species tool |
-| region | string | Yes | - | Region code (e.g., 'US-MA', 'CA-ON') or location name |
-| days_back | integer | No | 14 | Number of days to look back for sightings (1-30) |
 
 #### Response
 
@@ -120,21 +359,10 @@ Fetch recent bird sightings using parallel eBird API queries with smart endpoint
   "statistics": {
     "total_observations": 47,
     "unique_locations": 23,
-    "date_range": {
-      "start": "2024-03-01",
-      "end": "2024-03-15"
-    },
     "fetch_time_seconds": 1.234
   }
 }
 ```
-
-#### Error Codes
-
-- `INVALID_REGION`: Invalid region code or location
-- `API_ERROR`: eBird API request failed
-- `NO_SIGHTINGS`: No sightings found for specified criteria
-- `RATE_LIMIT_EXCEEDED`: eBird API rate limit reached
 
 ### filter_constraints
 
@@ -157,38 +385,6 @@ Apply geographic and temporal constraints to sightings using enrichment-in-place
 }
 ```
 
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| sightings | array | Yes | - | Sightings data from fetch_sightings tool |
-| start_location | object | Yes | - | Starting location coordinates (lat, lng) |
-| max_distance_km | number | No | 100 | Maximum travel distance in kilometers |
-| date_range | object | No | - | Optional date range filter (start, end) |
-
-#### Response
-
-```json
-{
-  "success": true,
-  "filtered_observations": [
-    {
-      "...existing_fields...": "...",
-      "meets_geographic_constraint": true,
-      "meets_temporal_constraint": true,
-      "distance_km": 23.5
-    }
-  ],
-  "statistics": {
-    "input_count": 47,
-    "passed_geographic": 32,
-    "passed_temporal": 47,
-    "passed_all": 32,
-    "filter_time_seconds": 0.123
-  }
-}
-```
-
 ### cluster_hotspots
 
 Cluster birding locations and integrate with eBird hotspots using dual discovery methods.
@@ -203,42 +399,6 @@ Cluster birding locations and integrate with eBird hotspots using dual discovery
 }
 ```
 
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| filtered_sightings | array | Yes | - | Filtered sightings from filter_constraints tool |
-| region | string | Yes | - | Region code for hotspot discovery |
-| cluster_radius_km | number | No | 15 | Clustering radius in kilometers |
-
-#### Response
-
-```json
-{
-  "success": true,
-  "hotspot_clusters": [
-    {
-      "cluster_id": "cluster_0",
-      "center_lat": 42.3736,
-      "center_lng": -71.1106,
-      "location_count": 5,
-      "species_count": 12,
-      "notable_species": ["Wood Duck", "Barred Owl"],
-      "is_hotspot": true,
-      "hotspot_name": "Fresh Pond",
-      "recent_checklists": 45,
-      "species_total": 187
-    }
-  ],
-  "statistics": {
-    "input_locations": 32,
-    "clusters_created": 8,
-    "hotspots_integrated": 5,
-    "clustering_time_seconds": 0.456
-  }
-}
-```
-
 ### score_locations
 
 Score and rank birding locations using multi-criteria analysis with optional LLM enhancement.
@@ -250,40 +410,6 @@ Score and rank birding locations using multi-criteria analysis with optional LLM
   "hotspot_clusters": [...],
   "target_species": ["norcar", "blujay"],
   "use_llm_enhancement": true
-}
-```
-
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| hotspot_clusters | array | Yes | - | Hotspot clusters from cluster_hotspots tool |
-| target_species | array[string] | Yes | - | Priority species codes for scoring |
-| use_llm_enhancement | boolean | No | true | Enable LLM habitat evaluation |
-
-#### Response
-
-```json
-{
-  "success": true,
-  "scored_locations": [
-    {
-      "...cluster_fields...": "...",
-      "overall_score": 0.875,
-      "score_components": {
-        "species_diversity": 0.90,
-        "recency": 0.85,
-        "hotspot_quality": 0.80,
-        "accessibility": 0.95
-      },
-      "recommendation": "Excellent location for target species with recent activity"
-    }
-  ],
-  "statistics": {
-    "locations_scored": 8,
-    "average_score": 0.72,
-    "scoring_time_seconds": 1.234
-  }
 }
 ```
 
@@ -304,45 +430,94 @@ Optimize travel route between birding locations using TSP algorithms.
 }
 ```
 
-#### Parameters
+### get_historic_observations
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| scored_locations | array | Yes | - | Scored locations from score_locations tool |
-| start_location | object | Yes | - | Starting location coordinates |
-| max_locations | integer | No | 8 | Maximum number of locations to include |
+Get historical bird observations for specific dates and temporal analysis.
 
-#### Response
+#### Request Schema
 
 ```json
 {
-  "success": true,
-  "optimized_route": {
-    "ordered_locations": [
-      {
-        "order": 1,
-        "location": {...},
-        "travel_time_minutes": 0,
-        "distance_km": 0
-      },
-      {
-        "order": 2,
-        "location": {...},
-        "travel_time_minutes": 15,
-        "distance_km": 12.3
-      }
-    ],
-    "total_distance_km": 87.5,
-    "total_time_hours": 2.3,
-    "optimization_method": "2-opt"
-  },
-  "statistics": {
-    "input_locations": 8,
-    "selected_locations": 6,
-    "optimization_time_seconds": 0.234
-  }
+  "region": "US-MA",
+  "start_date": "2023-03-01",
+  "end_date": "2023-03-31",
+  "species_codes": ["norcar"]
 }
 ```
+
+### get_seasonal_trends
+
+Analyze seasonal birding trends and patterns for species or regions.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "species_codes": ["norcar", "blujay"],
+  "years": 3
+}
+```
+
+### get_yearly_comparisons
+
+Compare birding activity across multiple years for trend analysis.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "years": [2022, 2023, 2024],
+  "species_codes": ["norcar"]
+}
+```
+
+### get_migration_data
+
+Analyze species migration timing and routes for trip planning.
+
+#### Request Schema
+
+```json
+{
+  "species_codes": ["yewwar", "btnwar"],
+  "region": "US-MA",
+  "migration_season": "spring"
+}
+```
+
+### get_peak_times
+
+Get optimal daily timing recommendations for birding activities.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "season": "spring",
+  "target_species": ["warblers"]
+}
+```
+
+### get_seasonal_hotspots
+
+Get location rankings optimized for specific seasons and migration periods.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "season": "spring",
+  "habitat_preference": "woodland"
+}
+```
+
+## Planning Tools
+
+High-level trip planning and itinerary generation tools.
 
 ### generate_itinerary
 
@@ -358,14 +533,6 @@ Generate professional birding itinerary with LLM enhancement and template fallba
 }
 ```
 
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| optimized_route | object | Yes | - | Optimized route from optimize_route tool |
-| target_species | array[string] | Yes | - | Target species for the trip |
-| trip_duration_days | integer | No | 1 | Duration of the birding trip in days |
-
 #### Response
 
 ```json
@@ -378,19 +545,9 @@ Generate professional birding itinerary with LLM enhancement and template fallba
       "Fresh Pond - High probability for Northern Cardinal",
       "Mount Auburn Cemetery - Recent Blue Jay activity"
     ]
-  },
-  "metadata": {
-    "generation_method": "llm_enhanced",
-    "total_distance_km": 87.5,
-    "locations_count": 6,
-    "target_species_count": 2
   }
 }
 ```
-
-## Business Logic Tools
-
-These tools provide high-level orchestration and expert advice.
 
 ### plan_complete_trip
 
@@ -411,17 +568,6 @@ End-to-end birding trip planning combining all pipeline stages for comprehensive
   "days_back": 14
 }
 ```
-
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| species_names | array[string] | Yes | - | Target bird species names |
-| region | string | Yes | - | Region code or location name |
-| start_location | object | Yes | - | Starting coordinates (lat, lng) |
-| max_distance_km | number | No | 100 | Maximum travel distance |
-| trip_duration_days | integer | No | 1 | Trip duration in days |
-| days_back | integer | No | 14 | Days to look back for sightings |
 
 #### Response
 
@@ -445,30 +591,14 @@ End-to-end birding trip planning combining all pipeline stages for comprehensive
       "route_optimization",
       "itinerary_generation"
     ],
-    "total_time_seconds": 4.567,
-    "warnings": []
+    "total_time_seconds": 4.567
   }
 }
 ```
 
-#### Stage-Specific Errors
+## Advisory Tools
 
-The tool provides detailed error information for each pipeline stage:
-
-```json
-{
-  "success": false,
-  "error": "Pipeline failed at stage: sightings_fetch",
-  "stage_errors": {
-    "species_validation": null,
-    "sightings_fetch": "API rate limit exceeded",
-    "constraint_filtering": "Not attempted"
-  },
-  "partial_results": {
-    "validated_species": [...]
-  }
-}
-```
+Expert birding advice and recommendation tools.
 
 ### get_birding_advice
 
@@ -487,17 +617,6 @@ Get expert birding advice for species, locations, or techniques using enhanced L
   }
 }
 ```
-
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| query | string | Yes | - | Birding question or advice request |
-| context | object | No | - | Optional context for personalized advice |
-| context.species | array[string] | No | - | Relevant species names |
-| context.location | string | No | - | Geographic location |
-| context.season | string | No | - | Season (spring, summer, fall, winter) |
-| context.experience_level | string | No | - | Birding experience (beginner, intermediate, advanced, expert) |
 
 #### Response
 
@@ -519,36 +638,74 @@ Get expert birding advice for species, locations, or techniques using enhanced L
       "Mount Auburn Cemetery, Cambridge",
       "Plum Island, Newburyport"
     ]
-  },
-  "metadata": {
-    "advice_type": "timing_migration",
-    "confidence": 0.95,
-    "sources": ["expert_knowledge", "seasonal_patterns"]
   }
 }
 ```
 
-#### Fallback Behavior
+## Community Tools
 
-If LLM is unavailable, the tool provides rule-based advice:
+Social birding features and community interaction tools.
+
+### get_recent_checklists
+
+Get most recent birding checklists submitted in a region.
+
+#### Request Schema
+
+```json
+{
+  "region": "US-MA",
+  "days_back": 7,
+  "limit": 20
+}
+```
+
+#### Response
 
 ```json
 {
   "success": true,
-  "advice": {
-    "main_response": "General birding advice based on your query...",
-    "fallback_used": true,
-    "metadata": {
-      "advice_type": "rule_based",
-      "reason": "LLM unavailable"
+  "checklists": [
+    {
+      "checklist_id": "S123456789",
+      "location_name": "Fresh Pond",
+      "observer": "John Birder",
+      "date": "2024-03-15",
+      "species_count": 23,
+      "duration_minutes": 120
     }
-  }
+  ]
+}
+```
+
+### get_checklist_details
+
+Get detailed information about a specific birding checklist.
+
+#### Request Schema
+
+```json
+{
+  "checklist_id": "S123456789"
+}
+```
+
+### get_user_stats
+
+Get birder profile and statistics for community features.
+
+#### Request Schema
+
+```json
+{
+  "user_id": "usr123",
+  "region": "US-MA"
 }
 ```
 
 ## Error Handling
 
-All tools follow a consistent error response format:
+All tools follow a consistent error response format with enhanced error handling framework including circuit breakers, retry logic, and graceful degradation.
 
 ```json
 {
@@ -556,7 +713,9 @@ All tools follow a consistent error response format:
   "error": "Error message describing what went wrong",
   "error_code": "SPECIFIC_ERROR_CODE",
   "details": {
-    "additional": "context-specific error information"
+    "stage": "validation",
+    "retry_count": 2,
+    "fallback_available": true
   }
 }
 ```
@@ -566,54 +725,58 @@ All tools follow a consistent error response format:
 | Code | Description | Recovery Action |
 |------|-------------|-----------------|
 | `INVALID_INPUT` | Request parameters are invalid | Check parameter types and requirements |
-| `API_ERROR` | External API request failed | Retry with exponential backoff |
-| `RATE_LIMIT_EXCEEDED` | API rate limit reached | Wait before retrying |
+| `API_ERROR` | External API request failed | Automatic retry with exponential backoff |
+| `RATE_LIMIT_EXCEEDED` | API rate limit reached | Circuit breaker activates, retry after delay |
 | `TIMEOUT` | Request timed out | Retry with smaller data set |
 | `INSUFFICIENT_DATA` | Not enough data to process | Adjust search criteria |
-| `LLM_ERROR` | LLM enhancement failed | Tool continues with fallback |
+| `LLM_ERROR` | LLM enhancement failed | Automatic fallback to rule-based responses |
 
 ## Rate Limits
 
-The system implements respectful rate limiting for external APIs:
+The system implements comprehensive rate limiting and error recovery:
 
 ### eBird API Limits
 - **Requests per hour**: 750 (authenticated)
-- **Requests per day**: 10,000 (authenticated)
 - **Concurrent requests**: 5 (self-imposed)
 - **Retry strategy**: Exponential backoff with jitter
+- **Circuit breaker**: Activates after 5 consecutive failures
 
 ### LLM API Limits
 - **Tokens per minute**: Based on OpenAI tier
-- **Requests per minute**: Based on OpenAI tier
 - **Fallback behavior**: Graceful degradation to non-LLM features
 
 ### Best Practices
 
-1. **Batch Operations**: Use `plan_complete_trip` for multiple related queries
-2. **Cache Results**: Results are cached for 15 minutes
-3. **Progressive Enhancement**: Start with basic queries, add detail as needed
-4. **Error Recovery**: All tools provide partial results when possible
-5. **Rate Awareness**: Monitor rate limit headers in responses
+1. **Use Complete Trip Planning**: `plan_complete_trip` orchestrates multiple tools efficiently
+2. **Leverage Caching**: Results cached for 15 minutes
+3. **Handle Partial Failures**: Tools provide partial results when possible
+4. **Monitor Error Rates**: Built-in error tracking and circuit breakers
+5. **Progressive Enhancement**: Start simple, add complexity as needed
 
-## Tool Chaining Examples
+## Tool Categories and Workflows
 
-### Complete Trip Planning
+### Complete Trip Planning Workflow
+```
+plan_complete_trip → [orchestrates all pipeline stages automatically]
+```
+
+### Manual Pipeline Workflow
 ```
 validate_species → fetch_sightings → filter_constraints → 
 cluster_hotspots → score_locations → optimize_route → generate_itinerary
 ```
 
-### Quick Species Lookup
+### Location Discovery Workflow
 ```
-validate_species → fetch_sightings → filter_constraints
-```
-
-### Hotspot Discovery
-```
-cluster_hotspots (with region only) → score_locations
+get_region_details → get_top_locations → get_hotspot_details → get_location_species_list
 ```
 
-### Expert Advice Flow
+### Temporal Analysis Workflow
 ```
-get_birding_advice → validate_species → plan_complete_trip
+get_historic_observations → get_seasonal_trends → get_migration_data → get_peak_times
+```
+
+### Community Exploration Workflow
+```
+get_recent_checklists → get_checklist_details → get_user_stats
 ```

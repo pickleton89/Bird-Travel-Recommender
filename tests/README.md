@@ -1,16 +1,17 @@
 # Testing Framework for Bird Travel Recommender
 
-This directory contains a comprehensive pytest-based testing framework for the Bird Travel Recommender system.
+This directory contains a comprehensive pytest-based testing framework for the Bird Travel Recommender system with **32 MCP tools across 6 categories**.
 
 ## Overview
 
 The testing framework provides:
-- **Unit tests** for individual node components
-- **Integration tests** for complete pipeline workflows
-- **Mock eBird API responses** for consistent testing
-- **Performance testing** utilities
-- **Data validation** helpers
-- **Parametrized tests** for comprehensive coverage
+- **Unit tests** for individual handler components across 6 tool categories
+- **Integration tests** for complete MCP tool workflows and cross-category interactions
+- **Error handling tests** for circuit breakers, retry logic, and graceful degradation
+- **Mock eBird API responses** for consistent testing without API limits
+- **Performance testing** utilities for concurrent operations
+- **Data validation** helpers for all 32 tools
+- **Parametrized tests** for comprehensive coverage of tool combinations
 
 ## Quick Start
 
@@ -34,11 +35,25 @@ uv run pytest -m unit
 # Run only integration tests  
 uv run pytest -m integration
 
+# Run error handling tests
+uv run pytest -m error_handling
+
+# Run MCP tool tests
+uv run pytest -m mcp_tools
+
 # Run only mock tests (no real API calls)
 uv run pytest -m mock
 
 # Run quick tests (exclude slow tests)
 uv run pytest -m "not slow"
+
+# Run tests by tool category
+uv run pytest -k "species"
+uv run pytest -k "location"
+uv run pytest -k "pipeline"
+uv run pytest -k "planning"
+uv run pytest -k "advisory"
+uv run pytest -k "community"
 ```
 
 ### Running Specific Test Files
@@ -56,19 +71,40 @@ uv run pytest tests/test_integration.py
 ## Test Structure
 
 ### Test Files
+
+#### Core Configuration
 - **`conftest.py`** - Shared fixtures and test configuration
-- **`test_validate_species_node.py`** - Tests for species validation logic
-- **`test_fetch_sightings_node.py`** - Tests for parallel sightings fetching
-- **`test_filter_constraints_node.py`** - Tests for constraint filtering
-- **`test_integration.py`** - End-to-end pipeline tests
 - **`test_utils.py`** - Testing utilities and helpers
 
+#### Unit Tests (by category)
+- **`unit/test_species.py`** - Species validation handler tests (2 tools)
+- **`unit/test_location.py`** - Location discovery handler tests (12 tools)
+- **`unit/test_pipeline.py`** - Pipeline processing handler tests (12 tools)
+- **`unit/test_planning.py`** - Planning handler tests (2 tools)
+- **`unit/test_advisory.py`** - Advisory handler tests (1 tool)
+- **`unit/test_community.py`** - Community handler tests (3 tools)
+
+#### Integration Tests
+- **`integration/test_mcp_tools_comprehensive.py`** - All 32 tools integration tests
+- **`integration/test_enhanced_error_handling.py`** - Error handling framework tests
+- **`integration/test_mcp_tools_expansion.py`** - Cross-category workflow tests
+
+#### Legacy Node Tests (being phased out)
+- **`test_validate_species_node.py`** - Legacy PocketFlow node tests
+- **`test_fetch_sightings_node.py`** - Legacy parallel fetching tests
+- **`test_filter_constraints_node.py`** - Legacy constraint filtering tests
+- **`test_integration.py`** - Legacy end-to-end pipeline tests
+
 ### Test Markers
-- **`@pytest.mark.unit`** - Unit tests for individual components
-- **`@pytest.mark.integration`** - Integration tests for workflows
+- **`@pytest.mark.unit`** - Unit tests for individual handler components
+- **`@pytest.mark.integration`** - Integration tests for MCP tool workflows
+- **`@pytest.mark.error_handling`** - Error handling and resilience tests
+- **`@pytest.mark.mcp_tools`** - MCP tool-specific tests
 - **`@pytest.mark.mock`** - Tests using mocked data only
 - **`@pytest.mark.api`** - Tests requiring real eBird API access
 - **`@pytest.mark.slow`** - Tests that take longer to run
+- **`@pytest.mark.circuit_breaker`** - Circuit breaker pattern tests
+- **`@pytest.mark.performance`** - Performance and concurrency tests
 
 ## Mock Data System
 
@@ -84,10 +120,14 @@ def test_species_validation(mock_ebird_api):
 
 ### Available Mock Fixtures
 - **`mock_ebird_taxonomy`** - Sample eBird taxonomy data
-- **`mock_ebird_observations`** - Sample observation data
-- **`mock_ebird_hotspots`** - Sample hotspot data
+- **`mock_ebird_observations`** - Sample observation data for all regions
+- **`mock_ebird_hotspots`** - Sample hotspot data with geographic distribution
 - **`mock_validated_species`** - Pre-validated species for testing
-- **`mock_ebird_api`** - Complete API client mocking
+- **`mock_ebird_api`** - Complete API client mocking with error simulation
+- **`mock_error_scenarios`** - Predefined error scenarios for testing
+- **`mock_circuit_breaker`** - Circuit breaker state simulation
+- **`mock_mcp_server`** - Complete MCP server for integration testing
+- **`mock_handlers_container`** - All 6 handler categories with mocking
 
 ## Test Data Generators
 
@@ -144,15 +184,64 @@ speedup, seq_time, par_time = helper.measure_parallel_speedup(
 
 ## Integration Testing
 
-### End-to-End Pipeline Tests
-Integration tests verify complete workflows:
+### MCP Tool Integration Tests
+Integration tests verify complete MCP tool workflows across all 6 categories:
 
 ```python
-def test_full_pipeline(pipeline_nodes, mock_ebird_api):
-    # Test validates complete species → fetch → filter pipeline
-    # Ensures data consistency across all stages
-    # Verifies error handling and recovery
-    pass
+@pytest.mark.integration
+@pytest.mark.mcp_tools
+async def test_complete_trip_planning_workflow(mock_mcp_server):
+    """Test end-to-end trip planning using multiple tool categories."""
+    # Species validation (Species category)
+    species_result = await mock_mcp_server.call_tool(
+        "validate_species", {"species_names": ["Northern Cardinal"]}
+    )
+    
+    # Location analysis (Location category)
+    region_result = await mock_mcp_server.call_tool(
+        "get_region_details", {"region": "US-MA"}
+    )
+    
+    # Pipeline processing (Pipeline category)
+    sightings_result = await mock_mcp_server.call_tool(
+        "fetch_sightings", {
+            "validated_species": species_result["validated_species"],
+            "region": "US-MA"
+        }
+    )
+    
+    # Trip planning (Planning category)
+    itinerary_result = await mock_mcp_server.call_tool(
+        "plan_complete_trip", {
+            "species_names": ["Northern Cardinal"],
+            "region": "US-MA",
+            "start_location": {"lat": 42.36, "lng": -71.06}
+        }
+    )
+    
+    # Verify all stages succeeded
+    assert all(result["success"] for result in [
+        species_result, region_result, sightings_result, itinerary_result
+    ])
+
+@pytest.mark.integration
+@pytest.mark.error_handling
+async def test_error_handling_across_categories(mock_mcp_server):
+    """Test error handling and recovery across tool categories."""
+    # Test validation errors
+    invalid_result = await mock_mcp_server.call_tool(
+        "validate_species", {"species_names": []}
+    )
+    assert not invalid_result["success"]
+    assert invalid_result["error_code"] == "INVALID_INPUT"
+    
+    # Test API errors with retry
+    with patch.object(mock_mcp_server.ebird_api, 'get_observations', side_effect=APIError):
+        api_result = await mock_mcp_server.call_tool(
+            "fetch_sightings", {"validated_species": [], "region": "US-MA"}
+        )
+        assert not api_result["success"]
+        assert "retry_count" in api_result.get("details", {})
 ```
 
 ## Common Test Patterns
@@ -175,14 +264,40 @@ def test_node_lifecycle(node, shared_store):
 
 ### Parametrized Testing
 ```python
-@pytest.mark.parametrize("input_data,expected", [
-    (["Northern Cardinal"], "direct_common_name"),
-    (["Cardinalis cardinalis"], "direct_scientific_name"),
-    (["norcar"], "direct_species_code"),
+@pytest.mark.parametrize("tool_category,tool_name,test_params", [
+    ("species", "validate_species", {"species_names": ["Northern Cardinal"]}),
+    ("location", "get_region_details", {"region": "US-MA"}),
+    ("pipeline", "fetch_sightings", {
+        "validated_species": [{"species_code": "norcar"}], 
+        "region": "US-MA"
+    }),
+    ("planning", "generate_itinerary", {
+        "optimized_route": {"ordered_locations": []},
+        "target_species": ["Northern Cardinal"]
+    }),
+    ("advisory", "get_birding_advice", {
+        "query": "Best time to see cardinals?"
+    }),
+    ("community", "get_recent_checklists", {"region": "US-MA"}),
 ])
-def test_validation_methods(input_data, expected):
-    # Test multiple scenarios efficiently
-    pass
+@pytest.mark.mcp_tools
+async def test_tool_success_responses(mock_mcp_server, tool_category, tool_name, test_params):
+    """Test successful responses for all tool categories."""
+    result = await mock_mcp_server.call_tool(tool_name, test_params)
+    assert result["success"], f"{tool_category}/{tool_name} failed: {result}"
+    
+@pytest.mark.parametrize("error_type,expected_code", [
+    (ValidationError("Invalid input"), "INVALID_INPUT"),
+    (APIError("API failed"), "API_ERROR"),
+    (RateLimitError("Rate limit"), "RATE_LIMIT_EXCEEDED"),
+    (TimeoutError("Timeout"), "TIMEOUT"),
+])
+@pytest.mark.error_handling
+def test_error_code_mapping(error_type, expected_code):
+    """Test error handling produces correct error codes."""
+    handler = ErrorHandler()
+    result = handler.handle_error(error_type)
+    assert result["error_code"] == expected_code
 ```
 
 ## Configuration
@@ -244,10 +359,12 @@ uv run pytest tests/test_validate_species_node.py::TestValidateSpeciesNode::test
 5. Validate test data structure with utilities
 
 ### Test Coverage Goals
-- **Unit tests** - 90%+ coverage for individual nodes
-- **Integration tests** - Cover all major workflows
-- **Error handling** - Test failure scenarios
-- **Performance** - Validate parallel processing benefits
+- **Unit tests** - 90%+ coverage for all 32 MCP tools and handlers
+- **Integration tests** - Cover all 6 tool categories and cross-category workflows
+- **Error handling** - Test circuit breakers, retry logic, graceful degradation
+- **Performance** - Validate concurrent tool execution and caching
+- **MCP compliance** - Verify all tools follow MCP protocol standards
+- **Resilience** - Test failure scenarios and recovery mechanisms
 
 ## Migration from Legacy Tests
 

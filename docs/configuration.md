@@ -315,7 +315,132 @@ LOGGING_CONFIG = {
 }
 ```
 
+## MCP Tools Configuration
+
+### Tool Category Settings
+
+Configure behavior for the 32 MCP tools across 6 categories:
+
+```bash
+# Species Tools (2 tools)
+SPECIES_VALIDATION_TIMEOUT=10        # Species name validation timeout
+ENABLE_FUZZY_SPECIES_MATCHING=true   # Allow approximate name matching
+MAX_SPECIES_PER_REQUEST=50           # Maximum species to validate at once
+
+# Location Tools (12 tools)  
+LOCATION_SEARCH_RADIUS_MAX=200       # Maximum search radius (km)
+ELEVATION_DATA_PRECISION=10          # Elevation data accuracy (meters)
+ADJACENT_REGIONS_LIMIT=10            # Max neighboring regions to return
+HOTSPOT_RANKING_ALGORITHM=weighted   # Options: weighted, simple, ml_based
+
+# Pipeline Tools (12 tools)
+PIPELINE_BATCH_SIZE=100              # Items processed per batch
+TEMPORAL_ANALYSIS_YEARS_MAX=10       # Maximum years for trend analysis
+MIGRATION_DATA_CACHE_HOURS=24        # Cache migration patterns (hours)
+SEASONAL_TRENDS_SMOOTHING=0.3        # Smoothing factor for trend analysis
+
+# Planning Tools (2 tools)
+MAX_TRIP_DURATION_DAYS=30           # Maximum trip length
+ITINERARY_DETAIL_LEVEL=standard     # Options: minimal, standard, detailed
+ROUTE_OPTIMIZATION_ALGORITHM=2opt   # Options: 2opt, genetic, greedy
+
+# Advisory Tools (1 tool)
+ADVISORY_LLM_FALLBACK=true          # Use rule-based advice if LLM fails
+ADVISORY_RESPONSE_LENGTH=medium     # Options: short, medium, long, adaptive
+
+# Community Tools (3 tools)
+COMMUNITY_DATA_FRESHNESS_HOURS=6    # How fresh community data must be
+USER_STATS_PRIVACY_LEVEL=public     # Options: private, friends, public
+CHECKLIST_DETAILS_LIMIT=100         # Max checklists to analyze
+```
+
+### Enhanced Error Handling Configuration
+
+Configure the comprehensive error handling framework:
+
+```bash
+# Circuit Breaker Settings
+CIRCUIT_BREAKER_ENABLED=true        # Enable circuit breaker pattern
+CIRCUIT_BREAKER_FAILURE_THRESHOLD=5 # Failures before opening circuit
+CIRCUIT_BREAKER_RECOVERY_TIMEOUT=60 # Seconds before attempting recovery
+CIRCUIT_BREAKER_HALF_OPEN_CALLS=3   # Test calls in half-open state
+
+# Retry Logic Configuration
+RETRY_ENABLED=true                   # Enable automatic retries
+RETRY_MAX_ATTEMPTS=3                # Maximum retry attempts
+RETRY_INITIAL_DELAY=1.0             # Initial retry delay (seconds)
+RETRY_MAX_DELAY=16.0                # Maximum retry delay (seconds)  
+RETRY_BACKOFF_FACTOR=2.0            # Exponential backoff multiplier
+RETRY_JITTER=true                   # Add randomness to delays
+
+# Graceful Degradation
+ENABLE_FALLBACK_RESPONSES=true      # Use fallback data when APIs fail
+FALLBACK_TO_CACHE=true              # Use stale cache on API failures
+FALLBACK_TO_MOCK_DATA=false         # Use mock data in emergencies
+PARTIAL_RESULTS_ACCEPTABLE=true     # Return partial results on errors
+
+# Error Response Configuration
+ERROR_INCLUDE_RETRY_INFO=true       # Include retry attempt info in errors
+ERROR_INCLUDE_SUGGESTIONS=true      # Include suggested fixes in errors
+ERROR_INCLUDE_TIMESTAMP=true        # Include error timestamp
+ERROR_MASK_SENSITIVE_DATA=true      # Hide sensitive info in error messages
+```
+
+### Tool Performance Configuration
+
+Configure performance settings for all 32 tools:
+
+```bash
+# Concurrent Tool Execution
+TOOL_EXECUTION_MODE=smart            # Options: sequential, parallel, smart
+MAX_CONCURRENT_TOOLS=8               # Max tools running simultaneously
+TOOL_EXECUTION_TIMEOUT=120           # Default tool timeout (seconds)
+TOOL_QUEUE_SIZE=50                   # Maximum queued tool requests
+
+# Category-Specific Timeouts
+SPECIES_TOOLS_TIMEOUT=15             # Species validation timeout
+LOCATION_TOOLS_TIMEOUT=30            # Location analysis timeout  
+PIPELINE_TOOLS_TIMEOUT=45            # Data processing timeout
+PLANNING_TOOLS_TIMEOUT=60            # Trip planning timeout
+ADVISORY_TOOLS_TIMEOUT=25            # LLM advice timeout
+COMMUNITY_TOOLS_TIMEOUT=20           # Community data timeout
+
+# Tool Caching Strategy
+ENABLE_TOOL_RESULT_CACHING=true      # Cache tool results
+TOOL_CACHE_SIZE_MB=250               # Tool cache size limit
+TOOL_CACHE_TTL_STRATEGY=adaptive     # Options: fixed, adaptive, category_based
+
+# Category-Specific Cache TTL (seconds)
+SPECIES_CACHE_TTL=86400              # 24 hours (stable data)
+LOCATION_CACHE_TTL=3600              # 1 hour (semi-stable)
+PIPELINE_CACHE_TTL=900               # 15 minutes (dynamic data)
+PLANNING_CACHE_TTL=1800              # 30 minutes (personalized)
+ADVISORY_CACHE_TTL=7200              # 2 hours (advice patterns)
+COMMUNITY_CACHE_TTL=300              # 5 minutes (real-time data)
+```
+
 ## Advanced Configuration
+
+### Tool Orchestration Settings
+
+Configure how the 32 tools work together:
+
+```bash
+# Smart Tool Selection
+ENABLE_INTELLIGENT_TOOL_SELECTION=true  # AI-powered tool selection
+TOOL_SELECTION_CONFIDENCE_THRESHOLD=0.8 # Minimum confidence for tool selection
+TOOL_DEPENDENCY_CHECKING=true           # Verify tool dependencies
+
+# Cross-Category Workflows
+ENABLE_CROSS_CATEGORY_WORKFLOWS=true    # Allow multi-category operations
+WORKFLOW_OPTIMIZATION=true              # Optimize tool execution order
+WORKFLOW_PARALLELIZATION=smart          # Options: none, aggressive, smart
+
+# Tool Result Integration
+RESULT_MERGING_STRATEGY=intelligent     # Options: simple, weighted, intelligent
+RESULT_CONFLICT_RESOLUTION=llm_mediated # Options: first_wins, voting, llm_mediated
+ENABLE_RESULT_VALIDATION=true           # Validate tool result consistency
+```
 
 ### Custom Model Configuration
 

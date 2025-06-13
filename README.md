@@ -7,7 +7,7 @@ An advanced birding travel planning system with enhanced natural language unders
 - **Enhanced Natural Language Understanding**: Semantic intent recognition with 90-95% accuracy
 - **Intelligent Trip Planning**: Optimized routes based on recent eBird sightings
 - **Experience-Level Adaptation**: Responses tailored from beginner to expert birders
-- **9 Specialized MCP Tools**: Comprehensive birding functionality via Model Context Protocol
+- **32 Specialized MCP Tools**: Comprehensive birding functionality across 6 categories via Model Context Protocol
 - **Real-time eBird Integration**: Access to 600M+ observations and 10,000+ hotspots
 
 ## 📚 Documentation
@@ -15,7 +15,7 @@ An advanced birding travel planning system with enhanced natural language unders
 ### For Users
 - **[User Guide](docs/user-guide.md)** - Complete guide to using the enhanced birding assistant
 - **[Examples](docs/examples-enhanced.md)** - Real-world usage examples with natural language queries
-- **[API Reference](docs/api-reference.md)** - Detailed documentation of all 9 MCP tools
+- **[API Reference](docs/api-reference.md)** - Detailed documentation of all 32 MCP tools
 
 ### For Developers
 - **[Architecture](docs/architecture.md)** - System design, data flows, and component details
@@ -121,7 +121,7 @@ The Bird Travel Recommender can be integrated with Claude Desktop to provide bir
      "mcpServers": {
        "bird-travel-recommender": {
          "command": "uv",
-         "args": ["run", "python", "mcp_server.py"],
+         "args": ["run", "python", "scripts/mcp_server.py"],
          "cwd": "/path/to/Bird-Travel-Recommender",
          "env": {
            "PYTHONPATH": "src"
@@ -133,16 +133,13 @@ The Bird Travel Recommender can be integrated with Claude Desktop to provide bir
 
 3. **Restart Claude Desktop** to load the new MCP server
 
-4. **Verify the integration**: In Claude Desktop, you should now have access to 9 birding tools:
-   - `fetch_sightings` - Get recent bird sightings
-   - `validate_species` - Validate bird species names
-   - `cluster_hotspots` - Find optimal birding locations
-   - `score_locations` - Evaluate birding destinations
-   - `optimize_route` - Plan efficient birding routes
-   - `generate_itinerary` - Create detailed trip plans
-   - `filter_constraints` - Apply trip constraints
-   - `get_species_info` - Get detailed species information
-   - `search_hotspots` - Search for birding hotspots
+4. **Verify the integration**: In Claude Desktop, you should now have access to 32 birding tools across 6 categories:
+   - **Species Tools** (2) - Species validation and regional species lists
+   - **Location Tools** (12) - Hotspot discovery, regional analysis, and geographic data
+   - **Pipeline Tools** (12) - Data processing, temporal analysis, and filtering
+   - **Planning Tools** (2) - Trip planning and itinerary generation
+   - **Advisory Tools** (1) - Expert birding advice and recommendations
+   - **Community Tools** (3) - Social features and birder statistics
 
 ### Usage Example
 

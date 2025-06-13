@@ -60,7 +60,7 @@ uv run python main.py
 uv run python src/bird_travel_recommender/mcp/server.py
 
 # Deploy MCP server for Claude
-python scripts/deploy_mcp.py development
+uv run python scripts/deploy_mcp.py development
 ```
 
 ## Project Structure
@@ -84,7 +84,10 @@ Bird-Travel-Recommender/
 │       │   └── route_optimizer.py    # Route optimization
 │       └── mcp/
 │           ├── __init__.py
-│           ├── server.py      # MCP server with 9 tools
+│           ├── server.py      # MCP server with 32 tools
+│           ├── tools/         # Tool definitions (6 categories)
+│           ├── handlers/      # Business logic implementations
+│           ├── utils/         # Error handling framework
 │           └── config/
 │               ├── base.json
 │               ├── development.json
@@ -126,23 +129,56 @@ class MyNode(Node):
         shared["my_results"] = exec_data
 ```
 
-#### MCP Tools (`src/bird_travel_recommender/mcp/server.py`)
+#### MCP Tools Architecture
 
-Tools are defined with JSON schemas:
+The system now uses a modular architecture with 32 tools across 6 categories:
 
 ```python
-Tool(
-    name="my_tool",
-    description="Tool description",
-    inputSchema={
-        "type": "object",
-        "properties": {
-            "param1": {"type": "string"},
-            "param2": {"type": "number"}
-        },
-        "required": ["param1"]
-    }
-)
+# Tools are organized by category in tools/ directory
+tools/
+├── species.py      # Species validation tools (2)
+├── location.py     # Location discovery tools (12)
+├── pipeline.py     # Data processing tools (12)
+├── planning.py     # Trip planning tools (2)
+├── advisory.py     # Expert advice tools (1)
+└── community.py    # Social features tools (3)
+
+# Handlers implement business logic in handlers/ directory
+handlers/
+├── species.py
+├── enhanced_species.py  # With comprehensive error handling
+├── location.py
+├── pipeline.py
+├── planning.py
+├── advisory.py
+└── community.py
+```
+
+Tool definitions use enhanced schemas with validation:
+
+```python
+@validate_parameters
+@handle_errors
+@circuit_breaker
+async def get_region_details(self, region: str) -> Dict:
+    """Get detailed region information with error handling."""
+    try:
+        # Validation
+        if not region or len(region) < 2:
+            raise ValidationError("Region must be at least 2 characters")
+        
+        # Business logic with error handling
+        region_data = await self.ebird_api.get_region_info(region)
+        enriched_data = self._enrich_region_data(region_data)
+        
+        return {"success": True, "region_info": enriched_data}
+        
+    except ValidationError as e:
+        return self.error_handler.handle_validation_error(e)
+    except APIError as e:
+        return self.error_handler.handle_api_error(e)
+    except Exception as e:
+        return self.error_handler.handle_unexpected_error(e)
 ```
 
 ## Core Concepts
@@ -158,7 +194,7 @@ User Query → Enhanced NLP → Intent + Parameters → Tool Selection → Execu
 
 Key classes:
 - `EnhancedNLPProcessor`: Intent classification and parameter extraction
-- `BirdingIntent`: Enum of 9 intent types
+- `BirdingIntent`: Enum of 9 intent types mapped to 32 tools
 - `ExtractedParameters`: Structured parameter storage
 
 ### 2. Shared Store Pattern
@@ -177,11 +213,12 @@ shared_store = {
 
 ### 3. Tool Execution Strategies
 
-Three execution patterns based on query complexity:
+Multiple execution patterns based on query complexity:
 
-- **Monolithic**: Single tool for complete workflows
-- **Sequential**: Step-by-step tool execution
-- **Parallel**: Concurrent independent operations
+- **Monolithic**: Single tool for complete workflows (`plan_complete_trip`)
+- **Sequential**: Step-by-step tool execution across categories
+- **Parallel**: Concurrent independent operations within categories
+- **Category-Based**: Tools organized by function (Species, Location, Pipeline, Planning, Advisory, Community)
 
 ### 4. Experience Level Adaptation
 
@@ -195,58 +232,132 @@ Responses adapt to four experience levels:
 
 ### Adding a New MCP Tool
 
-1. **Define the tool in `src/bird_travel_recommender/mcp/server.py`**:
+The modular architecture makes adding tools straightforward:
+
+1. **Choose the appropriate category** (Species, Location, Pipeline, Planning, Advisory, Community)
+
+2. **Define the tool in the relevant tools file** (e.g., `tools/location.py`):
 
 ```python
-Tool(
-    name="analyze_migration",
-    description="Analyze bird migration patterns",
+# In tools/pipeline.py (since this is data analysis)
+get_migration_analysis_tool = Tool(
+    name="get_migration_analysis",
+    description="Analyze bird migration patterns and timing for species in regions",
     inputSchema={
         "type": "object",
         "properties": {
-            "species": {"type": "array", "items": {"type": "string"}},
-            "region": {"type": "string"},
-            "season": {"type": "string", "enum": ["spring", "fall"]}
+            "species_codes": {
+                "type": "array", 
+                "items": {"type": "string"},
+                "description": "List of eBird species codes to analyze"
+            },
+            "region": {
+                "type": "string",
+                "description": "Region code (e.g., 'US-MA', 'CA-ON')"
+            },
+            "migration_season": {
+                "type": "string", 
+                "enum": ["spring", "fall", "both"],
+                "default": "both",
+                "description": "Which migration season to analyze"
+            },
+            "years_back": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "default": 3,
+                "description": "Number of years of historical data to analyze"
+            }
         },
-        "required": ["species", "region"]
+        "required": ["species_codes", "region"]
     }
 )
+
+PIPELINE_TOOLS = [
+    # ... existing tools
+    get_migration_analysis_tool
+]
 ```
 
-2. **Implement the handler**:
+3. **Implement the handler in `handlers/pipeline.py`**:
 
 ```python
-async def _handle_analyze_migration(self, species: List[str], region: str, season: str = "spring"):
-    """Analyze migration patterns for species"""
-    try:
-        # Validate species
-        validated = await self._validate_species_batch(species)
-        
-        # Query migration data
-        migration_data = await self.ebird_api.get_migration_data(
-            validated, region, season
-        )
-        
-        # Analyze patterns
-        patterns = self._analyze_patterns(migration_data)
-        
-        return {
-            "success": True,
-            "patterns": patterns,
-            "peak_dates": self._calculate_peak_dates(patterns)
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+class PipelineHandlers:
+    def __init__(self):
+        self.ebird_api = EBirdClient()
+        self.error_handler = ErrorHandler()
+    
+    @validate_parameters
+    @handle_errors
+    @circuit_breaker
+    async def get_migration_analysis(self, species_codes: List[str], region: str, 
+                                   migration_season: str = "both", years_back: int = 3) -> Dict:
+        """Analyze migration patterns with comprehensive error handling."""
+        try:
+            # Input validation
+            if not species_codes:
+                raise ValidationError("At least one species code required")
+            if not region:
+                raise ValidationError("Region parameter is required")
+            
+            # Get historical data with retry logic
+            migration_data = await self._fetch_migration_data_with_retry(
+                species_codes, region, migration_season, years_back
+            )
+            
+            # Analyze patterns with fallback
+            analysis = self._analyze_migration_patterns(migration_data)
+            
+            # Enrich with additional insights
+            enriched_analysis = await self._enrich_migration_analysis(analysis)
+            
+            return {
+                "success": True,
+                "migration_analysis": enriched_analysis,
+                "peak_periods": self._calculate_peak_periods(analysis),
+                "confidence_metrics": self._calculate_confidence(migration_data)
+            }
+            
+        except ValidationError as e:
+            return self.error_handler.handle_validation_error(e)
+        except APIError as e:
+            return self.error_handler.handle_api_error(e)
+        except Exception as e:
+            return self.error_handler.handle_unexpected_error(e)
+    
+    async def _fetch_migration_data_with_retry(self, species_codes, region, season, years):
+        """Fetch migration data with exponential backoff retry."""
+        for attempt in range(self.error_handler.max_retries):
+            try:
+                return await self.ebird_api.get_historical_observations(
+                    species_codes, region, years_back=years, migration_season=season
+                )
+            except RateLimitError:
+                if attempt < self.error_handler.max_retries - 1:
+                    await asyncio.sleep(self.error_handler.calculate_backoff(attempt))
+                else:
+                    raise
 ```
 
-3. **Add to tool router**:
+4. **Register in server.py**:
 
 ```python
-elif tool_name == "analyze_migration":
-    result = await self._handle_analyze_migration(**arguments)
+# Import new tools
+from .tools.pipeline import PIPELINE_TOOLS
+
+# In server.py, tools are automatically registered from each category
+all_tools = (
+    SPECIES_TOOLS + 
+    LOCATION_TOOLS + 
+    PIPELINE_TOOLS +  # Now includes get_migration_analysis
+    PLANNING_TOOLS + 
+    ADVISORY_TOOLS + 
+    COMMUNITY_TOOLS
+)
+
+# Handler routing in call_tool method
+elif tool_name == "get_migration_analysis":
+    result = await self.handlers_container.pipeline.get_migration_analysis(**arguments)
 ```
 
 ### Adding a New Pipeline Node
@@ -291,16 +402,17 @@ flow.add_edge("validate_species", "migration_analysis")
 ```python
 class BirdingIntent(Enum):
     # Existing intents...
-    MIGRATION_ANALYSIS = "migration_analysis"
+    TEMPORAL_ANALYSIS = "temporal_analysis"  # Maps to multiple pipeline tools
 ```
 
-2. **Update LLM prompt**:
+2. **Update LLM prompt to map to tool categories**:
 
 ```python
 INTENT_CLASSIFICATION_PROMPT = """
-Classify the birding-related intent...
+Classify the birding-related intent and map to our 6 tool categories...
 
-9. migration_analysis - Analyzing bird migration patterns and timing
+9. temporal_analysis - Analyzing migration, seasonal trends, historical patterns
+   → Maps to Pipeline Tools: get_migration_data, get_seasonal_trends, get_historic_observations
 """
 ```
 
@@ -316,13 +428,24 @@ def _extract_migration_parameters(self, query: str) -> Dict:
     }
 ```
 
-4. **Map to tools in agent**:
+4. **Map to tool categories in agent**:
 
 ```python
-elif intent == BirdingIntent.MIGRATION_ANALYSIS:
+elif intent == BirdingIntent.TEMPORAL_ANALYSIS:
+    # Determine specific tools based on extracted parameters
+    tools = ["validate_species"]  # Species validation first
+    
+    if "migration" in parameters.get("analysis_type", ""):
+        tools.append("get_migration_data")
+    if "seasonal" in parameters.get("analysis_type", ""):
+        tools.append("get_seasonal_trends")
+    if "historical" in parameters.get("analysis_type", ""):
+        tools.append("get_historic_observations")
+    
     return {
         "strategy": "sequential",
-        "tools": ["validate_species", "analyze_migration"],
+        "tools": tools,
+        "categories": ["species", "pipeline"],
         "confidence": confidence
     }
 ```
@@ -334,64 +457,164 @@ elif intent == BirdingIntent.MIGRATION_ANALYSIS:
 ```python
 class ResponseType(Enum):
     # Existing types...
-    MIGRATION_ANALYSIS = "migration_analysis"
+    TEMPORAL_ANALYSIS = "temporal_analysis"  # Covers migration, seasonal, historical
 ```
 
-2. **Create formatting function**:
+2. **Create comprehensive formatting function**:
 
 ```python
-def _format_migration_analysis(self, data: Dict, context: FormattingContext) -> str:
-    """Format migration analysis results"""
-    if context.experience_level == "beginner":
-        return self._format_simple_migration(data)
-    else:
-        return self._format_detailed_migration(data)
+def _format_temporal_analysis(self, data: Dict, context: FormattingContext) -> str:
+    """Format temporal analysis results with error handling."""
+    try:
+        # Determine analysis type from data
+        analysis_type = self._detect_analysis_type(data)
+        
+        if context.experience_level == "beginner":
+            return self._format_simple_temporal(data, analysis_type)
+        elif context.experience_level == "expert":
+            return self._format_expert_temporal(data, analysis_type)
+        else:
+            return self._format_standard_temporal(data, analysis_type)
+            
+    except Exception as e:
+        logger.error(f"Error formatting temporal analysis: {e}")
+        return self._format_fallback_temporal(data)
+
+def _format_simple_temporal(self, data: Dict, analysis_type: str) -> str:
+    """Beginner-friendly temporal analysis formatting."""
+    if analysis_type == "migration":
+        return f"""
+🦅 **Migration Timing for {data.get('species_name', 'your species')}**
+
+**Best time to see them:** {data.get('peak_period', 'Spring migration')}
+**Where to look:** {data.get('best_locations', 'Various locations')}
+**What to expect:** Migration typically lasts {data.get('duration', '2-3 weeks')}
+
+💡 **Tip:** Early morning hours (6-10 AM) are usually best for spotting migrating birds!
+        """
+    # Handle other analysis types...
 ```
 
-3. **Add to response router**:
+3. **Add to response router with error handling**:
 
 ```python
-elif response_type == ResponseType.MIGRATION_ANALYSIS:
-    return self._format_migration_analysis(results, context)
+elif response_type == ResponseType.TEMPORAL_ANALYSIS:
+    try:
+        return self._format_temporal_analysis(results, context)
+    except Exception as e:
+        logger.error(f"Temporal analysis formatting failed: {e}")
+        return self._format_generic_results(results, context)
 ```
 
 ## Testing Strategy
 
 ### Unit Testing
 
-Test individual components in isolation:
+Test individual components with comprehensive error scenarios:
 
 ```python
-def test_migration_analysis_node():
-    node = MigrationAnalysisNode()
-    shared = {
-        "validated_species": [{"species_code": "amro"}],
-        "region": "US-MA",
-        "season": "spring"
-    }
+def test_migration_analysis_handler():
+    """Test migration analysis with various scenarios."""
+    handler = PipelineHandlers()
     
-    prep_data = node.prep(shared)
-    exec_data = node.exec(prep_data)
+    # Test successful case
+    result = await handler.get_migration_analysis(
+        species_codes=["amro"],
+        region="US-MA",
+        migration_season="spring"
+    )
     
-    assert exec_data["success"]
-    assert "peak_dates" in exec_data
+    assert result["success"]
+    assert "migration_analysis" in result
+    assert "confidence_metrics" in result
+
+def test_migration_analysis_validation_errors():
+    """Test validation error handling."""
+    handler = PipelineHandlers()
+    
+    # Test empty species list
+    result = await handler.get_migration_analysis(
+        species_codes=[],
+        region="US-MA"
+    )
+    
+    assert not result["success"]
+    assert "error_code" in result
+    assert result["error_code"] == "INVALID_INPUT"
+
+def test_migration_analysis_circuit_breaker():
+    """Test circuit breaker activation."""
+    handler = PipelineHandlers()
+    
+    # Simulate repeated failures
+    with patch.object(handler.ebird_api, 'get_historical_observations', side_effect=APIError):
+        for _ in range(6):  # Exceed failure threshold
+            await handler.get_migration_analysis(["amro"], "US-MA")
+        
+        # Next call should trigger circuit breaker
+        result = await handler.get_migration_analysis(["amro"], "US-MA")
+        assert result["error_code"] == "CIRCUIT_BREAKER_OPEN"
 ```
 
 ### Integration Testing
 
-Test complete workflows:
+Test complete workflows across tool categories:
 
 ```python
 @pytest.mark.integration
-def test_migration_tool_integration(mcp_server):
-    result = await mcp_server._handle_analyze_migration(
-        species=["American Robin"],
-        region="US-MA",
-        season="spring"
+async def test_temporal_analysis_workflow(mcp_server):
+    """Test complete temporal analysis workflow."""
+    # Test species validation → migration analysis chain
+    species_result = await mcp_server.call_tool(
+        "validate_species", 
+        {"species_names": ["American Robin"]}
     )
     
-    assert result["success"]
-    assert len(result["patterns"]) > 0
+    assert species_result["success"]
+    
+    # Use validated species for migration analysis
+    species_codes = [s["species_code"] for s in species_result["validated_species"]]
+    migration_result = await mcp_server.call_tool(
+        "get_migration_analysis",
+        {
+            "species_codes": species_codes,
+            "region": "US-MA",
+            "migration_season": "spring"
+        }
+    )
+    
+    assert migration_result["success"]
+    assert "migration_analysis" in migration_result
+    assert "confidence_metrics" in migration_result
+
+@pytest.mark.integration
+async def test_cross_category_workflow(mcp_server):
+    """Test workflow spanning multiple tool categories."""
+    # Species (validation) → Location (region details) → Pipeline (temporal analysis)
+    workflow_results = {}
+    
+    # Step 1: Species validation
+    workflow_results["species"] = await mcp_server.call_tool(
+        "validate_species", {"species_names": ["Yellow Warbler"]}
+    )
+    
+    # Step 2: Region analysis
+    workflow_results["region"] = await mcp_server.call_tool(
+        "get_region_details", {"region": "US-MA"}
+    )
+    
+    # Step 3: Temporal analysis
+    workflow_results["temporal"] = await mcp_server.call_tool(
+        "get_seasonal_trends", {
+            "region": "US-MA",
+            "species_codes": ["yewwar"],
+            "years": 3
+        }
+    )
+    
+    # Verify all steps succeeded
+    for step, result in workflow_results.items():
+        assert result["success"], f"Step {step} failed: {result}"
 ```
 
 ### Mock Testing
@@ -516,33 +739,91 @@ def process_observations(observations):
 - Use type hints for clarity
 - Document with clear docstrings
 - Keep functions focused and small
+- Use descriptive names reflecting tool categories
 
 ### Error Handling
 
+Use the comprehensive error handling framework:
+
 ```python
-try:
-    result = risky_operation()
-except SpecificError as e:
-    logger.error(f"Operation failed: {e}")
-    return fallback_result()
-except Exception as e:
-    logger.exception("Unexpected error")
-    raise
+@validate_parameters
+@handle_errors
+@circuit_breaker
+async def my_handler_method(self, param1: str, param2: int) -> Dict:
+    """Handler with comprehensive error handling."""
+    try:
+        # Input validation (automatic via decorator)
+        
+        # Business logic with specific error handling
+        result = await self.api_call(param1, param2)
+        
+        # Data processing with fallback
+        processed = self._process_with_fallback(result)
+        
+        return {"success": True, "data": processed}
+        
+    except ValidationError as e:
+        return self.error_handler.handle_validation_error(e)
+    except RateLimitError as e:
+        # Automatic retry handled by decorator
+        return self.error_handler.handle_rate_limit_error(e)
+    except APIError as e:
+        return self.error_handler.handle_api_error(e)
+    except Exception as e:
+        return self.error_handler.handle_unexpected_error(e)
+```
+
+### Tool Organization
+
+```python
+# Organize tools by logical categories
+SPECIES_TOOLS = [...]     # Species validation and info
+LOCATION_TOOLS = [...]    # Geographic analysis
+PIPELINE_TOOLS = [...]    # Data processing and analysis
+PLANNING_TOOLS = [...]    # Trip planning
+ADVISORY_TOOLS = [...]    # Expert advice
+COMMUNITY_TOOLS = [...]   # Social features
+
+# Use consistent naming conventions
+# get_* for data retrieval
+# validate_* for validation
+# generate_* for creation
+# analyze_* for analysis
 ```
 
 ### Testing
 
-- Write tests for new features
-- Maintain > 80% code coverage
-- Use meaningful test names
-- Test edge cases and errors
+- Write tests for new features across all tool categories
+- Maintain > 80% code coverage including error paths
+- Use meaningful test names describing scenarios
+- Test edge cases, validation errors, and API failures
+- Test circuit breaker activation and recovery
+- Test graceful degradation scenarios
+- Include performance tests for batch operations
+
+```python
+# Test naming convention examples
+def test_get_migration_analysis_success_case():
+    pass
+
+def test_get_migration_analysis_validation_error_empty_species():
+    pass
+
+def test_get_migration_analysis_api_timeout_with_retry():
+    pass
+
+def test_get_migration_analysis_circuit_breaker_activation():
+    pass
+```
 
 ### Documentation
 
-- Update docstrings for new code
-- Add examples for complex features
-- Keep README current
-- Document breaking changes
+- Update docstrings for new code with error handling details
+- Add examples for complex features showing tool category interactions
+- Keep README current with accurate tool counts (32 tools, 6 categories)
+- Document breaking changes and migration paths
+- Update API reference with new tools and enhanced error responses
+- Document new error codes and recovery strategies
 
 ## Resources
 
@@ -555,6 +836,8 @@ except Exception as e:
 - [PocketFlow Documentation](https://github.com/PocketFlow/docs)
 - [eBird API Documentation](https://documenter.getpostman.com/view/664302/S1ENwy59)
 - [MCP Specification](https://modelcontextprotocol.io/docs)
+- [Circuit Breaker Pattern](https://martinfowler.com/bliki/CircuitBreaker.html)
+- [Error Handling Best Practices](https://docs.python.org/3/tutorial/errors.html)
 
 ### Getting Help
 - Check existing issues on GitHub

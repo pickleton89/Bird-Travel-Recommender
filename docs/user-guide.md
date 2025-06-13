@@ -39,10 +39,42 @@ The Bird Travel Recommender uses advanced natural language processing to underst
 
 ### What Makes It "Enhanced"
 
+- **32 Specialized Tools**: Access to comprehensive birding functionality across 6 categories
 - **Semantic Understanding**: Understands context and meaning, not just keywords
 - **Conversation Memory**: Remembers previous queries in the conversation
 - **Experience Adaptation**: Adjusts language complexity to your birding level
 - **Rich Formatting**: Provides structured, easy-to-follow responses
+- **Error Recovery**: Robust handling of API issues with graceful fallbacks
+
+### Tool Categories
+
+The system uses **32 specialized tools** organized into 6 categories:
+
+#### Species Tools (2)
+- **Species Validation**: Verify bird names using eBird taxonomy
+- **Regional Species Lists**: Get comprehensive species information for areas
+
+#### Location Tools (12)
+- **Region Analysis**: Detailed geographic and birding statistics
+- **Hotspot Discovery**: Find and analyze top birding locations
+- **Proximity Search**: Find nearest observations and notable sightings
+- **Geographic Intelligence**: Elevation data, subregions, adjacent areas
+
+#### Pipeline Tools (12)
+- **Data Processing**: Fetch, filter, and analyze bird observation data
+- **Temporal Analysis**: Migration patterns, seasonal trends, historical comparisons
+- **Clustering & Scoring**: Group locations and rank by birding potential
+- **Route Optimization**: Calculate efficient travel between locations
+
+#### Planning Tools (2)
+- **Trip Planning**: End-to-end birding trip orchestration
+- **Itinerary Generation**: Detailed day-by-day birding schedules
+
+#### Advisory Tools (1)
+- **Expert Advice**: LLM-enhanced birding knowledge and recommendations
+
+#### Community Tools (3)
+- **Social Features**: Recent checklists, observer statistics, community data
 
 ## Natural Language Queries
 
@@ -406,7 +438,147 @@ birdwatching around Boston with common, easy-to-identify species.
 - Leave if owl shows stress
 ```
 
+### Example 4: Cross-Category Tool Usage
+
+**User**: "I want to analyze seasonal trends for cardinals in Massachusetts and plan optimal viewing times"
+
+**Assistant**:
+```markdown
+# Cardinal Seasonal Analysis & Viewing Strategy for Massachusetts
+
+## Seasonal Trend Analysis (3-Year Data)
+
+### Winter Presence (Dec-Feb)
+📊 **Abundance**: High (Cardinals are year-round residents)
+- 2022: 2,847 observations 
+- 2023: 3,120 observations (+9.6% increase)
+- 2024: 3,301 observations (+5.8% increase)
+
+### Breeding Season Activity (Mar-Aug)
+🐣 **Peak Activity**: April-June
+- Most vocal: Early morning (6:00-9:00 AM)
+- Territory establishment: March-April
+- Multiple broods: 2-3 per season
+
+### Fall/Winter Feeding (Sep-Nov)
+🌰 **Food Source Shifts**: 
+- Natural seeds and berries peak in fall
+- Feeder dependency increases in winter
+- Mixed flock behavior increases
+
+## Optimal Viewing Times by Season
+
+### Spring (Mar-May) - BEST for Behavior
+⭐ **Prime Time**: 6:30-8:30 AM
+- Males singing from exposed perches
+- Courtship displays visible
+- Nest-building activity
+
+**Top Locations**:
+1. Mount Auburn Cemetery - Territorial males on monuments
+2. Forest Hills Cemetery - Dense shrub areas
+3. Arnold Arboretum - Mixed habitat edges
+
+### Summer (Jun-Aug) - Family Groups
+👨‍👩‍👧‍👦 **Prime Time**: 7:00-9:00 AM, 5:00-7:00 PM
+- Adult males teaching juveniles
+- Multiple age classes present
+- Less territorial, more approachable
+
+### Fall/Winter (Sep-Feb) - Flock Behavior
+❄️ **Prime Time**: 8:00-10:00 AM, 3:00-5:00 PM
+- Mixed species flocks
+- Predictable at feeding stations
+- Best for photography (clear backgrounds)
+
+## Species Intelligence Summary
+- **Habitat**: Edge species, woodland borders to suburbs
+- **Diet Shifts**: 70% seeds (winter) → 30% insects (breeding)
+- **Social Structure**: Territorial pairs → Winter flocks of 3-20
+- **Migration Status**: Non-migratory resident
+
+## Recommended Viewing Strategy
+1. **Start with winter feeding stations** (predictable)
+2. **Progress to spring territories** (behavioral observation)
+3. **Advance to summer family tracking** (population dynamics)
+```
+
+### Example 5: Community Data Integration
+
+**User**: "Show me what other birders are seeing in my area and compare it with historical data"
+
+**Assistant**:
+```markdown
+# Recent Community Activity vs Historical Patterns
+
+## Past 7 Days - Active Birders
+👥 **Community Stats**:
+- 47 active observers in 25-mile radius
+- 312 checklists submitted
+- 89 species reported
+- 15 notable observations
+
+### Top Community Sightings
+1. **Snowy Owl** - 3 reports (unusual for area!)
+   - Last seen: 2 days ago at Logan Airport
+   - Historic frequency: Once every 3-4 years
+   
+2. **Northern Shrike** - 2 reports  
+   - Winter visitor, expected this time of year
+   - Historic peak: December-February
+
+3. **Common Redpoll** - 8 reports
+   - Irruptive species, good year for sightings
+   - Last major irruption: 2019-2020
+
+## Historical Comparison (Same Week, Past 5 Years)
+📈 **Observation Trends**:
+- **2024**: 89 species (current week)
+- **2023**: 67 species (-25% fewer)
+- **2022**: 71 species 
+- **2021**: 64 species
+- **2020**: 58 species
+
+**Analysis**: This week shows exceptional diversity, likely due to:
+- Mild weather extending migration
+- Active irruption of northern species
+- Increased observer effort (holiday season)
+
+## Notable Absences
+⚠️ **Expected but Missing**:
+- American Robin (98% frequency this week historically)
+- Dark-eyed Junco (94% frequency)
+- White-throated Sparrow (87% frequency)
+
+**Possible causes**: Recent cold snap may have pushed these south
+
+## Community Hotspots This Week
+1. **Fresh Pond** - 23 species, 8 observers
+2. **Mount Auburn Cemetery** - 19 species, 12 observers  
+3. **Charles River Reservation** - 16 species, 6 observers
+
+## Rare Bird Alerts
+🚨 **Worth Chasing**:
+- Snowy Owl at Logan Airport (72% still present after 3 days)
+- Northern Shrike near Alewife (mobile, check fresh reports)
+```
+
 ## Advanced Features
+
+### Multi-Tool Orchestration
+
+The system automatically combines tools for complex requests:
+
+```
+Query: "Compare winter bird diversity between Boston parks and plan a route to visit the best ones"
+
+Tools Used:
+1. Location Tools → Identify Boston parks and analyze species diversity
+2. Pipeline Tools → Compare historical winter data across locations  
+3. Pipeline Tools → Score locations by diversity and recent activity
+4. Planning Tools → Optimize route between top-scoring parks
+5. Community Tools → Check recent observer reports for validation
+```
 
 ### Conversation Memory
 

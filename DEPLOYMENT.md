@@ -31,13 +31,13 @@ Choose your deployment environment:
 
 ```bash
 # Development deployment (with debug logging)
-python deploy_mcp.py development
+uv run python scripts/deploy_mcp.py development
 
 # Production deployment (optimized settings)
-python deploy_mcp.py production
+uv run python scripts/deploy_mcp.py production
 
 # Local deployment (current configuration)
-python deploy_mcp.py local
+uv run python scripts/deploy_mcp.py local
 ```
 
 ### 3. Configure Claude Desktop or Claude CLI
@@ -118,22 +118,49 @@ claude chat --server bird-travel-recommender
 
 ## Available MCP Tools
 
-The Bird Travel Recommender MCP server provides 9 specialized birding tools:
+The Bird Travel Recommender MCP server provides 32 specialized birding tools across 6 categories:
 
-### Core eBird Data Tools
+### Species Tools (2)
+- **validate_species** - Validate bird species names using eBird taxonomy
+- **get_regional_species_list** - Get comprehensive species list for regions
 
-1. **validate_species** - Validate bird species names using eBird taxonomy
-2. **fetch_sightings** - Retrieve recent bird sightings data
-3. **filter_constraints** - Apply geographic and temporal filters
-4. **cluster_hotspots** - Identify optimal birding locations
-5. **score_locations** - Evaluate birding potential of destinations
-6. **optimize_route** - Calculate optimal travel routes
-7. **generate_itinerary** - Create detailed birding trip plans
+### Location Tools (12)
+- **get_region_details** - Geographic region information and statistics
+- **get_hotspot_details** - Detailed birding hotspot information
+- **find_nearest_species** - Find closest observations of specific species
+- **get_nearby_notable_observations** - Rare/notable observations near coordinates
+- **get_nearby_species_observations** - Recent species observations near coordinates
+- **get_top_locations** - Most active birding locations in regions
+- **get_regional_statistics** - Species counts and activity statistics
+- **get_location_species_list** - Complete species lists for locations
+- **get_subregions** - Subregions within geographic areas
+- **get_adjacent_regions** - Neighboring regions for cross-border planning
+- **get_elevation_data** - Elevation and habitat zone analysis
 
-### Business Logic Tools
+### Pipeline Tools (12)
+- **fetch_sightings** - Retrieve recent bird sightings data
+- **filter_constraints** - Apply geographic and temporal filters
+- **cluster_hotspots** - Identify optimal birding locations
+- **score_locations** - Evaluate birding potential of destinations
+- **optimize_route** - Calculate optimal travel routes
+- **get_historic_observations** - Historical observations for temporal analysis
+- **get_seasonal_trends** - Seasonal birding patterns and trends
+- **get_yearly_comparisons** - Multi-year activity comparisons
+- **get_migration_data** - Species migration timing and routes
+- **get_peak_times** - Optimal daily timing recommendations
+- **get_seasonal_hotspots** - Season-optimized location rankings
 
-8. **plan_complete_trip** - End-to-end trip planning orchestration
-9. **get_birding_advice** - Expert birding advice and recommendations
+### Planning Tools (2)
+- **generate_itinerary** - Create detailed birding trip plans
+- **plan_complete_trip** - End-to-end trip planning orchestration
+
+### Advisory Tools (1)
+- **get_birding_advice** - Expert birding advice and recommendations
+
+### Community Tools (3)
+- **get_recent_checklists** - Recent birding checklists in regions
+- **get_checklist_details** - Detailed checklist information
+- **get_user_stats** - Birder profiles and statistics
 
 ## Usage Examples
 
@@ -203,7 +230,7 @@ If you prefer to manually edit your Claude Desktop configuration:
         "--directory",
         "/Users/your-username/path/to/Bird-Travel-Recommender",
         "python",
-        "mcp_server.py"
+        "scripts/mcp_server.py"
       ],
       "env": {
         "PYTHONPATH": "src"
@@ -259,7 +286,7 @@ Edit the MCP configuration files directly:
 2. **MCP Server Won't Start**
    ```bash
    # Test server manually
-   uv run --directory /path/to/Bird-Travel-Recommender python mcp_server.py
+   uv run --directory /path/to/Bird-Travel-Recommender python scripts/mcp_server.py
    
    # Check dependencies
    uv sync
@@ -276,7 +303,7 @@ Edit the MCP configuration files directly:
      "--directory",
      "/full/path/to/Bird-Travel-Recommender",
      "python",
-     "mcp_server.py"
+     "scripts/mcp_server.py"
    ]
    ```
 
@@ -302,7 +329,7 @@ Edit the MCP configuration files directly:
    cat ~/.claude/mcp_servers.json
    
    # Test configuration
-   python deploy_mcp.py development --validate-only
+   uv run python scripts/deploy_mcp.py development --validate-only
    ```
 
 ### Deployment Validation
@@ -311,13 +338,13 @@ Use the deployment script to validate your environment:
 
 ```bash
 # Validate environment only
-python deploy_mcp.py development --validate-only
+uv run python scripts/deploy_mcp.py development --validate-only
 
 # Test MCP server
-python deploy_mcp.py development --test-only
+uv run python scripts/deploy_mcp.py development --test-only
 
 # Update configuration paths
-python deploy_mcp.py production --update-path /path/to/project
+uv run python scripts/deploy_mcp.py production --update-path /path/to/project
 ```
 
 ### Debug Mode
@@ -326,7 +353,7 @@ Enable debug mode for troubleshooting:
 
 ```bash
 # Deploy with debug settings
-python deploy_mcp.py development
+uv run python scripts/deploy_mcp.py development
 
 # Or set environment variable
 export BIRD_TRAVEL_LOG_LEVEL=DEBUG
@@ -375,7 +402,7 @@ git pull origin main
 uv sync
 
 # Redeploy
-python deploy_mcp.py production
+uv run python scripts/deploy_mcp.py production
 ```
 
 ### Monitoring
@@ -398,7 +425,7 @@ cp ~/.claude/mcp_servers.json.backup ~/.claude/mcp_servers.json
 
 For development and contributions:
 
-1. Use development environment: `python deploy_mcp.py development`
+1. Use development environment: `uv run python scripts/deploy_mcp.py development`
 2. Run tests: `uv run pytest`
 3. Check code quality: `uv run ruff check`
 4. Follow the established patterns in the codebase
