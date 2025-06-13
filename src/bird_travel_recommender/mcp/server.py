@@ -1165,8 +1165,7 @@ class BirdTravelMCPServer:
         lng: float, 
         days_back: int = 14,
         distance_km: int = 50,
-        hotspot_only: bool = False,
-        **kwargs
+        hotspot_only: bool = False
     ):
         """Handle find_nearest_species tool"""
         try:
@@ -1203,7 +1202,7 @@ class BirdTravelMCPServer:
                 "observations": []
             }
     
-    async def _handle_get_regional_species_list(self, region_code: str, **kwargs):
+    async def _handle_get_regional_species_list(self, region_code: str):
         """Handle get_regional_species_list tool"""
         try:
             logger.info(f"Getting species list for region {region_code}")
@@ -1226,7 +1225,7 @@ class BirdTravelMCPServer:
                 "species_list": []
             }
     
-    async def _handle_get_region_details(self, region_code: str, name_format: str = "detailed", **kwargs):
+    async def _handle_get_region_details(self, region_code: str, name_format: str = "detailed"):
         """Handle get_region_details tool"""
         try:
             logger.info(f"Getting region details for {region_code}")
@@ -1252,7 +1251,7 @@ class BirdTravelMCPServer:
                 "region_info": {}
             }
     
-    async def _handle_get_hotspot_details(self, location_id: str, **kwargs):
+    async def _handle_get_hotspot_details(self, location_id: str):
         """Handle get_hotspot_details tool"""
         try:
             logger.info(f"Getting hotspot details for {location_id}")
