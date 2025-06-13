@@ -367,22 +367,19 @@ class BirdTravelMCPServer:
             # Create mock shared store for node execution
             shared_store = {"input": {"species_list": species_names}}
             
-            # Execute ValidateSpeciesNode
-            self.validate_species_node.prep(shared_store)
-            result = self.validate_species_node.exec(shared_store)
-            self.validate_species_node.post(shared_store)
+            # Execute ValidateSpeciesNode with correct PocketFlow pattern
+            prep_res = self.validate_species_node.prep(shared_store)
+            exec_res = self.validate_species_node.exec(prep_res)
+            self.validate_species_node.post(shared_store, prep_res, exec_res)
             
             # Return validated species data
             validated_species = shared_store.get("validated_species", [])
+            validation_stats = shared_store.get("validation_stats", {})
             
             return {
                 "success": True,
                 "validated_species": validated_species,
-                "statistics": {
-                    "input_count": len(species_names),
-                    "validated_count": len(validated_species),
-                    "success_rate": len(validated_species) / len(species_names) if species_names else 0
-                }
+                "statistics": validation_stats
             }
             
         except Exception as e:
@@ -425,10 +422,16 @@ class BirdTravelMCPServer:
                 }
             }
             
-            # Execute FetchSightingsNode (BatchNode)
-            self.fetch_sightings_node.prep(shared_store)
-            result = self.fetch_sightings_node.exec(shared_store)
-            self.fetch_sightings_node.post(shared_store)
+            # Execute FetchSightingsNode (BatchNode) with correct pattern
+            prep_res = self.fetch_sightings_node.prep(shared_store)  # Returns list of species
+            
+            # For BatchNode, exec is called for each item in prep_res
+            exec_results = []
+            for species in prep_res:
+                exec_res = self.fetch_sightings_node.exec(species)
+                exec_results.append(exec_res)
+            
+            self.fetch_sightings_node.post(shared_store, prep_res, exec_results)
             
             # Return sightings data
             all_sightings = shared_store.get("all_sightings", [])
@@ -459,19 +462,23 @@ class BirdTravelMCPServer:
             # Create mock shared store for node execution
             shared_store = {
                 "all_sightings": sightings,
-                "start_location": start_location,
-                "max_distance_km": max_distance_km,
-                "date_range": date_range
+                "input": {
+                    "constraints": {
+                        "start_location": start_location,
+                        "max_distance_km": max_distance_km,
+                        "date_range": date_range
+                    }
+                }
             }
             
-            # Execute FilterConstraintsNode
-            self.filter_constraints_node.prep(shared_store)
-            result = self.filter_constraints_node.exec(shared_store)
-            self.filter_constraints_node.post(shared_store)
+            # Execute FilterConstraintsNode with correct pattern
+            prep_res = self.filter_constraints_node.prep(shared_store)
+            exec_res = self.filter_constraints_node.exec(prep_res)
+            self.filter_constraints_node.post(shared_store, prep_res, exec_res)
             
             # Return filtered sightings data
             filtered_sightings = shared_store.get("all_sightings", [])
-            constraint_stats = shared_store.get("constraint_statistics", {})
+            constraint_stats = shared_store.get("filtering_stats", {})
             
             return {
                 "success": True,
@@ -501,18 +508,22 @@ class BirdTravelMCPServer:
             # Create mock shared store for node execution
             shared_store = {
                 "all_sightings": filtered_sightings,
-                "region": region,
-                "cluster_radius_km": cluster_radius_km
+                "input": {
+                    "constraints": {
+                        "region": region,
+                        "cluster_radius_km": cluster_radius_km
+                    }
+                }
             }
             
-            # Execute ClusterHotspotsNode
-            self.cluster_hotspots_node.prep(shared_store)
-            result = self.cluster_hotspots_node.exec(shared_store)
-            self.cluster_hotspots_node.post(shared_store)
+            # Execute ClusterHotspotsNode with correct pattern
+            prep_res = self.cluster_hotspots_node.prep(shared_store)
+            exec_res = self.cluster_hotspots_node.exec(prep_res)
+            self.cluster_hotspots_node.post(shared_store, prep_res, exec_res)
             
             # Return clustered hotspots data
             hotspot_clusters = shared_store.get("hotspot_clusters", [])
-            cluster_stats = shared_store.get("cluster_statistics", {})
+            cluster_stats = shared_store.get("clustering_stats", {})
             
             return {
                 "success": True,
@@ -539,18 +550,22 @@ class BirdTravelMCPServer:
             # Create mock shared store for node execution
             shared_store = {
                 "hotspot_clusters": hotspot_clusters,
-                "target_species": target_species,
-                "use_llm_enhancement": use_llm_enhancement
+                "input": {
+                    "constraints": {
+                        "target_species": target_species,
+                        "use_llm_enhancement": use_llm_enhancement
+                    }
+                }
             }
             
-            # Execute ScoreLocationsNode
-            self.score_locations_node.prep(shared_store)
-            result = self.score_locations_node.exec(shared_store)
-            self.score_locations_node.post(shared_store)
+            # Execute ScoreLocationsNode with correct pattern
+            prep_res = self.score_locations_node.prep(shared_store)
+            exec_res = self.score_locations_node.exec(prep_res)
+            self.score_locations_node.post(shared_store, prep_res, exec_res)
             
             # Return scored locations data
             scored_locations = shared_store.get("scored_locations", [])
-            scoring_stats = shared_store.get("scoring_statistics", {})
+            scoring_stats = shared_store.get("location_scoring_stats", {})
             
             return {
                 "success": True,
@@ -577,18 +592,22 @@ class BirdTravelMCPServer:
             # Create mock shared store for node execution
             shared_store = {
                 "scored_locations": scored_locations,
-                "start_location": start_location,
-                "max_locations": max_locations
+                "input": {
+                    "constraints": {
+                        "start_location": start_location,
+                        "max_locations": max_locations
+                    }
+                }
             }
             
-            # Execute OptimizeRouteNode
-            self.optimize_route_node.prep(shared_store)
-            result = self.optimize_route_node.exec(shared_store)
-            self.optimize_route_node.post(shared_store)
+            # Execute OptimizeRouteNode with correct pattern
+            prep_res = self.optimize_route_node.prep(shared_store)
+            exec_res = self.optimize_route_node.exec(prep_res)
+            self.optimize_route_node.post(shared_store, prep_res, exec_res)
             
             # Return optimized route data
             optimized_route = shared_store.get("optimized_route", {})
-            route_stats = shared_store.get("route_statistics", {})
+            route_stats = shared_store.get("route_optimization_stats", {})
             
             return {
                 "success": True,
@@ -615,18 +634,22 @@ class BirdTravelMCPServer:
             # Create mock shared store for node execution
             shared_store = {
                 "optimized_route": optimized_route,
-                "target_species": target_species,
-                "trip_duration_days": trip_duration_days
+                "input": {
+                    "constraints": {
+                        "target_species": target_species,
+                        "trip_duration_days": trip_duration_days
+                    }
+                }
             }
             
-            # Execute GenerateItineraryNode
-            self.generate_itinerary_node.prep(shared_store)
-            result = self.generate_itinerary_node.exec(shared_store)
-            self.generate_itinerary_node.post(shared_store)
+            # Execute GenerateItineraryNode with correct pattern
+            prep_res = self.generate_itinerary_node.prep(shared_store)
+            exec_res = self.generate_itinerary_node.exec(prep_res)
+            self.generate_itinerary_node.post(shared_store, prep_res, exec_res)
             
             # Return itinerary data
-            itinerary = shared_store.get("itinerary", "")
-            itinerary_stats = shared_store.get("itinerary_statistics", {})
+            itinerary = shared_store.get("itinerary_markdown", "")
+            itinerary_stats = shared_store.get("itinerary_generation_stats", {})
             
             return {
                 "success": True,
