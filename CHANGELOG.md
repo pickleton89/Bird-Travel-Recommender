@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **eBird API Enhancement Phase 1**: Implemented first geographic precision enhancement for rare bird discovery
+- **eBird API Enhancement Phase 1**: Implemented geographic precision enhancements for enhanced birding discovery
   - **get_nearby_notable_observations()**: New eBird API endpoint for finding rare/notable birds near specific coordinates (lines 501-552 in ebird_api.py)
+  - **get_nearby_species_observations()**: Enhanced geographic precision for species-specific sightings near coordinates (lines 554-610 in ebird_api.py)
   - **Local Rare Bird Alerts**: Geographic-based discovery of notable sightings within configurable radius (max 50km, 30 days back)
-  - **MCP Tool Integration**: Added "get_nearby_notable_observations" as MCP tool #12 with complete parameter validation and error handling
-  - **Enhanced Trip Planning**: Enables discovery of exciting birding opportunities during location-based trip planning
+  - **Species-Specific Geographic Search**: Enhanced precision for finding specific species with detailed location filtering
+  - **MCP Tool Integration**: Added "get_nearby_notable_observations" and "get_nearby_species_observations" as MCP tools #12 and #13
+  - **Enhanced Trip Planning**: Enables discovery of both rare birds and specific target species during location-based trip planning
   - **Configurable Parameters**: Support for distance radius, time range, detail levels, hotspot filtering, and provisional observation inclusion
 
 ### Fixed

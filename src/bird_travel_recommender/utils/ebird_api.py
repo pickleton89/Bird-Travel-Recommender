@@ -551,6 +551,64 @@ class EBirdClient:
             logger.error(f"Failed to get nearby notable observations: {e}")
             raise
 
+    def get_nearby_species_observations(
+        self,
+        species_code: str,
+        lat: float,
+        lng: float,
+        distance_km: int = 25,
+        days_back: int = 7,
+        detail: str = "simple",
+        hotspot_only: bool = False,
+        include_provisional: bool = False,
+        max_results: int = 200,
+        locale: str = "en"
+    ) -> List[Dict[str, Any]]:
+        """
+        Get observations for a specific species near coordinates with enhanced geographic precision.
+        
+        This endpoint provides more detailed geographic filtering compared to the general
+        get_nearby_observations() method by using species-specific geographic search.
+        
+        Args:
+            species_code: eBird species code (e.g., "norcar")
+            lat: Latitude coordinate
+            lng: Longitude coordinate
+            distance_km: Search radius in kilometers (default: 25, max: 50)
+            days_back: Days to look back (default: 7, max: 30)
+            detail: Response detail level ("simple" or "full")
+            hotspot_only: Restrict to hotspot sightings only
+            include_provisional: Include unconfirmed observations
+            max_results: Maximum observations to return (default: 200, max: 10000)
+            locale: Language locale for species names
+            
+        Returns:
+            List of species-specific observations with enhanced geographic precision
+            
+        Raises:
+            EBirdAPIError: For API errors with descriptive messages
+        """
+        endpoint = f"/data/obs/geo/recent/{species_code}"
+        params = {
+            "lat": lat,
+            "lng": lng,
+            "dist": min(distance_km, 50),  # eBird max is 50km
+            "back": min(days_back, 30),  # eBird max is 30 days
+            "detail": detail,
+            "hotspot": str(hotspot_only).lower(),
+            "includeProvisional": str(include_provisional).lower(),
+            "maxResults": min(max_results, 10000),  # eBird max is 10000
+            "locale": locale
+        }
+        
+        try:
+            result = self.make_request(endpoint, params)
+            logger.info(f"Retrieved {len(result)} geographic observations for species {species_code} near {lat},{lng}")
+            return result
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get nearby species observations: {e}")
+            raise
+
     def close(self):
         """Close the HTTP session."""
         self.session.close()
@@ -615,6 +673,10 @@ def get_hotspot_info(*args, **kwargs):
 def get_nearby_notable_observations(*args, **kwargs):
     """Convenience function for getting nearby notable observations."""
     return get_client().get_nearby_notable_observations(*args, **kwargs)
+
+def get_nearby_species_observations(*args, **kwargs):
+    """Convenience function for getting nearby species observations."""
+    return get_client().get_nearby_species_observations(*args, **kwargs)
 
 
 if __name__ == "__main__":
