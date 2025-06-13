@@ -32,10 +32,12 @@ from .tools.species import SPECIES_TOOLS
 from .tools.location import LOCATION_TOOLS
 from .tools.pipeline import PIPELINE_TOOLS
 from .tools.planning import PLANNING_TOOLS
+from .tools.community import COMMUNITY_TOOLS
 from .tools.advisory import ADVISORY_TOOLS
 
 # Import modularized handlers
 from .handlers.species import SpeciesHandlers
+from .handlers.community import CommunityHandlers
 from .handlers.location import LocationHandlers
 from .handlers.pipeline import PipelineHandlers
 from .handlers.planning import PlanningHandlers
@@ -54,17 +56,19 @@ class HandlersContainer:
         self.pipeline_handlers = PipelineHandlers()
         self.planning_handlers = PlanningHandlers()
         self.advisory_handlers = AdvisoryHandlers()
+        self.community_handlers = CommunityHandlers()
 
 class BirdTravelMCPServer:
     """
     MCP Server for Bird Travel Recommendations
     
-    Modularized architecture with 15 birding tools organized by category:
+    Modularized architecture with 30 birding tools organized by category:
     - Species (2 tools): Species validation and regional species lists
-    - Location (5 tools): Geographic and hotspot information
-    - Pipeline (5 tools): Core birding data processing pipeline
+    - Location (11 tools): Geographic and hotspot information + Phase 5B geographic tools
+    - Pipeline (11 tools): Core birding data processing + Phase 5A temporal + Phase 5C migration
     - Planning (2 tools): Itinerary generation and complete trip planning
     - Advisory (1 tool): LLM-enhanced birding advice
+    - Community (3 tools): Checklist and user data intelligence
     """
     
     def __init__(self):
@@ -77,7 +81,8 @@ class BirdTravelMCPServer:
             LOCATION_TOOLS + 
             PIPELINE_TOOLS + 
             PLANNING_TOOLS + 
-            ADVISORY_TOOLS
+            ADVISORY_TOOLS +
+            COMMUNITY_TOOLS
         )
         
         logger.info(f"Initialized Bird Travel MCP Server with {len(self.tools)} tools")
@@ -88,6 +93,7 @@ class BirdTravelMCPServer:
         logger.info(f"Pipeline tools: {len(PIPELINE_TOOLS)}")
         logger.info(f"Planning tools: {len(PLANNING_TOOLS)}")
         logger.info(f"Advisory tools: {len(ADVISORY_TOOLS)}")
+        logger.info(f"Community tools: {len(COMMUNITY_TOOLS)}")
 
     async def handle_list_tools(self, request: ListToolsRequest) -> list[Tool]:
         """Handle the tools list request"""
@@ -182,6 +188,12 @@ class BirdTravelMCPServer:
             return await self.handlers.pipeline_handlers.handle_get_seasonal_trends(**arguments)
         elif tool_name == "get_yearly_comparisons":
             return await self.handlers.pipeline_handlers.handle_get_yearly_comparisons(**arguments)
+        elif tool_name == "get_migration_data":
+            return await self.handlers.pipeline_handlers.handle_get_migration_data(**arguments)
+        elif tool_name == "get_peak_times":
+            return await self.handlers.pipeline_handlers.handle_get_peak_times(**arguments)
+        elif tool_name == "get_seasonal_hotspots":
+            return await self.handlers.pipeline_handlers.handle_get_seasonal_hotspots(**arguments)
         
         # Planning tools
         elif tool_name == "generate_itinerary":
@@ -192,6 +204,14 @@ class BirdTravelMCPServer:
         # Advisory tools
         elif tool_name == "get_birding_advice":
             return await self.handlers.advisory_handlers.handle_get_birding_advice(self.handlers, **arguments)
+        
+        # Community tools
+        elif tool_name == "get_recent_checklists":
+            return await self.handlers.community_handlers.handle_get_recent_checklists(**arguments)
+        elif tool_name == "get_checklist_details":
+            return await self.handlers.community_handlers.handle_get_checklist_details(**arguments)
+        elif tool_name == "get_user_stats":
+            return await self.handlers.community_handlers.handle_get_user_stats(**arguments)
         
         else:
             raise ValueError(f"Unknown tool: {tool_name}")

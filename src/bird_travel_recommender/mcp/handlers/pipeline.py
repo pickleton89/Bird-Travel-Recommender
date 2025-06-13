@@ -419,3 +419,111 @@ class PipelineHandlers:
                 "region": region,
                 "yearly_comparisons": {}
             }
+    
+    async def handle_get_migration_data(
+        self,
+        species_code: str,
+        region_code: str = "US",
+        months: List[int] = None
+    ):
+        """Handle get_migration_data tool"""
+        try:
+            logger.info(f"Getting migration data for {species_code} in {region_code}")
+            
+            migration_data = self.ebird_api.get_migration_data(
+                species_code=species_code,
+                region_code=region_code,
+                months=months
+            )
+            
+            return {
+                "success": True,
+                "species_code": species_code,
+                "region": region_code,
+                "search_parameters": {
+                    "months": months or list(range(1, 13))
+                },
+                "migration_analysis": migration_data
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_migration_data: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "species_code": species_code,
+                "migration_analysis": {}
+            }
+    
+    async def handle_get_peak_times(
+        self,
+        species_code: str,
+        latitude: float,
+        longitude: float,
+        radius_km: int = 25
+    ):
+        """Handle get_peak_times tool"""
+        try:
+            logger.info(f"Getting peak times for {species_code} at ({latitude}, {longitude})")
+            
+            peak_times = self.ebird_api.get_peak_times(
+                species_code=species_code,
+                lat=latitude,
+                lng=longitude,
+                radius_km=radius_km
+            )
+            
+            return {
+                "success": True,
+                "species_code": species_code,
+                "coordinates": {
+                    "latitude": latitude,
+                    "longitude": longitude
+                },
+                "search_radius": radius_km,
+                "timing_analysis": peak_times
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_peak_times: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "species_code": species_code,
+                "timing_analysis": {}
+            }
+    
+    async def handle_get_seasonal_hotspots(
+        self,
+        region_code: str,
+        season: str = "spring",
+        max_results: int = 20
+    ):
+        """Handle get_seasonal_hotspots tool"""
+        try:
+            logger.info(f"Getting seasonal hotspots for {region_code} in {season}")
+            
+            seasonal_hotspots = self.ebird_api.get_seasonal_hotspots(
+                region_code=region_code,
+                season=season,
+                max_results=max_results
+            )
+            
+            return {
+                "success": True,
+                "region": region_code,
+                "season": season,
+                "search_parameters": {
+                    "max_results": max_results
+                },
+                "seasonal_analysis": seasonal_hotspots
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_seasonal_hotspots: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region": region_code,
+                "seasonal_analysis": {}
+            }

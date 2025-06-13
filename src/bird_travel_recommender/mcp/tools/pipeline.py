@@ -234,5 +234,81 @@ PIPELINE_TOOLS = [
             },
             "required": ["region", "reference_date", "years_to_compare"]
         }
+    ),
+    Tool(
+        name="get_migration_data",
+        description="Analyze species migration timing and routes with seasonal patterns",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "species_code": {
+                    "type": "string",
+                    "description": "eBird species code (e.g., 'norcar' for Northern Cardinal)"
+                },
+                "region_code": {
+                    "type": "string",
+                    "description": "eBird region code (default: 'US')",
+                    "default": "US"
+                },
+                "months": {
+                    "type": "array",
+                    "items": {"type": "integer", "minimum": 1, "maximum": 12},
+                    "description": "List of months to analyze (1-12, default: all months)"
+                }
+            },
+            "required": ["species_code"]
+        }
+    ),
+    Tool(
+        name="get_peak_times",
+        description="Get optimal daily timing recommendations for observing specific species",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "species_code": {
+                    "type": "string",
+                    "description": "eBird species code (e.g., 'norcar')"
+                },
+                "latitude": {
+                    "type": "number",
+                    "description": "Latitude coordinate"
+                },
+                "longitude": {
+                    "type": "number",
+                    "description": "Longitude coordinate"
+                },
+                "radius_km": {
+                    "type": "integer",
+                    "description": "Search radius in kilometers (default: 25)",
+                    "default": 25
+                }
+            },
+            "required": ["species_code", "latitude", "longitude"]
+        }
+    ),
+    Tool(
+        name="get_seasonal_hotspots",
+        description="Get location rankings optimized for specific seasons",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region_code": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US-CA')"
+                },
+                "season": {
+                    "type": "string",
+                    "enum": ["spring", "summer", "fall", "winter"],
+                    "description": "Season to analyze",
+                    "default": "spring"
+                },
+                "max_results": {
+                    "type": "integer",
+                    "description": "Maximum hotspots to return (default: 20)",
+                    "default": 20
+                }
+            },
+            "required": ["region_code"]
+        }
     )
 ]
