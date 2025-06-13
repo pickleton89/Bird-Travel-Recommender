@@ -25,7 +25,8 @@
       "Bash(rg:*)",
       "Bash(git commit:*)",
       "Bash(ls:*)",
-      "Bash(timeout 3 uv run:*)"
+      "Bash(timeout 3 uv run:*)",
+      "mcp__graphiti__search_memory_nodes"
     ],
     "deny": []
   }

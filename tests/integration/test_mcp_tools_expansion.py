@@ -1,0 +1,386 @@
+#!/usr/bin/env python3
+"""
+Integration tests for eBird API expansion MCP tools.
+
+Tests the 4 new MCP tools implemented in Phase 2:
+- find_nearest_species
+- get_regional_species_list  
+- get_region_details
+- get_hotspot_details
+
+Covers tool registration, end-to-end execution, error propagation,
+and JSON schema validation.
+"""
+
+import pytest
+import json
+from unittest.mock import Mock, patch, AsyncMock
+from src.bird_travel_recommender.mcp.server import BirdTravelMCPServer
+
+
+class TestMCPToolsExpansion:
+    """Integration test suite for new MCP tools."""
+    
+    @pytest.fixture
+    async def mcp_server(self):
+        """Create MCP server instance for testing."""
+        with patch.dict('os.environ', {'EBIRD_API_KEY': 'test_key_12345'}):
+            server = BirdTravelMCPServer()
+            return server
+
+    @pytest.fixture
+    def mock_ebird_responses(self):
+        """Mock eBird API responses for consistent testing."""
+        return {
+            'nearest_observations': [
+                {
+                    "speciesCode": "norcar",
+                    "comName": "Northern Cardinal",
+                    "lat": 42.3598,
+                    "lng": -71.0921,
+                    "locName": "Central Park",
+                    "locId": "L123456",
+                    "obsDate": "2024-01-15",
+                    "distance": 1.2
+                }
+            ],
+            'species_list': ["norcar", "blujay", "amerob", "houspa"],
+            'region_info': {
+                "code": "US-MA",
+                "name": "Massachusetts, United States",
+                "nameFormat": "detailed",
+                "bounds": {
+                    "minLat": 41.2371,
+                    "maxLat": 42.8868,
+                    "minLng": -73.5081,
+                    "maxLng": -69.9258
+                }
+            },
+            'hotspot_info': {
+                "locId": "L123456",
+                "name": "Central Park",
+                "lat": 40.7829,
+                "lng": -73.9654,
+                "countryCode": "US",
+                "subnational1Code": "US-NY",
+                "isHotspot": True,
+                "numSpeciesAllTime": 287,
+                "numChecklistsAllTime": 15432
+            }
+        }
+
+    # Test tool registration and discovery
+    async def test_tool_registration(self, mcp_server):
+        """Test that new tools are properly registered."""
+        # Get list of available tools
+        tools = await mcp_server.server._handlers["list_tools"]()
+        
+        tool_names = [tool.name for tool in tools]
+        
+        # Verify all new tools are registered
+        assert "find_nearest_species" in tool_names
+        assert "get_regional_species_list" in tool_names
+        assert "get_region_details" in tool_names
+        assert "get_hotspot_details" in tool_names
+        
+        # Verify total tool count (9 original + 4 new = 13)
+        assert len(tools) == 13
+
+    async def test_tool_schemas(self, mcp_server):
+        """Test that tool schemas are properly defined."""
+        tools = await mcp_server.server._handlers["list_tools"]()
+        
+        tools_dict = {tool.name: tool for tool in tools}
+        
+        # Test find_nearest_species schema
+        find_tool = tools_dict["find_nearest_species"]
+        schema = find_tool.inputSchema
+        assert schema["type"] == "object"
+        assert "species_code" in schema["properties"]
+        assert "lat" in schema["properties"]
+        assert "lng" in schema["properties"]
+        assert set(schema["required"]) == {"species_code", "lat", "lng"}
+        
+        # Test get_regional_species_list schema
+        species_list_tool = tools_dict["get_regional_species_list"]
+        schema = species_list_tool.inputSchema
+        assert "region_code" in schema["properties"]
+        assert schema["required"] == ["region_code"]
+        
+        # Test get_region_details schema
+        region_tool = tools_dict["get_region_details"]
+        schema = region_tool.inputSchema
+        assert "region_code" in schema["properties"]
+        assert "name_format" in schema["properties"]
+        assert schema["required"] == ["region_code"]
+        
+        # Test get_hotspot_details schema
+        hotspot_tool = tools_dict["get_hotspot_details"]
+        schema = hotspot_tool.inputSchema
+        assert "location_id" in schema["properties"]
+        assert schema["required"] == ["location_id"]
+
+    # Test end-to-end tool execution
+    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
+    async def test_find_nearest_species_execution(self, mock_client_class, mcp_server, mock_ebird_responses):
+        """Test end-to-end execution of find_nearest_species tool."""
+        # Mock the eBird client
+        mock_client = Mock()
+        mock_client.get_nearest_observations.return_value = mock_ebird_responses['nearest_observations']
+        mock_client_class.return_value = mock_client
+        
+        # Execute the tool
+        result = await mcp_server._handle_find_nearest_species(
+            species_code="norcar",
+            lat=42.36,
+            lng=-71.09,
+            days_back=14
+        )
+        
+        # Verify result structure
+        assert result["success"] is True
+        assert result["species_code"] == "norcar"
+        assert result["search_location"]["lat"] == 42.36
+        assert result["search_location"]["lng"] == -71.09
+        assert len(result["observations"]) == 1
+        assert result["count"] == 1
+        
+        # Verify eBird API was called correctly
+        mock_client.get_nearest_observations.assert_called_once_with(
+            species_code="norcar",
+            lat=42.36,
+            lng=-71.09,
+            days_back=14,
+            distance_km=50,  # default
+            hotspot_only=False  # default
+        )
+
+    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
+    async def test_get_regional_species_list_execution(self, mock_client_class, mcp_server, mock_ebird_responses):
+        """Test end-to-end execution of get_regional_species_list tool."""
+        mock_client = Mock()
+        mock_client.get_species_list.return_value = mock_ebird_responses['species_list']
+        mock_client_class.return_value = mock_client
+        
+        result = await mcp_server._handle_get_regional_species_list(region_code="US-MA")
+        
+        assert result["success"] is True
+        assert result["region_code"] == "US-MA"
+        assert result["species_count"] == 4
+        assert result["species_list"] == ["norcar", "blujay", "amerob", "houspa"]
+
+    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
+    async def test_get_region_details_execution(self, mock_client_class, mcp_server, mock_ebird_responses):
+        """Test end-to-end execution of get_region_details tool."""
+        mock_client = Mock()
+        mock_client.get_region_info.return_value = mock_ebird_responses['region_info']
+        mock_client_class.return_value = mock_client
+        
+        result = await mcp_server._handle_get_region_details(
+            region_code="US-MA",
+            name_format="detailed"
+        )
+        
+        assert result["success"] is True
+        assert result["region_code"] == "US-MA"
+        assert result["name_format"] == "detailed"
+        assert result["region_info"]["name"] == "Massachusetts, United States"
+        assert "bounds" in result["region_info"]
+
+    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
+    async def test_get_hotspot_details_execution(self, mock_client_class, mcp_server, mock_ebird_responses):
+        """Test end-to-end execution of get_hotspot_details tool."""
+        mock_client = Mock()
+        mock_client.get_hotspot_info.return_value = mock_ebird_responses['hotspot_info']
+        mock_client_class.return_value = mock_client
+        
+        result = await mcp_server._handle_get_hotspot_details(location_id="L123456")
+        
+        assert result["success"] is True
+        assert result["location_id"] == "L123456"
+        assert result["hotspot_info"]["name"] == "Central Park"
+        assert result["hotspot_info"]["numSpeciesAllTime"] == 287
+
+    # Test error propagation through MCP layer
+    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
+    async def test_error_propagation(self, mock_client_class, mcp_server):
+        """Test that eBird API errors propagate correctly through MCP layer."""
+        from src.bird_travel_recommender.utils.ebird_api import EBirdAPIError
+        
+        mock_client = Mock()
+        mock_client.get_nearest_observations.side_effect = EBirdAPIError("Species not found")
+        mock_client_class.return_value = mock_client
+        
+        result = await mcp_server._handle_find_nearest_species(
+            species_code="invalidspecies",
+            lat=42.36,
+            lng=-71.09
+        )
+        
+        assert result["success"] is False
+        assert "Species not found" in result["error"]
+        assert result["species_code"] == "invalidspecies"
+        assert result["observations"] == []
+
+    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
+    async def test_region_not_found_error(self, mock_client_class, mcp_server):
+        """Test handling of region not found errors."""
+        from src.bird_travel_recommender.utils.ebird_api import EBirdAPIError
+        
+        mock_client = Mock()
+        mock_client.get_species_list.side_effect = EBirdAPIError("Invalid region code")
+        mock_client_class.return_value = mock_client
+        
+        result = await mcp_server._handle_get_regional_species_list(region_code="INVALID")
+        
+        assert result["success"] is False
+        assert "Invalid region code" in result["error"]
+        assert result["species_list"] == []
+
+    # Test tool router integration
+    async def test_tool_router_integration(self, mcp_server):
+        """Test that tools are properly routed through handle_call_tool."""
+        # Mock the individual handlers to verify they're called
+        with patch.object(mcp_server, '_handle_find_nearest_species') as mock_handler:
+            mock_handler.return_value = {"success": True, "test": "result"}
+            
+            # Call through the router
+            result = await mcp_server.server._handlers["call_tool"](
+                "find_nearest_species",
+                {"species_code": "norcar", "lat": 42.36, "lng": -71.09}
+            )
+            
+            # Verify handler was called
+            mock_handler.assert_called_once_with(
+                species_code="norcar",
+                lat=42.36,
+                lng=-71.09
+            )
+            
+            # Verify result is JSON-formatted
+            assert len(result) == 1
+            assert result[0].type == "text"
+            result_data = json.loads(result[0].text)
+            assert result_data["success"] is True
+
+    async def test_unknown_tool_error(self, mcp_server):
+        """Test error handling for unknown tools."""
+        result = await mcp_server.server._handlers["call_tool"](
+            "unknown_tool",
+            {"param": "value"}
+        )
+        
+        assert len(result) == 1
+        assert "Error: Unknown tool: unknown_tool" in result[0].text
+
+    # Test enhanced business logic integration
+    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
+    async def test_enhanced_plan_complete_trip_integration(self, mock_client_class, mcp_server, mock_ebird_responses):
+        """Test that plan_complete_trip properly uses new endpoints."""
+        mock_client = Mock()
+        
+        # Mock all the responses the enhanced trip planner will need
+        mock_client.get_region_info.return_value = mock_ebird_responses['region_info']
+        mock_client.get_species_list.return_value = mock_ebird_responses['species_list']
+        mock_client.get_hotspot_info.return_value = mock_ebird_responses['hotspot_info']
+        mock_client.get_nearest_observations.return_value = mock_ebird_responses['nearest_observations']
+        
+        # Mock other required methods
+        mock_client.get_taxonomy.return_value = [
+            {"speciesCode": "norcar", "comName": "Northern Cardinal"}
+        ]
+        mock_client.get_recent_observations.return_value = []
+        mock_client.get_hotspots.return_value = []
+        
+        mock_client_class.return_value = mock_client
+        
+        # Mock the individual pipeline handlers to avoid complex setup
+        with patch.object(mcp_server, '_handle_validate_species') as mock_validate, \
+             patch.object(mcp_server, '_handle_fetch_sightings') as mock_fetch, \
+             patch.object(mcp_server, '_handle_filter_constraints') as mock_filter, \
+             patch.object(mcp_server, '_handle_cluster_hotspots') as mock_cluster, \
+             patch.object(mcp_server, '_handle_score_locations') as mock_score, \
+             patch.object(mcp_server, '_handle_optimize_route') as mock_route, \
+             patch.object(mcp_server, '_handle_generate_itinerary') as mock_itinerary:
+            
+            # Setup mock returns
+            mock_validate.return_value = {
+                "success": True,
+                "validated_species": [{"species_code": "norcar", "common_name": "Northern Cardinal"}]
+            }
+            mock_fetch.return_value = {"success": True, "sightings": []}
+            mock_filter.return_value = {"success": True, "filtered_sightings": []}
+            mock_cluster.return_value = {
+                "success": True,
+                "hotspot_clusters": [{"hotspots": [{"locId": "L123456"}]}]
+            }
+            mock_score.return_value = {"success": True, "scored_locations": []}
+            mock_route.return_value = {"success": True, "optimized_route": {"total_distance_km": 50}}
+            mock_itinerary.return_value = {"success": True, "itinerary": "Test itinerary"}
+            
+            # Execute enhanced trip planning
+            result = await mcp_server._handle_plan_complete_trip(
+                species_names=["Northern Cardinal"],
+                region="US-MA",
+                start_location={"lat": 42.36, "lng": -71.09}
+            )
+            
+            # Verify the enhanced features are included
+            assert result["success"] is True
+            assert "region_display_name" in result["trip_plan"]
+            assert "enriched_hotspots" in result["trip_plan"]
+            assert "species_finding_recommendations" in result["trip_plan"]
+            
+            # Verify enhanced summary statistics
+            summary = result["summary"]
+            assert "regional_species_available" in summary
+            assert "enriched_hotspots" in summary
+            assert "species_with_targeted_recommendations" in summary
+
+    # Performance and reliability tests
+    async def test_concurrent_tool_execution(self, mcp_server):
+        """Test that multiple tools can be executed concurrently."""
+        import asyncio
+        
+        with patch.object(mcp_server, '_handle_get_regional_species_list') as mock_species, \
+             patch.object(mcp_server, '_handle_get_region_details') as mock_region:
+            
+            mock_species.return_value = {"success": True, "species_list": []}
+            mock_region.return_value = {"success": True, "region_info": {}}
+            
+            # Execute tools concurrently
+            tasks = [
+                mcp_server._handle_get_regional_species_list("US-MA"),
+                mcp_server._handle_get_region_details("US-MA"),
+                mcp_server._handle_get_regional_species_list("US-CA"),
+                mcp_server._handle_get_region_details("US-CA")
+            ]
+            
+            results = await asyncio.gather(*tasks)
+            
+            # Verify all succeeded
+            assert all(result["success"] for result in results)
+            assert len(results) == 4
+
+    async def test_tool_parameter_edge_cases(self, mcp_server):
+        """Test tools with edge case parameters."""
+        with patch.object(mcp_server, 'ebird_api') as mock_api:
+            mock_api.get_nearest_observations.return_value = []
+            
+            # Test with extreme coordinates
+            result = await mcp_server._handle_find_nearest_species(
+                species_code="norcar",
+                lat=89.9,  # Near north pole
+                lng=179.9,  # Near international date line
+                distance_km=1,  # Minimum distance
+                days_back=1   # Minimum days
+            )
+            
+            assert result["success"] is True
+            assert result["search_location"]["lat"] == 89.9
+            assert result["search_location"]["lng"] == 179.9
+
+
+if __name__ == "__main__":
+    # Run tests if script is executed directly
+    pytest.main([__file__, "-v"])
