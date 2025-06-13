@@ -326,3 +326,100 @@ class LocationHandlers:
                 "location_id": location_id,
                 "species_list": []
             }
+    
+    async def handle_get_subregions(
+        self,
+        region_code: str,
+        region_type: str = "subnational1"
+    ):
+        """Handle get_subregions tool"""
+        try:
+            logger.info(f"Getting {region_type} subregions for {region_code}")
+            
+            subregions = self.ebird_api.get_subregions(
+                region_code=region_code,
+                region_type=region_type
+            )
+            
+            return {
+                "success": True,
+                "parent_region": region_code,
+                "region_type": region_type,
+                "subregions": subregions,
+                "subregion_count": len(subregions)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_subregions: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "parent_region": region_code,
+                "subregions": []
+            }
+    
+    async def handle_get_adjacent_regions(
+        self,
+        region_code: str
+    ):
+        """Handle get_adjacent_regions tool"""
+        try:
+            logger.info(f"Getting adjacent regions for {region_code}")
+            
+            adjacent_regions = self.ebird_api.get_adjacent_regions(
+                region_code=region_code
+            )
+            
+            return {
+                "success": True,
+                "center_region": region_code,
+                "adjacent_regions": adjacent_regions,
+                "adjacent_count": len(adjacent_regions)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_adjacent_regions: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "center_region": region_code,
+                "adjacent_regions": []
+            }
+    
+    async def handle_get_elevation_data(
+        self,
+        latitude: float,
+        longitude: float,
+        radius_km: int = 25
+    ):
+        """Handle get_elevation_data tool"""
+        try:
+            logger.info(f"Getting elevation data for ({latitude}, {longitude}) within {radius_km}km")
+            
+            elevation_data = self.ebird_api.get_elevation_data(
+                lat=latitude,
+                lng=longitude,
+                radius_km=radius_km
+            )
+            
+            return {
+                "success": True,
+                "coordinates": {
+                    "latitude": latitude,
+                    "longitude": longitude
+                },
+                "search_radius": radius_km,
+                "elevation_analysis": elevation_data
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_elevation_data: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "coordinates": {
+                    "latitude": latitude,
+                    "longitude": longitude
+                },
+                "elevation_analysis": None
+            }

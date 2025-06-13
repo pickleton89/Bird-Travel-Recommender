@@ -158,6 +158,12 @@ class BirdTravelMCPServer:
             return await self.handlers.location_handlers.handle_get_regional_statistics(**arguments)
         elif tool_name == "get_location_species_list":
             return await self.handlers.location_handlers.handle_get_location_species_list(**arguments)
+        elif tool_name == "get_subregions":
+            return await self.handlers.location_handlers.handle_get_subregions(**arguments)
+        elif tool_name == "get_adjacent_regions":
+            return await self.handlers.location_handlers.handle_get_adjacent_regions(**arguments)
+        elif tool_name == "get_elevation_data":
+            return await self.handlers.location_handlers.handle_get_elevation_data(**arguments)
         
         # Pipeline tools
         elif tool_name == "fetch_sightings":

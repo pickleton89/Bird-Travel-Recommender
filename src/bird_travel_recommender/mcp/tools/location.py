@@ -198,5 +198,62 @@ LOCATION_TOOLS = [
             },
             "required": ["location_id"]
         }
+    ),
+    Tool(
+        name="get_subregions",
+        description="Get list of subregions (counties, states, provinces) within a geographic region for hierarchical navigation",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region_code": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US' for states, 'US-CA' for counties)"
+                },
+                "region_type": {
+                    "type": "string",
+                    "description": "Type of subregions to return",
+                    "enum": ["country", "subnational1", "subnational2"],
+                    "default": "subnational1"
+                }
+            },
+            "required": ["region_code"]
+        }
+    ),
+    Tool(
+        name="get_adjacent_regions",
+        description="Get neighboring/adjacent regions for cross-border birding trip planning",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region_code": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-BCN')"
+                }
+            },
+            "required": ["region_code"]
+        }
+    ),
+    Tool(
+        name="get_elevation_data",
+        description="Get elevation information and habitat zone analysis for birding locations",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "latitude": {
+                    "type": "number",
+                    "description": "Latitude coordinate"
+                },
+                "longitude": {
+                    "type": "number",
+                    "description": "Longitude coordinate"
+                },
+                "radius_km": {
+                    "type": "integer",
+                    "description": "Search radius in kilometers (default: 25, max: 50)",
+                    "default": 25
+                }
+            },
+            "required": ["latitude", "longitude"]
+        }
     )
 ]
