@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **MCP Server Modularization**: Completely refactored monolithic MCP server into clean, maintainable modular architecture
+  - **85% Code Reduction**: Reduced main server.py from 1,502 lines to 226 lines through systematic modularization
+  - **5 Tool Categories**: Organized 15 MCP tools into logical modules: Species (2), Location (5), Pipeline (5), Planning (2), Advisory (1)
+  - **Separated Concerns**: Split tool definitions and handler implementations into dedicated modules for easier maintenance
+  - **Modular Handler System**: Created specialized handler classes (SpeciesHandlers, LocationHandlers, PipelineHandlers, PlanningHandlers, AdvisoryHandlers)
+  - **Cross-Handler Communication**: Implemented HandlersContainer pattern enabling complex tools like plan_complete_trip to orchestrate multiple handler categories
+  - **Clean Tool Routing**: Streamlined `_route_tool_call()` method delegates to appropriate handler modules based on tool name
+  - **Preserved Functionality**: All 15 tools maintain exact same interfaces and functionality while dramatically improving code organization
+  - **Future-Ready Architecture**: Modular structure supports easy expansion and maintenance of new tools and handlers
+
+### Added
 - **eBird API Enhancement Phase 1**: Implemented geographic precision enhancements for enhanced birding discovery
   - **get_nearby_notable_observations()**: New eBird API endpoint for finding rare/notable birds near specific coordinates (lines 501-552 in ebird_api.py)
   - **get_nearby_species_observations()**: Enhanced geographic precision for species-specific sightings near coordinates (lines 554-610 in ebird_api.py)

@@ -15,7 +15,6 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from mcp.server.models import InitializationOptions
 from mcp.server import NotificationOptions, Server
-import mcp.server.stdio
 from mcp.types import (
     CallToolRequest, 
     CallToolResult,
@@ -218,6 +217,8 @@ async def run_server():
         )
 
 if __name__ == "__main__":
+    import mcp.server.stdio
+    
     try:
         asyncio.run(run_server())
     except KeyboardInterrupt:
