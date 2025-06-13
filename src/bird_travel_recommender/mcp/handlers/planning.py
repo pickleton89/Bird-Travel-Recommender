@@ -78,12 +78,12 @@ class PlanningHandlers:
                 "itinerary": ""
             }
     
-    async def handle_plan_complete_trip(self, handlers_container, species_names: List[str], region: str, 
-                                       start_location: Dict[str, float], max_distance_km: float = 100,
-                                       trip_duration_days: int = 1, days_back: int = 14, **kwargs):
+    async def handle_plan_complete_trip(self, handlers_container, target_species: List[str], regions: List[str], 
+                                       trip_duration_days: int, max_daily_driving_hours: float = 4,
+                                       birding_skill_level: str = "intermediate"):
         """Handle plan_complete_trip tool - End-to-end birding trip planning"""
         try:
-            logger.info(f"Planning complete trip for {len(species_names)} species in {region}")
+            logger.info(f"Planning complete trip for {len(target_species)} species in {regions}")
             
             pipeline_results = {}
             

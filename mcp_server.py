@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Import and run the actual server
-from bird_travel_recommender.mcp.server import main
+from bird_travel_recommender.mcp.server import run_server
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(run_server())

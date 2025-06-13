@@ -95,10 +95,6 @@ class BirdTravelMCPServer:
         logger.info(f"Advisory tools: {len(ADVISORY_TOOLS)}")
         logger.info(f"Community tools: {len(COMMUNITY_TOOLS)}")
 
-    async def handle_list_tools(self, request: ListToolsRequest) -> list[Tool]:
-        """Handle the tools list request"""
-        logger.info(f"Listing {len(self.tools)} available tools")
-        return self.tools
 
     async def handle_call_tool(self, request: CallToolRequest) -> CallToolResult:
         """Handle tool execution requests with modular handler delegation"""
@@ -199,11 +195,11 @@ class BirdTravelMCPServer:
         elif tool_name == "generate_itinerary":
             return await self.handlers.planning_handlers.handle_generate_itinerary(**arguments)
         elif tool_name == "plan_complete_trip":
-            return await self.handlers.planning_handlers.handle_plan_complete_trip(self.handlers, **arguments)
+            return await self.handlers.planning_handlers.handle_plan_complete_trip(handlers_container=self.handlers, **arguments)
         
         # Advisory tools
         elif tool_name == "get_birding_advice":
-            return await self.handlers.advisory_handlers.handle_get_birding_advice(self.handlers, **arguments)
+            return await self.handlers.advisory_handlers.handle_get_birding_advice(handlers_container=self.handlers, **arguments)
         
         # Community tools
         elif tool_name == "get_recent_checklists":
@@ -229,11 +225,11 @@ async def run_server():
     # Register handlers
     @server.list_tools()
     async def handle_list_tools() -> list[Tool]:
-        return await mcp_server.handle_list_tools(ListToolsRequest())
+        return mcp_server.tools
     
     @server.call_tool()
     async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-        request = CallToolRequest(params=types.CallToolRequestParams(name=name, arguments=arguments))
+        request = CallToolRequest(method="tools/call", params=types.CallToolRequestParams(name=name, arguments=arguments))
         result = await mcp_server.handle_call_tool(request)
         return result.content
     

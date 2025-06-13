@@ -190,11 +190,11 @@ async def run_server():
     # Register handlers
     @server.list_tools()
     async def handle_list_tools() -> list[Tool]:
-        return await mcp_server.handle_list_tools(ListToolsRequest())
+        return await mcp_server.handle_list_tools(ListToolsRequest(method="tools/list", params={}))
     
     @server.call_tool()
     async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-        request = CallToolRequest(params=types.CallToolRequestParams(name=name, arguments=arguments))
+        request = CallToolRequest(method="tools/call", params=types.CallToolRequestParams(name=name, arguments=arguments))
         result = await mcp_server.handle_call_tool(request)
         return result.content
     

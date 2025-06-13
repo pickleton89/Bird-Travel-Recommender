@@ -20,10 +20,13 @@ class AdvisoryHandlers:
     def __init__(self):
         pass
     
-    async def handle_get_birding_advice(self, handlers_container, query: str, context: Optional[Dict] = None, **kwargs):
+    async def handle_get_birding_advice(self, handlers_container, question: str, location: str, 
+                                       species_of_interest: Optional[List[str]] = None,
+                                       time_of_year: str = "current", 
+                                       experience_level: str = "intermediate"):
         """Handle get_birding_advice tool - Expert birding advice using enhanced LLM prompting"""
         try:
-            logger.info(f"Providing birding advice for query: {query[:100]}...")
+            logger.info(f"Providing birding advice for question: {question[:100]}...")
             
             # Import LLM function for advice generation
             from ...utils.call_llm import call_llm

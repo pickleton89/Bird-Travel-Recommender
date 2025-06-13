@@ -36,6 +36,9 @@ class PipelineHandlers:
     """Handler methods for core birding pipeline processing MCP tools"""
     
     def __init__(self):
+        # Initialize eBird API client for temporal analysis tools
+        self.ebird_api = EBirdClient()
+        
         # Initialize pipeline nodes
         self.fetch_sightings_node = FetchSightingsNode()
         self.filter_constraints_node = FilterConstraintsNode()
@@ -43,33 +46,29 @@ class PipelineHandlers:
         self.score_locations_node = ScoreLocationsNode()
         self.optimize_route_node = OptimizeRouteNode()
     
-    async def handle_fetch_sightings(self, validated_species: List, region: str, days_back: int = 14, **kwargs):
+    async def handle_fetch_sightings(self, species_codes: List[str], regions: List[str], days_back: int = 30):
         """Handle fetch_sightings tool"""
         try:
-            logger.info(f"Fetching sightings for {len(validated_species)} species in {region}")
+            logger.info(f"Fetching sightings for {len(species_codes)} species in {regions}")
             
-            # Handle case where user passes strings instead of validated species objects
+            # Convert species codes to the format expected by the pipeline
             processed_species = []
-            for species in validated_species:
-                if isinstance(species, str):
-                    # Convert string to basic validated species format
-                    processed_species.append({
-                        "original_name": species,
-                        "common_name": species,
-                        "species_code": species.lower().replace(" ", "")[:6],  # Simple code generation
-                        "scientific_name": "Unknown",
-                        "validation_method": "string_input",
-                        "confidence": 0.5
-                    })
-                else:
-                    processed_species.append(species)
+            for species_code in species_codes:
+                processed_species.append({
+                    "original_name": species_code,
+                    "common_name": species_code,
+                    "species_code": species_code,
+                    "scientific_name": "Unknown",
+                    "validation_method": "direct_code_input",
+                    "confidence": 1.0
+                })
             
             # Create mock shared store for node execution
             shared_store = {
                 "validated_species": processed_species,
                 "input": {
                     "constraints": {
-                        "region": region,
+                        "regions": regions,
                         "days_back": days_back
                     }
                 }

@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Comprehensive Error Testing**: Created 10 error handling test scenarios covering validation, timeouts, retries, circuit breakers, and logging
 
 ### Fixed
+- **Critical MCP Handler Issues**: Systematically resolved three major categories of MCP server errors preventing tool execution
+  - **Function Signature Fixes**: Removed incorrect `**kwargs` parameters from handlers; fixed parameter mismatches between tool schemas and handler signatures
+  - **Missing Dependencies**: Added missing `self.ebird_api = EBirdClient()` initialization to PipelineHandlers, preventing AttributeError in temporal analysis tools
+  - **Server Routing Consistency**: Fixed inconsistent handler calling patterns; standardized `handlers_container` parameter passing as keyword argument
+  - **Data Structure Alignment**: Corrected parameter mapping between MCP tool definitions and handler implementations for all 30 tools
+- **MCP Protocol Compliance**: Fixed missing `method` field in CallToolRequest and ListToolsRequest constructors, resolving Claude Desktop validation errors
 - **Outdated MCP Integration Tests**: Updated legacy MCP tests to match current 30-tool modular architecture, fixing async handling and API compatibility issues
 - **Test Infrastructure**: Resolved pytest async configuration issues and MCP API usage patterns for reliable test execution
 - **Error Response Standardization**: Standardized error response format across all handlers with consistent `success`, `error`, `error_category`, and `error_details` fields

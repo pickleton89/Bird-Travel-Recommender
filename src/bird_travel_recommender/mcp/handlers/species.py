@@ -26,7 +26,7 @@ class SpeciesHandlers:
         self.ebird_api = EBirdClient()
         self.validate_species_node = ValidateSpeciesNode()
     
-    async def handle_validate_species(self, species_names: List[str], **kwargs):
+    async def handle_validate_species(self, species_names: List[str]):
         """Handle validate_species tool"""
         try:
             logger.info(f"Validating {len(species_names)} species")
