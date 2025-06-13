@@ -152,6 +152,12 @@ class BirdTravelMCPServer:
             return await self.handlers.location_handlers.handle_get_nearby_notable_observations(**arguments)
         elif tool_name == "get_nearby_species_observations":
             return await self.handlers.location_handlers.handle_get_nearby_species_observations(**arguments)
+        elif tool_name == "get_top_locations":
+            return await self.handlers.location_handlers.handle_get_top_locations(**arguments)
+        elif tool_name == "get_regional_statistics":
+            return await self.handlers.location_handlers.handle_get_regional_statistics(**arguments)
+        elif tool_name == "get_location_species_list":
+            return await self.handlers.location_handlers.handle_get_location_species_list(**arguments)
         
         # Pipeline tools
         elif tool_name == "fetch_sightings":

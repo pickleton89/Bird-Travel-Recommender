@@ -219,3 +219,110 @@ class LocationHandlers:
                 "coordinates": {"lat": lat, "lng": lng},
                 "species_observations": []
             }
+    
+    async def handle_get_top_locations(
+        self,
+        region: str,
+        days_back: int = 7,
+        max_results: int = 100,
+        locale: str = "en"
+    ):
+        """Handle get_top_locations tool"""
+        try:
+            logger.info(f"Getting top active locations in region {region}")
+            
+            locations = self.ebird_api.get_top_locations(
+                region=region,
+                days_back=days_back,
+                max_results=max_results,
+                locale=locale
+            )
+            
+            return {
+                "success": True,
+                "region": region,
+                "search_parameters": {
+                    "days_back": days_back,
+                    "max_results": max_results,
+                    "locale": locale
+                },
+                "top_locations": locations,
+                "location_count": len(locations)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_top_locations: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region": region,
+                "top_locations": []
+            }
+    
+    async def handle_get_regional_statistics(
+        self,
+        region: str,
+        days_back: int = 30,
+        locale: str = "en"
+    ):
+        """Handle get_regional_statistics tool"""
+        try:
+            logger.info(f"Getting regional statistics for {region}")
+            
+            statistics = self.ebird_api.get_regional_statistics(
+                region=region,
+                days_back=days_back,
+                locale=locale
+            )
+            
+            return {
+                "success": True,
+                "region": region,
+                "search_parameters": {
+                    "days_back": days_back,
+                    "locale": locale
+                },
+                "statistics": statistics
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_regional_statistics: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region": region,
+                "statistics": {}
+            }
+    
+    async def handle_get_location_species_list(
+        self,
+        location_id: str,
+        locale: str = "en"
+    ):
+        """Handle get_location_species_list tool"""
+        try:
+            logger.info(f"Getting species list for location {location_id}")
+            
+            species_list = self.ebird_api.get_location_species_list(
+                location_id=location_id,
+                locale=locale
+            )
+            
+            return {
+                "success": True,
+                "location_id": location_id,
+                "search_parameters": {
+                    "locale": locale
+                },
+                "species_list": species_list,
+                "species_count": len(species_list)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_location_species_list: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "location_id": location_id,
+                "species_list": []
+            }

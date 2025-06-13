@@ -609,6 +609,281 @@ class EBirdClient:
             logger.error(f"Failed to get nearby species observations: {e}")
             raise
 
+    def get_top_locations(
+        self,
+        region: str,
+        days_back: int = 7,
+        max_results: int = 100,
+        locale: str = "en"
+    ) -> List[Dict[str, Any]]:
+        """
+        Get most active birding locations in a region for community activity insights.
+        
+        This endpoint returns locations ordered by number of recent checklists,
+        providing insights into the most active birding communities and best 
+        locations for finding other birders.
+        
+        Args:
+            region: eBird region code (e.g., "US-CA", "MX-ROO")
+            days_back: Number of days back to consider (1-30, default: 7)
+            max_results: Maximum locations to return (default: 100, max: 200)
+            locale: Language code for common names (default: "en")
+            
+        Returns:
+            List of location dictionaries with checklist counts and metadata
+        """
+        endpoint = f"/ref/hotspot/{region}"
+        params = {
+            "back": min(max(days_back, 1), 30),  # eBird allows 1-30 days
+            "fmt": "json",
+            "locale": locale
+        }
+        
+        try:
+            # Get all hotspots in region first
+            hotspots = self.make_request(endpoint, params)
+            
+            # For each hotspot, get recent checklist activity
+            location_activity = []
+            for hotspot in hotspots[:max_results]:  # Limit to avoid API overload
+                location_id = hotspot.get("locId", "")
+                if location_id:
+                    try:
+                        # Get recent observations at this location
+                        obs_endpoint = f"/data/obs/{location_id}/recent"
+                        obs_params = {
+                            "back": days_back,
+                            "fmt": "json"
+                        }
+                        observations = self.make_request(obs_endpoint, obs_params)
+                        
+                        # Count unique checklists (by submission ID)
+                        checklist_ids = set()
+                        for obs in observations:
+                            if obs.get("subId"):
+                                checklist_ids.add(obs["subId"])
+                        
+                        location_activity.append({
+                            **hotspot,
+                            "recent_checklists": len(checklist_ids),
+                            "recent_observations": len(observations),
+                            "activity_score": len(checklist_ids) * 10 + len(observations)  # Weighted score
+                        })
+                        
+                    except Exception as e:
+                        logger.warning(f"Could not get activity for location {location_id}: {e}")
+                        # Include location but with zero activity
+                        location_activity.append({
+                            **hotspot,
+                            "recent_checklists": 0,
+                            "recent_observations": 0,
+                            "activity_score": 0
+                        })
+            
+            # Sort by activity score (most active first)
+            sorted_locations = sorted(location_activity, key=lambda x: x["activity_score"], reverse=True)
+            
+            logger.info(f"Retrieved top {len(sorted_locations)} active locations in {region}")
+            return sorted_locations[:max_results]
+            
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get top locations for {region}: {e}")
+            raise
+
+    def get_regional_statistics(
+        self,
+        region: str,
+        days_back: int = 30,
+        locale: str = "en"
+    ) -> Dict[str, Any]:
+        """
+        Get comprehensive species counts and birding activity statistics for a region.
+        
+        Provides insights into regional birding activity including species diversity,
+        observation counts, checklist activity, and temporal patterns.
+        
+        Args:
+            region: eBird region code (e.g., "US-CA", "MX-ROO")  
+            days_back: Number of days back to analyze (1-30, default: 30)
+            locale: Language code for common names (default: "en")
+            
+        Returns:
+            Dictionary containing comprehensive regional statistics
+        """
+        try:
+            # Get recent observations for statistical analysis
+            obs_endpoint = f"/data/obs/{region}/recent"
+            obs_params = {
+                "back": min(max(days_back, 1), 30),
+                "includeProvisional": True,
+                "maxResults": 10000,  # Get comprehensive data
+                "fmt": "json",
+                "locale": locale
+            }
+            
+            observations = self.make_request(obs_endpoint, obs_params)
+            
+            # Get region info for context
+            region_info = self.get_region_info(region, name_format="detailed")
+            
+            # Calculate comprehensive statistics
+            unique_species = set()
+            unique_locations = set()
+            unique_checklists = set()
+            unique_observers = set()
+            daily_activity = {}
+            species_frequency = {}
+            location_activity = {}
+            
+            for obs in observations:
+                # Species diversity
+                species_code = obs.get("speciesCode", "")
+                if species_code:
+                    unique_species.add(species_code)
+                    species_frequency[species_code] = species_frequency.get(species_code, 0) + 1
+                
+                # Location activity
+                location_id = obs.get("locId", "")
+                if location_id:
+                    unique_locations.add(location_id)
+                    location_activity[location_id] = location_activity.get(location_id, 0) + 1
+                
+                # Checklist and observer tracking
+                checklist_id = obs.get("subId", "")
+                if checklist_id:
+                    unique_checklists.add(checklist_id)
+                
+                observer_id = obs.get("userDisplayName", obs.get("obsDt", ""))  # Fallback to date if no user
+                if observer_id:
+                    unique_observers.add(observer_id)
+                
+                # Daily activity pattern
+                obs_date = obs.get("obsDt", "")[:10]  # Extract date part (YYYY-MM-DD)
+                if obs_date:
+                    daily_activity[obs_date] = daily_activity.get(obs_date, 0) + 1
+            
+            # Calculate derived statistics
+            avg_daily_observations = sum(daily_activity.values()) / max(len(daily_activity), 1)
+            most_active_location = max(location_activity.items(), key=lambda x: x[1]) if location_activity else ("", 0)
+            most_common_species = max(species_frequency.items(), key=lambda x: x[1]) if species_frequency else ("", 0)
+            
+            statistics = {
+                "region_info": region_info,
+                "analysis_period": {
+                    "days_back": days_back,
+                    "total_days_with_activity": len(daily_activity)
+                },
+                "diversity_metrics": {
+                    "total_species": len(unique_species),
+                    "total_observations": len(observations),
+                    "species_list": list(unique_species),
+                    "most_common_species": {
+                        "species_code": most_common_species[0],
+                        "observation_count": most_common_species[1]
+                    }
+                },
+                "activity_metrics": {
+                    "unique_locations": len(unique_locations),
+                    "unique_checklists": len(unique_checklists),
+                    "estimated_observers": len(unique_observers),
+                    "avg_daily_observations": round(avg_daily_observations, 1),
+                    "most_active_location": {
+                        "location_id": most_active_location[0],
+                        "observation_count": most_active_location[1]
+                    }
+                },
+                "temporal_patterns": {
+                    "daily_activity": daily_activity,
+                    "peak_activity_date": max(daily_activity.items(), key=lambda x: x[1])[0] if daily_activity else "",
+                    "total_active_days": len(daily_activity)
+                }
+            }
+            
+            logger.info(f"Generated comprehensive statistics for {region}: {len(unique_species)} species, {len(observations)} observations")
+            return statistics
+            
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get regional statistics for {region}: {e}")
+            raise
+
+    def get_location_species_list(
+        self,
+        location_id: str,
+        locale: str = "en"
+    ) -> List[Dict[str, Any]]:
+        """
+        Get complete list of all bird species ever reported at a specific location.
+        
+        This endpoint provides the historical species list for a location,
+        useful for understanding the full birding potential and biodiversity
+        of a specific hotspot or coordinate.
+        
+        Args:
+            location_id: eBird location ID (e.g., "L99381") or coordinates as "lat,lng"
+            locale: Language code for common names (default: "en")
+            
+        Returns:
+            List of species dictionaries with names and codes
+        """
+        # Handle both location IDs and coordinates
+        if location_id.startswith("L"):
+            # Standard location ID
+            endpoint = f"/product/spplist/{location_id}"
+        else:
+            # Assume coordinates format "lat,lng"
+            try:
+                lat, lng = location_id.split(",")
+                endpoint = f"/product/spplist/geo"
+                # For coordinates, we need to use different parameters
+            except ValueError:
+                raise EBirdAPIError(f"Invalid location format: {location_id}. Use location ID (L12345) or coordinates (lat,lng)")
+        
+        params = {
+            "fmt": "json",
+            "locale": locale
+        }
+        
+        # Add coordinates to params if using geographic endpoint
+        if not location_id.startswith("L"):
+            lat, lng = location_id.split(",")
+            params.update({
+                "lat": float(lat),
+                "lng": float(lng)
+            })
+        
+        try:
+            species_codes = self.make_request(endpoint, params)
+            
+            # Get detailed taxonomy information for the species
+            if species_codes:
+                taxonomy_info = self.get_taxonomy(species_codes=species_codes[:200], locale=locale)  # Limit to avoid API overload
+                
+                # Create enriched species list
+                species_list = []
+                taxonomy_dict = {t["speciesCode"]: t for t in taxonomy_info}
+                
+                for species_code in species_codes:
+                    if species_code in taxonomy_dict:
+                        species_list.append(taxonomy_dict[species_code])
+                    else:
+                        # Fallback for species not in taxonomy response
+                        species_list.append({
+                            "speciesCode": species_code,
+                            "comName": f"Species {species_code}",
+                            "sciName": "Unknown",
+                            "category": "species"
+                        })
+                
+                logger.info(f"Retrieved {len(species_list)} species for location {location_id}")
+                return species_list
+            else:
+                logger.info(f"No species found for location {location_id}")
+                return []
+                
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get species list for location {location_id}: {e}")
+            raise
+
     def close(self):
         """Close the HTTP session."""
         self.session.close()
@@ -677,6 +952,18 @@ def get_nearby_notable_observations(*args, **kwargs):
 def get_nearby_species_observations(*args, **kwargs):
     """Convenience function for getting nearby species observations."""
     return get_client().get_nearby_species_observations(*args, **kwargs)
+
+def get_top_locations(*args, **kwargs):
+    """Convenience function for getting most active birding locations."""
+    return get_client().get_top_locations(*args, **kwargs)
+
+def get_regional_statistics(*args, **kwargs):
+    """Convenience function for getting regional birding statistics."""
+    return get_client().get_regional_statistics(*args, **kwargs)
+
+def get_location_species_list(*args, **kwargs):
+    """Convenience function for getting species list for a location."""
+    return get_client().get_location_species_list(*args, **kwargs)
 
 
 if __name__ == "__main__":

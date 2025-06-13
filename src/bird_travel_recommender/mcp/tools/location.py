@@ -126,5 +126,77 @@ LOCATION_TOOLS = [
             },
             "required": ["species_codes", "latitude", "longitude"]
         }
+    ),
+    Tool(
+        name="get_top_locations",
+        description="Get most active birding locations in a region for community activity insights",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')"
+                },
+                "days_back": {
+                    "type": "integer",
+                    "description": "Number of days back to consider (1-30, default: 7)",
+                    "default": 7
+                },
+                "max_results": {
+                    "type": "integer", 
+                    "description": "Maximum locations to return (default: 100, max: 200)",
+                    "default": 100
+                },
+                "locale": {
+                    "type": "string",
+                    "description": "Language code for common names (default: 'en')",
+                    "default": "en"
+                }
+            },
+            "required": ["region"]
+        }
+    ),
+    Tool(
+        name="get_regional_statistics",
+        description="Get comprehensive species counts and birding activity statistics for a region",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "region": {
+                    "type": "string",
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')"
+                },
+                "days_back": {
+                    "type": "integer",
+                    "description": "Number of days back to analyze (1-30, default: 30)",
+                    "default": 30
+                },
+                "locale": {
+                    "type": "string",
+                    "description": "Language code for common names (default: 'en')",
+                    "default": "en"
+                }
+            },
+            "required": ["region"]
+        }
+    ),
+    Tool(
+        name="get_location_species_list",
+        description="Get complete list of all bird species ever reported at a specific location",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "location_id": {
+                    "type": "string",
+                    "description": "eBird location ID (e.g., 'L99381') or coordinates as 'lat,lng'"
+                },
+                "locale": {
+                    "type": "string",
+                    "description": "Language code for common names (default: 'en')",
+                    "default": "en"
+                }
+            },
+            "required": ["location_id"]
+        }
     )
 ]
