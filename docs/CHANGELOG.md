@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **eBird API expansion Phase 2: MCP server integration with 4 new tools for Claude Desktop**
+- **find_nearest_species MCP tool - Find closest species observations with structured response handling**
+- **get_regional_species_list MCP tool - Complete regional species lists via MCP interface**
+- **get_region_details MCP tool - Human-readable region metadata through MCP**
+- **get_hotspot_details MCP tool - Detailed hotspot information accessible via MCP**
+- **Enhanced MCP server with 13 total tools (9 original + 4 new) for comprehensive birding functionality**
+- **Tool router updates in handle_call_tool() method with proper error handling and structured responses**
 - **eBird API expansion Phase 1: 4 new high-priority endpoints implemented in ebird_api.py**
 - **get_nearest_observations() method - Find closest locations where specific species was recently observed**
 - **get_species_list() method - Complete species list ever reported in a region**

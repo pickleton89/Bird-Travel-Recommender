@@ -253,6 +253,92 @@ class BirdTravelMCPServer:
                     }
                 ),
                 
+                # New eBird API Expansion Tools
+                Tool(
+                    name="find_nearest_species",
+                    description="Find nearest locations where a specific species was recently observed",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "species_code": {
+                                "type": "string",
+                                "description": "eBird species code (e.g., 'norcar')"
+                            },
+                            "lat": {
+                                "type": "number",
+                                "description": "Latitude coordinate"
+                            },
+                            "lng": {
+                                "type": "number",
+                                "description": "Longitude coordinate"
+                            },
+                            "days_back": {
+                                "type": "integer",
+                                "description": "Days to look back (default: 14, max: 30)",
+                                "default": 14
+                            },
+                            "distance_km": {
+                                "type": "integer",
+                                "description": "Maximum search distance (default: 50, max: 50)",
+                                "default": 50
+                            },
+                            "hotspot_only": {
+                                "type": "boolean",
+                                "description": "Restrict to hotspot sightings only",
+                                "default": False
+                            }
+                        },
+                        "required": ["species_code", "lat", "lng"]
+                    }
+                ),
+                Tool(
+                    name="get_regional_species_list",
+                    description="Get complete list of species ever reported in a region",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "region_code": {
+                                "type": "string",
+                                "description": "eBird region code (e.g., 'US-MA', 'CA-ON')"
+                            }
+                        },
+                        "required": ["region_code"]
+                    }
+                ),
+                Tool(
+                    name="get_region_details",
+                    description="Get metadata and human-readable information for a region",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "region_code": {
+                                "type": "string",
+                                "description": "eBird region code to get information about"
+                            },
+                            "name_format": {
+                                "type": "string",
+                                "description": "Name format ('detailed' or 'short')",
+                                "default": "detailed"
+                            }
+                        },
+                        "required": ["region_code"]
+                    }
+                ),
+                Tool(
+                    name="get_hotspot_details",
+                    description="Get detailed information about a specific birding hotspot",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "location_id": {
+                                "type": "string",
+                                "description": "eBird location ID (e.g., 'L123456')"
+                            }
+                        },
+                        "required": ["location_id"]
+                    }
+                ),
+                
                 # Business Logic Tools
                 Tool(
                     name="plan_complete_trip",
@@ -349,6 +435,14 @@ class BirdTravelMCPServer:
                     result = await self._handle_plan_complete_trip(**arguments)
                 elif tool_name == "get_birding_advice":
                     result = await self._handle_get_birding_advice(**arguments)
+                elif tool_name == "find_nearest_species":
+                    result = await self._handle_find_nearest_species(**arguments)
+                elif tool_name == "get_regional_species_list":
+                    result = await self._handle_get_regional_species_list(**arguments)
+                elif tool_name == "get_region_details":
+                    result = await self._handle_get_region_details(**arguments)
+                elif tool_name == "get_hotspot_details":
+                    result = await self._handle_get_hotspot_details(**arguments)
                 else:
                     raise ValueError(f"Unknown tool: {tool_name}")
                 
@@ -918,6 +1012,123 @@ class BirdTravelMCPServer:
             • **Join local groups:** Connect with birding clubs for local knowledge
             
             For more specific advice, please provide details about your location, target species, or experience level."""
+    
+    # New eBird API Expansion Tool Handlers
+    async def _handle_find_nearest_species(
+        self, 
+        species_code: str, 
+        lat: float, 
+        lng: float, 
+        days_back: int = 14,
+        distance_km: int = 50,
+        hotspot_only: bool = False,
+        **kwargs
+    ):
+        """Handle find_nearest_species tool"""
+        try:
+            logger.info(f"Finding nearest observations for {species_code} at {lat},{lng}")
+            
+            observations = self.ebird_api.get_nearest_observations(
+                species_code=species_code,
+                lat=lat,
+                lng=lng,
+                days_back=days_back,
+                distance_km=distance_km,
+                hotspot_only=hotspot_only
+            )
+            
+            return {
+                "success": True,
+                "species_code": species_code,
+                "search_location": {"lat": lat, "lng": lng},
+                "parameters": {
+                    "days_back": days_back,
+                    "distance_km": distance_km,
+                    "hotspot_only": hotspot_only
+                },
+                "observations": observations,
+                "count": len(observations)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in find_nearest_species: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "species_code": species_code,
+                "observations": []
+            }
+    
+    async def _handle_get_regional_species_list(self, region_code: str, **kwargs):
+        """Handle get_regional_species_list tool"""
+        try:
+            logger.info(f"Getting species list for region {region_code}")
+            
+            species_list = self.ebird_api.get_species_list(region_code=region_code)
+            
+            return {
+                "success": True,
+                "region_code": region_code,
+                "species_list": species_list,
+                "species_count": len(species_list)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_regional_species_list: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region_code": region_code,
+                "species_list": []
+            }
+    
+    async def _handle_get_region_details(self, region_code: str, name_format: str = "detailed", **kwargs):
+        """Handle get_region_details tool"""
+        try:
+            logger.info(f"Getting region details for {region_code}")
+            
+            region_info = self.ebird_api.get_region_info(
+                region_code=region_code,
+                name_format=name_format
+            )
+            
+            return {
+                "success": True,
+                "region_code": region_code,
+                "name_format": name_format,
+                "region_info": region_info
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_region_details: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "region_code": region_code,
+                "region_info": {}
+            }
+    
+    async def _handle_get_hotspot_details(self, location_id: str, **kwargs):
+        """Handle get_hotspot_details tool"""
+        try:
+            logger.info(f"Getting hotspot details for {location_id}")
+            
+            hotspot_info = self.ebird_api.get_hotspot_info(location_id=location_id)
+            
+            return {
+                "success": True,
+                "location_id": location_id,
+                "hotspot_info": hotspot_info
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_hotspot_details: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "location_id": location_id,
+                "hotspot_info": {}
+            }
 
 async def main():
     """Run the MCP server"""
