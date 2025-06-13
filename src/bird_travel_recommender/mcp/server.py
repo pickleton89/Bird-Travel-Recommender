@@ -770,6 +770,34 @@ class BirdTravelMCPServer:
             
             pipeline_results = {}
             
+            # Step 0: Get Region Information for user-friendly display
+            try:
+                region_info_result = await self._handle_get_region_details(region)
+                if region_info_result["success"]:
+                    pipeline_results["region_info"] = region_info_result
+                    region_display_name = region_info_result["region_info"].get("name", region)
+                    logger.info(f"Trip planning for region: {region_display_name}")
+                else:
+                    region_display_name = region
+                    logger.warning(f"Could not get region info for {region}, using code as display name")
+            except Exception as e:
+                region_display_name = region
+                logger.warning(f"Error getting region info: {e}")
+            
+            # Step 0.5: Get Regional Species List for validation and suggestions
+            try:
+                regional_species_result = await self._handle_get_regional_species_list(region)
+                if regional_species_result["success"]:
+                    pipeline_results["regional_species"] = regional_species_result
+                    regional_species_codes = regional_species_result["species_list"]
+                    logger.info(f"Found {len(regional_species_codes)} species ever reported in {region_display_name}")
+                else:
+                    regional_species_codes = []
+                    logger.warning(f"Could not get species list for {region}")
+            except Exception as e:
+                regional_species_codes = []
+                logger.warning(f"Error getting regional species list: {e}")
+            
             # Step 1: Validate Species
             validate_result = await self._handle_validate_species(species_names)
             if not validate_result["success"]:
@@ -817,6 +845,48 @@ class BirdTravelMCPServer:
             pipeline_results["hotspot_clustering"] = cluster_result
             hotspot_clusters = cluster_result["hotspot_clusters"]
             
+            # Step 4.5: Enrich hotspot clusters with detailed information
+            enriched_clusters = []
+            for cluster in hotspot_clusters:
+                enriched_cluster = cluster.copy()
+                hotspot_details = []
+                
+                # Get detailed info for each hotspot in the cluster
+                for hotspot in cluster.get("hotspots", []):
+                    location_id = hotspot.get("locId", "")
+                    if location_id:
+                        try:
+                            hotspot_detail_result = await self._handle_get_hotspot_details(location_id)
+                            if hotspot_detail_result["success"]:
+                                hotspot_details.append({
+                                    "location_id": location_id,
+                                    "basic_info": hotspot,
+                                    "detailed_info": hotspot_detail_result["hotspot_info"]
+                                })
+                            else:
+                                hotspot_details.append({
+                                    "location_id": location_id, 
+                                    "basic_info": hotspot,
+                                    "detailed_info": {}
+                                })
+                        except Exception as e:
+                            logger.warning(f"Could not get details for hotspot {location_id}: {e}")
+                            hotspot_details.append({
+                                "location_id": location_id,
+                                "basic_info": hotspot, 
+                                "detailed_info": {}
+                            })
+                
+                enriched_cluster["enriched_hotspots"] = hotspot_details
+                enriched_clusters.append(enriched_cluster)
+            
+            pipeline_results["enriched_hotspot_clustering"] = {
+                "success": True,
+                "enriched_clusters": enriched_clusters,
+                "enrichment_count": len([h for c in enriched_clusters for h in c.get("enriched_hotspots", [])])
+            }
+            logger.info(f"Enriched {len(enriched_clusters)} hotspot clusters with detailed information")
+            
             # Step 5: Score Locations
             score_result = await self._handle_score_locations(hotspot_clusters, species_names)
             if not score_result["success"]:
@@ -852,24 +922,59 @@ class BirdTravelMCPServer:
                 }
             pipeline_results["itinerary_generation"] = itinerary_result
             
+            # Step 7.5: Generate targeted species finding recommendations
+            species_finding_recommendations = []
+            for species in validated_species:
+                species_code = species.get("species_code", "")
+                if species_code:
+                    try:
+                        nearest_obs_result = await self._handle_find_nearest_species(
+                            species_code=species_code,
+                            lat=start_location["lat"],
+                            lng=start_location["lng"],
+                            days_back=days_back,
+                            distance_km=max_distance_km
+                        )
+                        if nearest_obs_result["success"] and nearest_obs_result["observations"]:
+                            species_finding_recommendations.append({
+                                "species": species,
+                                "nearest_observations": nearest_obs_result["observations"][:3],  # Top 3 closest
+                                "total_nearby": len(nearest_obs_result["observations"])
+                            })
+                    except Exception as e:
+                        logger.warning(f"Could not get nearest observations for {species_code}: {e}")
+            
+            pipeline_results["species_finding_recommendations"] = {
+                "success": True,
+                "recommendations": species_finding_recommendations,
+                "species_count": len(species_finding_recommendations)
+            }
+            logger.info(f"Generated targeted finding recommendations for {len(species_finding_recommendations)} species")
+            
             # Return complete trip plan
             return {
                 "success": True,
                 "trip_plan": {
                     "species_names": species_names,
                     "region": region,
+                    "region_display_name": region_display_name,
                     "start_location": start_location,
                     "trip_duration_days": trip_duration_days,
                     "itinerary": itinerary_result["itinerary"],
                     "route": optimized_route,
-                    "locations": scored_locations[:8]  # Top locations
+                    "locations": scored_locations[:8],  # Top locations
+                    "enriched_hotspots": enriched_clusters,
+                    "species_finding_recommendations": species_finding_recommendations
                 },
                 "pipeline_results": pipeline_results,
                 "summary": {
                     "total_species_validated": len(validated_species),
+                    "regional_species_available": len(regional_species_codes),
                     "total_sightings_found": len(sightings),
                     "sightings_after_filtering": len(filtered_sightings),
                     "hotspot_clusters": len(hotspot_clusters),
+                    "enriched_hotspots": len([h for c in enriched_clusters for h in c.get("enriched_hotspots", [])]),
+                    "species_with_targeted_recommendations": len(species_finding_recommendations),
                     "route_distance_km": optimized_route.get("total_distance_km", 0),
                     "estimated_travel_time": optimized_route.get("total_travel_time_hours", 0)
                 }
@@ -891,8 +996,10 @@ class BirdTravelMCPServer:
             # Import LLM function for advice generation
             from ..utils.call_llm import call_llm
             
-            # Build context-aware prompt for expert birding advice
+            # Build enhanced context-aware prompt using new eBird endpoints
             context_info = ""
+            enhanced_data = {}
+            
             if context:
                 species = context.get("species", [])
                 location = context.get("location", "")
@@ -904,13 +1011,49 @@ class BirdTravelMCPServer:
                     context_parts.append(f"Target species: {', '.join(species)}")
                 if location:
                     context_parts.append(f"Location: {location}")
+                    
+                    # Enhance with regional species list for habitat recommendations
+                    try:
+                        regional_species_result = await self._handle_get_regional_species_list(location)
+                        if regional_species_result["success"]:
+                            enhanced_data["regional_species_count"] = len(regional_species_result["species_list"])
+                            context_parts.append(f"Regional diversity: {len(regional_species_result['species_list'])} species recorded")
+                    except Exception as e:
+                        logger.warning(f"Could not get regional species for advice: {e}")
+                    
+                    # Enhance with region details for better location context
+                    try:
+                        region_info_result = await self._handle_get_region_details(location)
+                        if region_info_result["success"]:
+                            region_name = region_info_result["region_info"].get("name", location)
+                            enhanced_data["region_name"] = region_name
+                            context_parts.append(f"Region: {region_name}")
+                    except Exception as e:
+                        logger.warning(f"Could not get region info for advice: {e}")
+                        
                 if season:
                     context_parts.append(f"Season: {season}")
                 if experience_level:
                     context_parts.append(f"Experience level: {experience_level}")
                 
+                # Add nearest observations context for species-specific advice
+                if species and location and "lat" in context and "lng" in context:
+                    try:
+                        for species_name in species[:3]:  # Limit to 3 species for context
+                            # Note: This assumes species_name might be a species code
+                            nearest_obs_result = await self._handle_find_nearest_species(
+                                species_code=species_name,
+                                lat=context["lat"],
+                                lng=context["lng"]
+                            )
+                            if nearest_obs_result["success"] and nearest_obs_result["observations"]:
+                                obs_count = len(nearest_obs_result["observations"])
+                                context_parts.append(f"{species_name}: {obs_count} recent nearby observations")
+                    except Exception as e:
+                        logger.warning(f"Could not get nearest observations for advice: {e}")
+                
                 if context_parts:
-                    context_info = f"\n\nContext: {'; '.join(context_parts)}"
+                    context_info = f"\n\nEnhanced Context: {'; '.join(context_parts)}"
             
             expert_prompt = f"""You are an expert birding guide with decades of field experience and deep knowledge of bird behavior, habitats, and identification techniques. 
             
@@ -935,7 +1078,8 @@ class BirdTravelMCPServer:
                     "advice": advice,
                     "query": query,
                     "context": context,
-                    "advice_type": "expert_llm_response"
+                    "enhanced_data": enhanced_data,
+                    "advice_type": "expert_llm_response_enhanced"
                 }
                 
             except Exception as llm_error:

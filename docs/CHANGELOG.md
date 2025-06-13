@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **eBird API expansion Phase 3: Enhanced business logic integration with comprehensive endpoint utilization**
+- **Enhanced plan_complete_trip tool with region info for user-friendly region names in trip planning**
+- **Regional species list integration for validation and suggestions in trip planning pipeline**
+- **Hotspot detail enrichment with comprehensive metadata and statistics for location scoring**
+- **Targeted species finding recommendations using nearest observations for each target species**
+- **Enhanced get_birding_advice tool with regional species context and nearest observations data**
+- **Enriched trip plan responses with region display names, enriched hotspots, and species finding recommendations**
+- **Enhanced summary statistics including regional diversity, enriched hotspots, and targeted recommendation counts**
 - **eBird API expansion Phase 2: MCP server integration with 4 new tools for Claude Desktop**
 - **find_nearest_species MCP tool - Find closest species observations with structured response handling**
 - **get_regional_species_list MCP tool - Complete regional species lists via MCP interface**
