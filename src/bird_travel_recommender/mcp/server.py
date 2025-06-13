@@ -338,6 +338,54 @@ class BirdTravelMCPServer:
                         "required": ["location_id"]
                     }
                 ),
+                Tool(
+                    name="get_nearby_notable_observations",
+                    description="Get notable/rare bird observations near specific coordinates for local rare bird alerts",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "lat": {
+                                "type": "number",
+                                "description": "Latitude coordinate"
+                            },
+                            "lng": {
+                                "type": "number",
+                                "description": "Longitude coordinate"
+                            },
+                            "distance_km": {
+                                "type": "integer",
+                                "description": "Search radius in kilometers (default: 25, max: 50)",
+                                "default": 25
+                            },
+                            "days_back": {
+                                "type": "integer",
+                                "description": "Days to look back (default: 7, max: 30)",
+                                "default": 7
+                            },
+                            "detail": {
+                                "type": "string",
+                                "description": "Response detail level ('simple' or 'full')",
+                                "default": "simple"
+                            },
+                            "hotspot_only": {
+                                "type": "boolean",
+                                "description": "Restrict to hotspot sightings only",
+                                "default": False
+                            },
+                            "include_provisional": {
+                                "type": "boolean",
+                                "description": "Include unconfirmed observations",
+                                "default": False
+                            },
+                            "max_results": {
+                                "type": "integer",
+                                "description": "Maximum observations to return (default: 200, max: 10000)",
+                                "default": 200
+                            }
+                        },
+                        "required": ["lat", "lng"]
+                    }
+                ),
                 
                 # Business Logic Tools
                 Tool(
@@ -443,6 +491,8 @@ class BirdTravelMCPServer:
                     result = await self._handle_get_region_details(**arguments)
                 elif tool_name == "get_hotspot_details":
                     result = await self._handle_get_hotspot_details(**arguments)
+                elif tool_name == "get_nearby_notable_observations":
+                    result = await self._handle_get_nearby_notable_observations(**arguments)
                 else:
                     raise ValueError(f"Unknown tool: {tool_name}")
                 
@@ -1271,6 +1321,56 @@ class BirdTravelMCPServer:
                 "error": str(e),
                 "location_id": location_id,
                 "hotspot_info": {}
+            }
+
+    async def _handle_get_nearby_notable_observations(
+        self,
+        lat: float,
+        lng: float,
+        distance_km: int = 25,
+        days_back: int = 7,
+        detail: str = "simple",
+        hotspot_only: bool = False,
+        include_provisional: bool = False,
+        max_results: int = 200
+    ):
+        """Handle get_nearby_notable_observations tool"""
+        try:
+            logger.info(f"Getting nearby notable observations at {lat},{lng}")
+            
+            observations = self.ebird_api.get_nearby_notable_observations(
+                lat=lat,
+                lng=lng,
+                distance_km=distance_km,
+                days_back=days_back,
+                detail=detail,
+                hotspot_only=hotspot_only,
+                include_provisional=include_provisional,
+                max_results=max_results
+            )
+            
+            return {
+                "success": True,
+                "coordinates": {"lat": lat, "lng": lng},
+                "search_parameters": {
+                    "distance_km": distance_km,
+                    "days_back": days_back,
+                    "detail": detail,
+                    "hotspot_only": hotspot_only,
+                    "include_provisional": include_provisional,
+                    "max_results": max_results
+                },
+                "notable_observations": observations,
+                "observation_count": len(observations)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in get_nearby_notable_observations: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "coordinates": {"lat": lat, "lng": lng},
+                "notable_observations": []
             }
 
 async def main():

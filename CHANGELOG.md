@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **eBird API Enhancement Phase 1**: Implemented first geographic precision enhancement for rare bird discovery
+  - **get_nearby_notable_observations()**: New eBird API endpoint for finding rare/notable birds near specific coordinates (lines 501-552 in ebird_api.py)
+  - **Local Rare Bird Alerts**: Geographic-based discovery of notable sightings within configurable radius (max 50km, 30 days back)
+  - **MCP Tool Integration**: Added "get_nearby_notable_observations" as MCP tool #12 with complete parameter validation and error handling
+  - **Enhanced Trip Planning**: Enables discovery of exciting birding opportunities during location-based trip planning
+  - **Configurable Parameters**: Support for distance radius, time range, detail levels, hotspot filtering, and provisional observation inclusion
+
 ### Fixed
 - **Critical MCP Server Handler Issues**: Resolved multiple blocking issues preventing MCP tool execution in Claude Desktop
   - **Handler Function Signatures**: Fixed `handle_call_tool` and `handle_list_tools` signatures to remove incorrect `**kwargs` parameters that caused "takes 1 positional argument but 2 were given" errors
