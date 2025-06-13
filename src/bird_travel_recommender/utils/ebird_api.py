@@ -363,6 +363,141 @@ class EBirdClient:
             logger.error(f"Failed to get taxonomy: {e}")
             raise
 
+    def get_nearest_observations(
+        self,
+        species_code: str,
+        lat: float,
+        lng: float,
+        days_back: int = 14,
+        distance_km: int = 50,
+        hotspot_only: bool = False,
+        include_provisional: bool = False,
+        max_results: int = 3000,
+        locale: str = "en"
+    ) -> List[Dict[str, Any]]:
+        """
+        Find nearest locations where a specific species was recently observed.
+        
+        Args:
+            species_code: eBird species code (e.g., "norcar")
+            lat: Latitude coordinate
+            lng: Longitude coordinate
+            days_back: Days to look back (default: 14, max: 30)
+            distance_km: Maximum search distance (default: 50, max: 50)
+            hotspot_only: Restrict to hotspot sightings only
+            include_provisional: Include unconfirmed observations
+            max_results: Maximum observations to return (default: 3000, max: 3000)
+            locale: Language locale for species names
+            
+        Returns:
+            List of nearest observations sorted by distance (closest first)
+            
+        Raises:
+            EBirdAPIError: For API errors with descriptive messages
+        """
+        endpoint = f"/data/nearest/geo/recent/{species_code}"
+        params = {
+            "lat": lat,
+            "lng": lng,
+            "back": min(days_back, 30),  # eBird max is 30 days
+            "dist": min(distance_km, 50),  # eBird max is 50km
+            "hotspot": str(hotspot_only).lower(),
+            "includeProvisional": str(include_provisional).lower(),
+            "maxResults": min(max_results, 3000),  # eBird max is 3000
+            "locale": locale
+        }
+        
+        try:
+            result = self.make_request(endpoint, params)
+            logger.info(f"Retrieved {len(result)} nearest observations for species {species_code} at {lat},{lng}")
+            return result
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get nearest observations: {e}")
+            raise
+
+    def get_species_list(
+        self,
+        region_code: str
+    ) -> List[str]:
+        """
+        Get complete list of species ever reported in a region.
+        
+        Args:
+            region_code: eBird region code (e.g., "US-MA", "CA-ON")
+            
+        Returns:
+            List of eBird species codes for all species in region
+            
+        Raises:
+            EBirdAPIError: For API errors with descriptive messages
+        """
+        endpoint = f"/product/spplist/{region_code}"
+        
+        try:
+            result = self.make_request(endpoint)
+            logger.info(f"Retrieved species list for {region_code}: {len(result)} species")
+            return result
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get species list: {e}")
+            raise
+
+    def get_region_info(
+        self,
+        region_code: str,
+        name_format: str = "detailed"
+    ) -> Dict[str, Any]:
+        """
+        Get metadata and human-readable information for a region.
+        
+        Args:
+            region_code: eBird region code to get information about
+            name_format: Name format ("detailed" or "short")
+            
+        Returns:
+            Region information including name, type, and hierarchy
+            
+        Raises:
+            EBirdAPIError: For API errors with descriptive messages
+        """
+        endpoint = f"/ref/region/info/{region_code}"
+        params = {
+            "nameFormat": name_format
+        }
+        
+        try:
+            result = self.make_request(endpoint, params)
+            logger.info(f"Retrieved region info for {region_code}: {result.get('name', 'Unknown')}")
+            return result
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get region info: {e}")
+            raise
+
+    def get_hotspot_info(
+        self,
+        location_id: str
+    ) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific birding hotspot.
+        
+        Args:
+            location_id: eBird location ID (e.g., "L123456")
+            
+        Returns:
+            Hotspot details including coordinates, statistics, and metadata
+            
+        Raises:
+            EBirdAPIError: For API errors with descriptive messages
+        """
+        endpoint = f"/ref/hotspot/info/{location_id}"
+        
+        try:
+            result = self.make_request(endpoint)
+            logger.info(f"Retrieved hotspot info for {location_id}: {result.get('name', 'Unknown')}")
+            return result
+        except EBirdAPIError as e:
+            logger.error(f"Failed to get hotspot info: {e}")
+            raise
+
     def close(self):
         """Close the HTTP session."""
         self.session.close()
@@ -407,6 +542,22 @@ def get_nearby_hotspots(*args, **kwargs):
 def get_taxonomy(*args, **kwargs):
     """Convenience function for getting taxonomy."""
     return get_client().get_taxonomy(*args, **kwargs)
+
+def get_nearest_observations(*args, **kwargs):
+    """Convenience function for getting nearest observations."""
+    return get_client().get_nearest_observations(*args, **kwargs)
+
+def get_species_list(*args, **kwargs):
+    """Convenience function for getting species list."""
+    return get_client().get_species_list(*args, **kwargs)
+
+def get_region_info(*args, **kwargs):
+    """Convenience function for getting region info."""
+    return get_client().get_region_info(*args, **kwargs)
+
+def get_hotspot_info(*args, **kwargs):
+    """Convenience function for getting hotspot info."""
+    return get_client().get_hotspot_info(*args, **kwargs)
 
 
 if __name__ == "__main__":

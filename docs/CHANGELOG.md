@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **eBird API expansion Phase 1: 4 new high-priority endpoints implemented in ebird_api.py**
+- **get_nearest_observations() method - Find closest locations where specific species was recently observed**
+- **get_species_list() method - Complete species list ever reported in a region**
+- **get_region_info() method - Region metadata and human-readable names**
+- **get_hotspot_info() method - Detailed hotspot information and activity metrics**
+- **Convenience functions for all new endpoints following existing module patterns**
 - **eBird API expansion implementation plan (docs/planning/ebird-api-expansion-plan.md) for 4 high-priority endpoints**
 - **Comprehensive API gap analysis identifying 19 missing eBird endpoints from technical research documentation**
 - **Detailed specifications for get_nearest_observations(), get_species_list(), get_region_info(), get_hotspot_info()**
