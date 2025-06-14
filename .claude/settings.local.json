@@ -27,7 +27,10 @@
       "Bash(ls:*)",
       "Bash(timeout 3 uv run:*)",
       "mcp__graphiti__search_memory_nodes",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:ebird.org)",
+      "Bash(cat:*)",
+      "WebFetch(domain:the-pocket.github.io)"
     ],
     "deny": []
   }
