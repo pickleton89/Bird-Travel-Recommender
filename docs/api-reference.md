@@ -1,13 +1,13 @@
 # Bird Travel Recommender API Reference
 
-This document provides a comprehensive reference for all 32 MCP tools available in the Bird Travel Recommender system, organized into 6 specialized categories.
+This document provides a comprehensive reference for all 30 MCP tools available in the Bird Travel Recommender system, organized into 6 specialized categories.
 
 ## Table of Contents
 
 - [Species Tools (2)](#species-tools)
   - [validate_species](#validate_species)
   - [get_regional_species_list](#get_regional_species_list)
-- [Location Tools (12)](#location-tools)
+- [Location Tools (11)](#location-tools)
   - [get_region_details](#get_region_details)
   - [get_hotspot_details](#get_hotspot_details)
   - [find_nearest_species](#find_nearest_species)
@@ -19,7 +19,7 @@ This document provides a comprehensive reference for all 32 MCP tools available 
   - [get_subregions](#get_subregions)
   - [get_adjacent_regions](#get_adjacent_regions)
   - [get_elevation_data](#get_elevation_data)
-- [Pipeline Tools (12)](#pipeline-tools)
+- [Pipeline Tools (11)](#pipeline-tools)
   - [fetch_sightings](#fetch_sightings)
   - [filter_constraints](#filter_constraints)
   - [cluster_hotspots](#cluster_hotspots)

@@ -29,7 +29,7 @@ EBIRD_API_KEY=...your-key-here...
 
 ```bash
 # Model Configuration
-OPENAI_MODEL=gpt-4o-mini          # Default: gpt-4o-mini
+OPENAI_MODEL=gpt-4o               # Default: gpt-4o
 OPENAI_TEMPERATURE=0.7            # Default: 0.7 (0.0-2.0)
 OPENAI_MAX_TOKENS=2000            # Default: 2000
 
@@ -93,7 +93,7 @@ Configure OpenAI behavior in `src/bird_travel_recommender/utils/call_llm.py`:
 
 ```python
 # Model selection
-model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
 # Temperature (creativity)
 # 0.0 = Deterministic, 2.0 = Very creative
@@ -333,7 +333,7 @@ ELEVATION_DATA_PRECISION=10          # Elevation data accuracy (meters)
 ADJACENT_REGIONS_LIMIT=10            # Max neighboring regions to return
 HOTSPOT_RANKING_ALGORITHM=weighted   # Options: weighted, simple, ml_based
 
-# Pipeline Tools (12 tools)
+# Pipeline Tools (11 tools)
 PIPELINE_BATCH_SIZE=100              # Items processed per batch
 TEMPORAL_ANALYSIS_YEARS_MAX=10       # Maximum years for trend analysis
 MIGRATION_DATA_CACHE_HOURS=24        # Cache migration patterns (hours)
@@ -455,7 +455,10 @@ OPENAI_MAX_TOKENS=4000
 OPENAI_MODEL=gpt-3.5-turbo
 OPENAI_MAX_TOKENS=1000
 
-# GPT-4o (multimodal, balanced)
+# GPT-4o (multimodal, balanced) - Default
+OPENAI_MODEL=gpt-4o
+
+# GPT-4o-mini (faster, cheaper alternative)
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_MAX_TOKENS=2000
 ```

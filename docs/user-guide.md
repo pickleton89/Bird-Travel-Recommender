@@ -39,7 +39,7 @@ The Bird Travel Recommender uses advanced natural language processing to underst
 
 ### What Makes It "Enhanced"
 
-- **32 Specialized Tools**: Access to comprehensive birding functionality across 6 categories
+- **30 Specialized MCP Tools**: Access to comprehensive birding functionality across 6 categories
 - **Semantic Understanding**: Understands context and meaning, not just keywords
 - **Conversation Memory**: Remembers previous queries in the conversation
 - **Experience Adaptation**: Adjusts language complexity to your birding level
@@ -48,19 +48,19 @@ The Bird Travel Recommender uses advanced natural language processing to underst
 
 ### Tool Categories
 
-The system uses **32 specialized tools** organized into 6 categories:
+The system uses **30 specialized tools** organized into 6 categories:
 
 #### Species Tools (2)
 - **Species Validation**: Verify bird names using eBird taxonomy
 - **Regional Species Lists**: Get comprehensive species information for areas
 
-#### Location Tools (12)
+#### Location Tools (11)
 - **Region Analysis**: Detailed geographic and birding statistics
 - **Hotspot Discovery**: Find and analyze top birding locations
 - **Proximity Search**: Find nearest observations and notable sightings
 - **Geographic Intelligence**: Elevation data, subregions, adjacent areas
 
-#### Pipeline Tools (12)
+#### Pipeline Tools (11)
 - **Data Processing**: Fetch, filter, and analyze bird observation data
 - **Temporal Analysis**: Migration patterns, seasonal trends, historical comparisons
 - **Clustering & Scoring**: Group locations and rank by birding potential

@@ -474,7 +474,7 @@ def optimize_prompt(base_prompt: str, max_tokens: int = 2000) -> str:
 async def stream_llm_response(prompt: str) -> AsyncIterator[str]:
     """Stream LLM response for better perceived performance."""
     async for chunk in openai.ChatCompletion.acreate(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         stream=True
     ):

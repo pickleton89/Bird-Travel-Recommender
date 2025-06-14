@@ -131,14 +131,14 @@ class MyNode(Node):
 
 #### MCP Tools Architecture
 
-The system now uses a modular architecture with 32 tools across 6 categories:
+The system now uses a modular architecture with 30 tools across 6 categories:
 
 ```python
 # Tools are organized by category in tools/ directory
 tools/
 ├── species.py      # Species validation tools (2)
-├── location.py     # Location discovery tools (12)
-├── pipeline.py     # Data processing tools (12)
+├── location.py     # Location discovery tools (11)
+├── pipeline.py     # Data processing tools (11)
 ├── planning.py     # Trip planning tools (2)
 ├── advisory.py     # Expert advice tools (1)
 └── community.py    # Social features tools (3)
@@ -194,7 +194,7 @@ User Query → Enhanced NLP → Intent + Parameters → Tool Selection → Execu
 
 Key classes:
 - `EnhancedNLPProcessor`: Intent classification and parameter extraction
-- `BirdingIntent`: Enum of 9 intent types mapped to 32 tools
+- `BirdingIntent`: Enum of 9 intent types mapped to 30 tools
 - `ExtractedParameters`: Structured parameter storage
 
 ### 2. Shared Store Pattern
@@ -820,7 +820,7 @@ def test_get_migration_analysis_circuit_breaker_activation():
 
 - Update docstrings for new code with error handling details
 - Add examples for complex features showing tool category interactions
-- Keep README current with accurate tool counts (32 tools, 6 categories)
+- Keep README current with accurate tool counts (30 tools, 6 categories)
 - Document breaking changes and migration paths
 - Update API reference with new tools and enhanced error responses
 - Document new error codes and recovery strategies

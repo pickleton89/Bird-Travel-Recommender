@@ -30,7 +30,7 @@ The Bird Travel Recommender employs a sophisticated dual-architecture design:
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    MCP Server Layer                          │
-│              (32 Tools across 6 Categories)                  │
+│              (30 Tools across 6 Categories)                  │
 └─────────────────────────────────────────────────────────────┘
                                │
                                ▼
@@ -76,17 +76,17 @@ graph TB
         S2[get_regional_species_list]
     end
     
-    subgraph "Location Tools (12)"
+    subgraph "Location Tools (11)"
         L1[get_region_details]
         L2[get_hotspot_details]
         L3[find_nearest_species]
         L4[get_nearby_notable_observations]
         L5[get_top_locations]
         L6[get_elevation_data]
-        L7[...6 more location tools]
+        L7[...5 more location tools]
     end
     
-    subgraph "Pipeline Tools (12)"
+    subgraph "Pipeline Tools (11)"
         P1[fetch_sightings]
         P2[filter_constraints]
         P3[cluster_hotspots]
@@ -95,7 +95,7 @@ graph TB
         P6[get_historic_observations]
         P7[get_seasonal_trends]
         P8[get_migration_data]
-        P9[...4 more pipeline tools]
+        P9[...3 more pipeline tools]
     end
     
     subgraph "Planning Tools (2)"
@@ -487,8 +487,8 @@ MCP Server Architecture
 ├── server.py                    # Main MCP server orchestration
 ├── tools/                       # Tool definitions and schemas
 │   ├── species.py              # Species validation tools (2)
-│   ├── location.py             # Location discovery tools (12)
-│   ├── pipeline.py             # Data processing tools (12)
+│   ├── location.py             # Location discovery tools (11)
+│   ├── pipeline.py             # Data processing tools (11)
 │   ├── planning.py             # Trip planning tools (2)
 │   ├── advisory.py             # Expert advice tools (1)
 │   └── community.py            # Social features tools (3)
