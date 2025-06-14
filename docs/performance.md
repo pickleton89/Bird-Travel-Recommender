@@ -18,13 +18,15 @@ This guide covers performance optimization strategies for the Bird Travel Recomm
 
 ### Current Performance Metrics
 
-| Operation | Average Time | Max Time | Notes |
-|-----------|-------------|----------|-------|
-| Species Validation | 150ms | 500ms | With LLM fallback |
-| Fetch Sightings (5 species) | 1.2s | 3s | Parallel execution |
-| Complete Trip Planning | 4-6s | 10s | Full pipeline |
-| Route Optimization (10 locations) | 200ms | 500ms | TSP algorithm |
-| LLM Enhancement | 1-2s | 5s | GPT-4o response |
+**Table:** Current Performance Metrics
+
+| Operation                         | Average Time | Max Time | Notes                |
+| :-------------------------------- | -----------: | -------: | :------------------- |
+| Species Validation                |        150ms |    500ms | With LLM fallback    |
+| Fetch Sightings (5 species)      |         1.2s |       3s | Parallel execution   |
+| Complete Trip Planning            |        4-6s  |      10s | Full pipeline        |
+| Route Optimization (10 locations) |        200ms |    500ms | TSP algorithm        |
+| LLM Enhancement                   |        1-2s  |       5s | GPT-4o response      |
 
 ### Performance Goals
 

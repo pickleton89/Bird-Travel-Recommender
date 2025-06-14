@@ -61,9 +61,11 @@ Validate bird species names using eBird taxonomy with LLM fallback for fuzzy mat
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| species_names | array[string] | Yes | List of bird species names to validate (common names, scientific names, or species codes) |
+**Table:** validate_species Parameters
+
+| Parameter     | Type          | Required | Description                                                                                    |
+| :------------ | :------------ | :------: | :--------------------------------------------------------------------------------------------- |
+| species_names | array[string] |   Yes    | List of bird species names to validate (common names, scientific names, or species codes)     |
 
 #### Response
 
@@ -104,10 +106,12 @@ Get comprehensive species list for a specific region with recent activity data.
 
 #### Parameters
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| region | string | Yes | - | Region code (e.g., 'US-MA', 'CA-ON') |
-| days_back | integer | No | 30 | Number of days to analyze for recent activity |
+**Table:** get_regional_species_list Parameters
+
+| Parameter | Type    | Required | Default | Description                                       |
+| :-------- | :------ | :------: | ------: | :------------------------------------------------ |
+| region    | string  |   Yes    |       - | Region code (e.g., 'US-MA', 'CA-ON')             |
+| days_back | integer |    No    |      30 | Number of days to analyze for recent activity     |
 
 #### Response
 
@@ -722,14 +726,16 @@ All tools follow a consistent error response format with enhanced error handling
 
 ### Common Error Codes
 
-| Code | Description | Recovery Action |
-|------|-------------|-----------------|
-| `INVALID_INPUT` | Request parameters are invalid | Check parameter types and requirements |
-| `API_ERROR` | External API request failed | Automatic retry with exponential backoff |
-| `RATE_LIMIT_EXCEEDED` | API rate limit reached | Circuit breaker activates, retry after delay |
-| `TIMEOUT` | Request timed out | Retry with smaller data set |
-| `INSUFFICIENT_DATA` | Not enough data to process | Adjust search criteria |
-| `LLM_ERROR` | LLM enhancement failed | Automatic fallback to rule-based responses |
+**Table:** Common Error Codes and Recovery Actions
+
+| Code                  | Description                     | Recovery Action                               |
+| :-------------------- | :------------------------------ | :-------------------------------------------- |
+| `INVALID_INPUT`       | Request parameters are invalid  | Check parameter types and requirements        |
+| `API_ERROR`           | External API request failed     | Automatic retry with exponential backoff     |
+| `RATE_LIMIT_EXCEEDED` | API rate limit reached          | Circuit breaker activates, retry after delay |
+| `TIMEOUT`             | Request timed out               | Retry with smaller data set                   |
+| `INSUFFICIENT_DATA`   | Not enough data to process      | Adjust search criteria                        |
+| `LLM_ERROR`           | LLM enhancement failed          | Automatic fallback to rule-based responses   |
 
 ## Rate Limits
 

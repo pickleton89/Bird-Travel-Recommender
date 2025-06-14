@@ -155,6 +155,8 @@ Once integrated, you can ask Claude Desktop questions like:
 
 ## Acknowledgments
 
+This project is built using [PocketFlow](https://github.com/The-Pocket/PocketFlow), a minimalist 100-line LLM framework created by Zachary Huang and The Pocket team. PocketFlow provides the core pipeline architecture that enables our node-based bird travel recommendation workflow system. PocketFlow is released under the MIT License and offers a lightweight, dependency-free approach to building AI agent workflows with support for multi-agent coordination and task decomposition.
+
 This project's MCP tool architecture and eBird API integration patterns were significantly influenced by the [ebird-mcp-server](https://github.com/moonbirdai/ebird-mcp-server) by moonbirdai. Their working JavaScript implementation provided proven patterns for MCP tool schemas, eBird API endpoint strategies, and error handling approaches that we adapted for our Python-based PocketFlow architecture.
 
 We also reference the [ebird-api](https://github.com/ProjectBabbler/ebird-api) Python wrapper by ProjectBabbler, distributed under the MIT License. While we implement our own custom eBird API utilities following the hybrid approach outlined in our design documentation, both projects provided valuable insights into best practices for eBird API integration.

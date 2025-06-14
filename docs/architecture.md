@@ -371,22 +371,26 @@ graph TD
 
 ### Core Technologies
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Pipeline Framework | PocketFlow | Node-based workflow orchestration |
-| MCP Integration | mcp (Python) | Model Context Protocol server |
-| NLP Processing | OpenAI GPT-4o | Intent classification & enhancement |
-| API Integration | httpx | Async HTTP client for APIs |
-| Data Processing | Python 3.9+ | Core processing logic |
-| Testing | pytest | Comprehensive test framework |
+**Table:** Core Technology Stack
+
+| Component           | Technology     | Purpose                             |
+| :------------------ | :------------- | :---------------------------------- |
+| Pipeline Framework  | PocketFlow     | Node-based workflow orchestration   |
+| MCP Integration     | mcp (Python)   | Model Context Protocol server       |
+| NLP Processing      | OpenAI GPT-4o  | Intent classification & enhancement |
+| API Integration     | httpx          | Async HTTP client for APIs          |
+| Data Processing     | Python 3.9+    | Core processing logic               |
+| Testing             | pytest         | Comprehensive test framework        |
 
 ### External Services
 
-| Service | Purpose | Rate Limits |
-|---------|---------|-------------|
-| eBird API | Bird observation data | 750/hour, 10K/day |
-| OpenAI API | LLM enhancement | Tier-based |
-| Geocoding | Location resolution | As needed |
+**Table:** External Service Dependencies
+
+| Service     | Purpose                | Rate Limits       |
+| :---------- | :--------------------- | :---------------- |
+| eBird API   | Bird observation data  | 750/hour, 10K/day |
+| OpenAI API  | LLM enhancement        | Tier-based        |
+| Geocoding   | Location resolution    | As needed         |
 
 ### Performance Optimizations
 
