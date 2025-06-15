@@ -8,6 +8,16 @@ from .nodes import (
     OptimizeRouteNode,
     GenerateItineraryNode
 )
+from .constants import (
+    MAX_WORKERS_DEFAULT,
+    CLUSTER_RADIUS_KM_DEFAULT,
+    MAX_LOCATIONS_FOR_OPTIMIZATION,
+    MAX_RETRIES_DEFAULT,
+    MAX_DAYS_DEFAULT,
+    MAX_DAILY_DISTANCE_KM_DEFAULT,
+    MAX_LOCATIONS_PER_DAY,
+    MIN_LOCATION_SCORE
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -33,12 +43,12 @@ def create_birding_flow():
     
     # Create all pipeline nodes
     validate_species = ValidateSpeciesNode()
-    fetch_sightings = FetchSightingsNode(max_workers=5)  # BatchNode with 5 parallel workers
+    fetch_sightings = FetchSightingsNode(max_workers=MAX_WORKERS_DEFAULT)  # BatchNode with parallel workers
     filter_constraints = FilterConstraintsNode()
-    cluster_hotspots = ClusterHotspotsNode(cluster_radius_km=15.0)
+    cluster_hotspots = ClusterHotspotsNode(cluster_radius_km=CLUSTER_RADIUS_KM_DEFAULT)
     score_locations = ScoreLocationsNode()
-    optimize_route = OptimizeRouteNode(max_locations_for_optimization=12)
-    generate_itinerary = GenerateItineraryNode(max_retries=3)  # AsyncNode with retry logic
+    optimize_route = OptimizeRouteNode(max_locations_for_optimization=MAX_LOCATIONS_FOR_OPTIMIZATION)
+    generate_itinerary = GenerateItineraryNode(max_retries=MAX_RETRIES_DEFAULT)  # AsyncNode with retry logic
     
     # Connect nodes in pipeline sequence
     # Each node reads from shared store and writes results back to shared store
@@ -69,12 +79,12 @@ def create_test_input():
             ],
             "constraints": {
                 "start_location": {"lat": 42.3601, "lng": -71.0589},  # Boston, MA
-                "max_days": 3,
-                "max_daily_distance_km": 200,
+                "max_days": MAX_DAYS_DEFAULT,
+                "max_daily_distance_km": MAX_DAILY_DISTANCE_KM_DEFAULT,
                 "date_range": {"start": "2024-09-01", "end": "2024-09-30"},
                 "region": "US-MA",
-                "max_locations_per_day": 8,
-                "min_location_score": 0.3
+                "max_locations_per_day": MAX_LOCATIONS_PER_DAY,
+                "min_location_score": MIN_LOCATION_SCORE
             }
         }
     }

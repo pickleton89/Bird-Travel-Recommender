@@ -225,9 +225,9 @@ async def test_enhanced_error_handling():
     for species_list, description in test_cases:
         try:
             result = await handler.handle_validate_species(species_list)
-            print(f"✅ {description}: {result['success']}")
+            logger.info(f"✅ {description}: {result['success']}")
         except Exception as e:
-            print(f"❌ {description}: {type(e).__name__}: {e}")
+            logger.error(f"❌ {description}: {type(e).__name__}: {e}")
 
 
 if __name__ == "__main__":

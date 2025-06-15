@@ -246,26 +246,29 @@ def is_within_region(lat: float, lng: float, region_code: str) -> bool:
 
 if __name__ == "__main__":
     # Test the geo utility functions
-    print("Testing geo utility functions...")
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    
+    logger.info("Testing geo utility functions...")
     
     # Test distance calculation
     boston_lat, boston_lng = 42.3601, -71.0589
     cambridge_lat, cambridge_lng = 42.3736, -71.1097
     
     distance = haversine_distance(boston_lat, boston_lng, cambridge_lat, cambridge_lng)
-    print(f"Distance from Boston to Cambridge: {distance:.2f} km")
+    logger.info(f"Distance from Boston to Cambridge: {distance:.2f} km")
     
     # Test coordinate validation
-    print(f"Valid coordinates (42.36, -71.06): {validate_coordinates(42.36, -71.06)}")
-    print(f"Invalid coordinates (200, 300): {validate_coordinates(200, 300)}")
+    logger.info(f"Valid coordinates (42.36, -71.06): {validate_coordinates(42.36, -71.06)}")
+    logger.info(f"Invalid coordinates (200, 300): {validate_coordinates(200, 300)}")
     
     # Test date parsing
     test_date = "2024-01-15 10:30"
     parsed = parse_ebird_datetime(test_date)
-    print(f"Parsed eBird date '{test_date}': {parsed}")
+    logger.info(f"Parsed eBird date '{test_date}': {parsed}")
     
     # Test within radius
     within = is_within_radius(boston_lat, boston_lng, cambridge_lat, cambridge_lng, 10.0)
-    print(f"Cambridge within 10km of Boston: {within}")
+    logger.info(f"Cambridge within 10km of Boston: {within}")
     
-    print("Geo utility testing completed!")
+    logger.info("Geo utility testing completed!")

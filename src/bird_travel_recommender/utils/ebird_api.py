@@ -12,6 +12,24 @@ import requests
 from typing import List, Dict, Any, Optional, Union
 from dotenv import load_dotenv
 import logging
+from ..constants import (
+    EBIRD_MAX_RESULTS_DEFAULT,
+    EBIRD_MAX_RESULTS_LIMIT, 
+    EBIRD_DAYS_BACK_DEFAULT,
+    EBIRD_DAYS_BACK_MAX,
+    EBIRD_RADIUS_KM_DEFAULT,
+    EBIRD_RADIUS_KM_MAX,
+    HTTP_TIMEOUT_DEFAULT,
+    DEFAULT_ELEVATION_M,
+    SIMULATED_SPECIES_MIN,
+    SIMULATED_SPECIES_MAX,
+    SIMULATED_CHECKLISTS_MIN,
+    SIMULATED_CHECKLISTS_MAX,
+    LATITUDE_MIN,
+    LATITUDE_MAX,
+    LONGITUDE_MIN,
+    LONGITUDE_MAX
+)
 
 # Load environment variables
 load_dotenv()
@@ -78,7 +96,7 @@ class EBirdClient:
         for attempt in range(self.MAX_RETRIES):
             try:
                 logger.debug(f"Making eBird API request: {endpoint} (attempt {attempt + 1})")
-                response = self.session.get(url, params=params, timeout=30)
+                response = self.session.get(url, params=params, timeout=HTTP_TIMEOUT_DEFAULT)
                 
                 # Handle different HTTP status codes
                 if response.status_code == 200:
@@ -693,7 +711,7 @@ class EBirdClient:
     def get_regional_statistics(
         self,
         region: str,
-        days_back: int = 30,
+        days_back: int = EBIRD_DAYS_BACK_DEFAULT,
         locale: str = "en"
     ) -> Dict[str, Any]:
         """
@@ -1315,7 +1333,7 @@ class EBirdClient:
         self,
         lat: float,
         lng: float,
-        radius_km: int = 25
+        radius_km: int = EBIRD_RADIUS_KM_DEFAULT
     ) -> Dict[str, Any]:
         """
         Get elevation information for birding locations.
@@ -1333,73 +1351,32 @@ class EBirdClient:
         """
         try:
             # Validate coordinates
-            if not (-90 <= lat <= 90):
+            if not (LATITUDE_MIN <= lat <= LATITUDE_MAX):
                 raise ValueError(f"Invalid latitude: {lat}")
-            if not (-180 <= lng <= 180):
+            if not (LONGITUDE_MIN <= lng <= LONGITUDE_MAX):
                 raise ValueError(f"Invalid longitude: {lng}")
                 
             # Normalize radius
-            radius_km = min(radius_km, 50)
+            radius_km = min(radius_km, EBIRD_RADIUS_KM_MAX)
             
-            # eBird doesn't have direct elevation endpoint, so we'll provide estimated
-            # elevation data based on geographic coordinates and known topography
+            # ⚠️ IMPORTANT: eBird API does not provide elevation data
+            # This method returns PLACEHOLDER DATA for demonstration purposes only
+            # In production, you should integrate with a proper elevation API service
+            # such as:
+            # - Google Elevation API
+            # - OpenTopoData API
+            # - USGS Elevation Point Query Service
+            # - Mapbox Terrain API
             
-            # Basic elevation estimation based on known geographic features
-            estimated_elevation = None
-            habitat_zones = set()
+            logger.warning("Using PLACEHOLDER elevation data - integrate with real elevation API for production use")
             
-            # Rough elevation estimates for major geographic regions
-            if 35 <= lat <= 50 and -125 <= lng <= -65:  # Continental US
-                if lng < -100:  # Western US
-                    estimated_elevation = 800  # Generally higher elevation
-                    habitat_zones.add('montane')
-                    habitat_zones.add('forest')
-                else:  # Eastern US
-                    estimated_elevation = 200  # Generally lower elevation
-                    habitat_zones.add('forest')
-                    habitat_zones.add('general')
-            elif 24 <= lat <= 49 and -141 <= lng <= -52:  # Canada
-                estimated_elevation = 300
-                habitat_zones.add('forest')
-                habitat_zones.add('general')
-            elif 14 <= lat <= 33 and -118 <= lng <= -86:  # Mexico
-                estimated_elevation = 1200  # Often higher elevation
-                habitat_zones.add('montane')
-                habitat_zones.add('general')
-            else:
-                estimated_elevation = 100  # Default low elevation
-                habitat_zones.add('general')
+            # PLACEHOLDER: Simple elevation estimation
+            # Real implementation would query an elevation service
+            estimated_elevation = DEFAULT_ELEVATION_M  # Default placeholder value
+            habitat_zones = {'general', 'mixed'}
             
-            # Coastal detection (within 100km of major water bodies)
-            coastal_regions = [
-                # Atlantic Coast
-                (lat > 24 and lat < 45 and lng > -85 and lng < -65),
-                # Pacific Coast  
-                (lat > 30 and lat < 50 and lng > -125 and lng < -115),
-                # Gulf Coast
-                (lat > 25 and lat < 32 and lng > -98 and lng < -80)
-            ]
-            if any(coastal_regions):
-                estimated_elevation = max(estimated_elevation - 100, 0)
-                habitat_zones.add('coastal')
-            
-            # Urban area detection (rough approximation)
-            major_cities = [
-                (40.7, -74.0, "New York"),     # NYC
-                (34.1, -118.2, "Los Angeles"), # LA  
-                (41.9, -87.6, "Chicago"),      # Chicago
-                (29.8, -95.4, "Houston"),      # Houston
-                (33.4, -112.1, "Phoenix")      # Phoenix
-            ]
-            
-            for city_lat, city_lng, city_name in major_cities:
-                if abs(lat - city_lat) < 0.5 and abs(lng - city_lng) < 0.5:
-                    habitat_zones.add('urban')
-                    break
-            
-            # Add wetland detection for known wetland regions
-            if any(region in str(habitat_zones) for region in ['coastal']):
-                habitat_zones.add('wetland')
+            # Add warning to output that this is not real data
+            elevation_warning = "PLACEHOLDER DATA - Not from real elevation service"
             
             elevation_stats = {
                 "min_elevation": estimated_elevation - 50 if estimated_elevation else None,
@@ -1415,7 +1392,8 @@ class EBirdClient:
                 "elevation_stats": elevation_stats,
                 "habitat_zones": list(habitat_zones),
                 "hotspot_count": 0,  # Not using actual hotspot data
-                "analysis_note": f"Estimated elevation analysis based on geographic coordinates ({lat}, {lng})"
+                "warning": elevation_warning,
+                "implementation_note": "Replace with real elevation API service for production use"
             }
             
             logger.info(f"Generated elevation analysis for ({lat}, {lng}): estimated elevation {estimated_elevation}m")
@@ -1460,7 +1438,7 @@ class EBirdClient:
                     month_observations = self.get_species_observations(
                         species_code=species_code,
                         region_code=region_code,
-                        days_back=30,
+                        days_back=EBIRD_DAYS_BACK_DEFAULT,
                         max_results=1000
                     )
                     
@@ -1739,7 +1717,7 @@ class EBirdClient:
             EBirdAPIError: For API errors with descriptive messages
         """
         try:
-            days_back = min(days_back, 30)  # API limit
+            days_back = min(days_back, EBIRD_DAYS_BACK_MAX)  # API limit
             endpoint = f"/data/obs/{region_code}/recent"
             
             params = {
@@ -1907,8 +1885,10 @@ class EBirdClient:
     ) -> Dict[str, Any]:
         """
         Get birder profile and statistics.
-        Note: eBird user stats require special permissions, so this provides 
-        estimated statistics based on available public data.
+        
+        ⚠️ IMPORTANT: This method returns SIMULATED DATA for demonstration purposes.
+        Real eBird user statistics require special API permissions that are not 
+        available through the standard eBird API.
         
         Args:
             username: eBird username or identifier
@@ -1916,23 +1896,26 @@ class EBirdClient:
             year: Year for statistics (default: 2024)
                 
         Returns:
-            User birding statistics and profile information
+            Simulated user birding statistics and profile information
             
         Raises:
             EBirdAPIError: For API errors with descriptive messages
         """
         try:
-            logger.info(f"Generating user statistics for {username} in {region_code}")
+            logger.info(f"Generating SIMULATED user statistics for {username} in {region_code}")
             
-            # Since direct user stats require special API access, provide estimated stats
-            # In a real implementation, this would query user's public checklists
+            # ⚠️ SIMULATED DATA - NOT FROM REAL EBIRD API
+            # The eBird API does not provide public access to user statistics.
+            # In a production system, this would either:
+            # 1. Query user's public checklists if available
+            # 2. Require OAuth authentication for private data
+            # 3. Be removed entirely if not needed
             
-            # Simulate realistic birding statistics
             import random
             random.seed(hash(username) % 1000)  # Consistent results for same username
             
-            base_species = random.randint(50, 500)
-            base_checklists = random.randint(20, 200)
+            base_species = random.randint(SIMULATED_SPECIES_MIN, SIMULATED_SPECIES_MAX)
+            base_checklists = random.randint(SIMULATED_CHECKLISTS_MIN, SIMULATED_CHECKLISTS_MAX)
             
             user_stats = {
                 "username": username,
@@ -1947,7 +1930,7 @@ class EBirdClient:
                 "average_species_per_checklist": round(base_species / max(base_checklists, 1), 1),
                 "most_active_month": random.choice(["May", "October", "April", "September"]),
                 "birding_level": "Intermediate" if base_species < 200 else "Advanced",
-                "profile_note": f"Statistics estimated based on typical birding patterns for {username}"
+                "data_source": "SIMULATED - NOT REAL USER DATA"
             }
             
             # Add some seasonal activity patterns
@@ -1961,15 +1944,16 @@ class EBirdClient:
             result = {
                 "user_profile": user_stats,
                 "monthly_activity": monthly_activity,
-                "analysis_note": f"User statistics for {username} - Note: Data estimated due to API privacy restrictions"
+                "warning": "⚠️ SIMULATED DATA - The eBird API does not provide public access to user statistics",
+                "implementation_note": "In production, this would require OAuth authentication or be removed"
             }
             
-            logger.info(f"Generated user statistics for {username}: {base_species} species, {base_checklists} checklists")
+            logger.info(f"Generated SIMULATED user statistics for {username}")
             return result
             
         except Exception as e:
-            logger.error(f"Failed to get user stats for {username}: {e}")
-            raise EBirdAPIError(f"User statistics lookup failed: {str(e)}")
+            logger.error(f"Failed to generate simulated user stats for {username}: {e}")
+            raise EBirdAPIError(f"User statistics generation failed: {str(e)}")
 
     def close(self):
         """Close the HTTP session."""
@@ -2107,18 +2091,18 @@ if __name__ == "__main__":
         client = EBirdClient()
         
         # Test taxonomy lookup
-        print("Testing taxonomy lookup...")
+        logger.info("Testing taxonomy lookup...")
         taxonomy = client.get_taxonomy(species_codes=["norcar", "blujay"])
         for species in taxonomy:
-            print(f"  {species['comName']} ({species['speciesCode']})")
+            logger.info(f"  {species['comName']} ({species['speciesCode']})")
         
         # Test recent observations
-        print("\nTesting recent observations in Massachusetts...")
+        logger.info("Testing recent observations in Massachusetts...")
         observations = client.get_recent_observations("US-MA", days_back=3)
-        print(f"  Found {len(observations)} recent observations")
+        logger.info(f"  Found {len(observations)} recent observations")
         
         client.close()
-        print("\neBird API client test completed successfully!")
+        logger.info("eBird API client test completed successfully!")
         
     except Exception as e:
-        print(f"Error testing eBird API: {e}")
+        logger.error(f"Error testing eBird API: {e}")

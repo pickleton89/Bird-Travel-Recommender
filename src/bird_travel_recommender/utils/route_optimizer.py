@@ -9,6 +9,7 @@ computational constraints.
 import math
 from typing import List, Dict, Any, Optional, Tuple
 from .geo_utils import haversine_distance
+from ..constants import AVERAGE_DRIVING_SPEED
 import logging
 
 logger = logging.getLogger(__name__)
@@ -375,7 +376,7 @@ def calculate_route_segments(start_location: Dict[str, float], route: List[Dict[
                 "lng": location["center_lng"]
             },
             "distance_km": distance,
-            "estimated_drive_time_hours": distance / 60.0,  # Assume 60 km/h average
+            "estimated_drive_time_hours": distance / AVERAGE_DRIVING_SPEED,
             "cumulative_distance_km": sum(seg.get("distance_km", 0) for seg in segments) + distance,
             "location_score": location.get("final_score", 0),
             "species_diversity": location.get("statistics", {}).get("species_diversity", 0)
@@ -401,7 +402,7 @@ def calculate_route_segments(start_location: Dict[str, float], route: List[Dict[
                 "lng": start_location["lng"]
             },
             "distance_km": return_distance,
-            "estimated_drive_time_hours": return_distance / 60.0,
+            "estimated_drive_time_hours": return_distance / AVERAGE_DRIVING_SPEED,
             "cumulative_distance_km": segments[-1]["cumulative_distance_km"] + return_distance,
             "location_score": 0,
             "species_diversity": 0
