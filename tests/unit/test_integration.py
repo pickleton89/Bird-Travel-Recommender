@@ -13,7 +13,7 @@ import pytest
 from unittest.mock import patch
 import time
 from bird_travel_recommender.nodes import ValidateSpeciesNode, FetchSightingsNode, FilterConstraintsNode
-from tests.test_utils import TestDataValidator, PerformanceTestHelper
+from .test_utils import TestDataValidator, PerformanceTestHelper
 
 
 class TestPipelineIntegration:

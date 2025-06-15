@@ -7,6 +7,7 @@ import os
 import sys
 import asyncio
 import tempfile
+import pytest
 from pathlib import Path
 
 # Add src to path for imports
@@ -35,9 +36,7 @@ def test_auth_manager():
         if session:
             print(f"✅ Authentication successful for user: {session.user_id}")
             print(f"   Permissions: {session.permissions}")
-        else:
-            print("❌ Authentication failed")
-            return False
+        assert session is not None, "Authentication should succeed with valid key"
         
         # Test permission checking
         has_species_perm = auth_manager.check_permission(session, "read:species")
@@ -54,7 +53,7 @@ def test_auth_manager():
         invalid_session = auth_manager.authenticate_request("invalid_key")
         print(f"✅ Invalid key correctly rejected: {invalid_session is None}")
         
-        return True
+        # Test completed successfully
 
 def test_rate_limiter():
     """Test rate limiting functionality"""
@@ -94,9 +93,8 @@ def test_rate_limiter():
     
     # Test system stats
     stats = rate_limiter.get_system_stats()
+    assert 'total_requests' in stats, "System stats should include total_requests"
     print(f"✅ System stats: {stats['total_requests']} total requests")
-    
-    return True
 
 def test_circuit_breaker():
     """Test circuit breaker functionality"""
@@ -122,10 +120,10 @@ def test_circuit_breaker():
     
     # Test that requests are blocked
     can_proceed = circuit_breaker.can_proceed()
+    assert not can_proceed, "Circuit breaker should block requests after failures"
     print(f"✅ Circuit breaker blocking requests: {not can_proceed}")
-    
-    return True
 
+@pytest.mark.asyncio
 async def test_decorated_handler():
     """Test handler with auth and rate limiting decorators"""
     print("\nTesting Decorated Handler...")
@@ -147,23 +145,21 @@ async def test_decorated_handler():
     
     try:
         # Test handler call (this would normally require all the handler setup)
+        assert handler.auth_manager is not None, "Auth manager should be configured"
+        assert handler.rate_limiter is not None, "Rate limiter should be configured"
         print("✅ Handler security components initialized")
         print(f"   Auth manager configured: {handler.auth_manager is not None}")
         print(f"   Rate limiter configured: {handler.rate_limiter is not None}")
         
         # Test session creation
         session = handler.auth_manager.authenticate_request(raw_key)
+        assert session is not None, "Session should be created with valid key"
         print(f"✅ Session created for user: {session.user_id if session else 'None'}")
         
-    except Exception as e:
-        print(f"❌ Handler test failed: {e}")
-        return False
     finally:
         # Clean up
         if 'MCP_API_KEY' in os.environ:
             del os.environ['MCP_API_KEY']
-    
-    return True
 
 def main():
     """Run all authentication and rate limiting tests"""

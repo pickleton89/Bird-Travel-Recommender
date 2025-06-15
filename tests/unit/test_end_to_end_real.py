@@ -16,7 +16,7 @@ from typing import Dict, Any, List
 
 from bird_travel_recommender.flow import run_birding_pipeline, create_test_input
 from bird_travel_recommender.utils.ebird_api import get_client, EBirdAPIError
-from tests.test_utils import PerformanceTestHelper
+from .test_utils import PerformanceTestHelper
 import logging
 
 # Configure logging for tests
