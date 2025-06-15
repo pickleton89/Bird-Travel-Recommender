@@ -13,7 +13,12 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 import json
 import os
+import sys
+from pathlib import Path
 from typing import Dict, List, Any
+
+# Add the src directory to the Python path so tests can import the package
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 
 @pytest.fixture
