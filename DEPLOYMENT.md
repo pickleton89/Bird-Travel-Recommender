@@ -23,6 +23,10 @@ cp .env.example .env
 # Edit .env file with your API keys
 # OPENAI_API_KEY=your_openai_key_here
 # EBIRD_API_KEY=your_ebird_key_here
+
+# Generate the authentication secret
+mkdir -p config
+openssl rand -hex 32 > config/.auth_secret
 ```
 
 ### 2. Deploy MCP Server
