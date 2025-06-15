@@ -147,7 +147,9 @@ class AuthManager:
         self._save_api_keys()
         
         logger.info(f"Created development API key: {key_id}")
-        logger.info(f"Raw key (save this): {raw_key}")
+        # Avoid logging the full secret; mask most characters for reference
+        masked_key = raw_key[:4] + "***" + raw_key[-4:]
+        logger.info(f"Raw key (save this): {masked_key}")
         
         return raw_key
     
