@@ -225,7 +225,7 @@ class TestMCPToolsExpansion:
         mock_client.get_nearest_observations.side_effect = EBirdAPIError("Species not found")
         mock_client_class.return_value = mock_client
         
-        result = await mcp_server._handle_find_nearest_species(
+        result = await mcp_server.handlers.location_handlers.handle_find_nearest_species(
             species_code="invalidspecies",
             lat=42.36,
             lng=-71.09
@@ -246,7 +246,7 @@ class TestMCPToolsExpansion:
         mock_client.get_species_list.side_effect = EBirdAPIError("Invalid region code")
         mock_client_class.return_value = mock_client
         
-        result = await mcp_server._handle_get_regional_species_list(region_code="INVALID")
+        result = await mcp_server.handlers.species_handlers.handle_get_regional_species_list(region_code="INVALID")
         
         assert result["success"] is False
         assert "Invalid region code" in result["error"]
@@ -257,7 +257,7 @@ class TestMCPToolsExpansion:
     async def test_tool_router_integration(self, mcp_server):
         """Test that tools are properly routed through handle_call_tool."""
         # Mock the individual handlers to verify they're called
-        with patch.object(mcp_server, '_handle_find_nearest_species') as mock_handler:
+        with patch.object(mcp_server.handlers.location_handlers, 'handle_find_nearest_species') as mock_handler:
             mock_handler.return_value = {"success": True, "test": "result"}
             
             # Call through the router
@@ -313,13 +313,13 @@ class TestMCPToolsExpansion:
         mock_client_class.return_value = mock_client
         
         # Mock the individual pipeline handlers to avoid complex setup
-        with patch.object(mcp_server, '_handle_validate_species') as mock_validate, \
-             patch.object(mcp_server, '_handle_fetch_sightings') as mock_fetch, \
-             patch.object(mcp_server, '_handle_filter_constraints') as mock_filter, \
-             patch.object(mcp_server, '_handle_cluster_hotspots') as mock_cluster, \
-             patch.object(mcp_server, '_handle_score_locations') as mock_score, \
-             patch.object(mcp_server, '_handle_optimize_route') as mock_route, \
-             patch.object(mcp_server, '_handle_generate_itinerary') as mock_itinerary:
+        with patch.object(mcp_server.handlers.species_handlers, 'handle_validate_species') as mock_validate, \
+             patch.object(mcp_server.handlers.pipeline_handlers, 'handle_fetch_sightings') as mock_fetch, \
+             patch.object(mcp_server.handlers.pipeline_handlers, 'handle_filter_constraints') as mock_filter, \
+             patch.object(mcp_server.handlers.pipeline_handlers, 'handle_cluster_hotspots') as mock_cluster, \
+             patch.object(mcp_server.handlers.pipeline_handlers, 'handle_score_locations') as mock_score, \
+             patch.object(mcp_server.handlers.pipeline_handlers, 'handle_optimize_route') as mock_route, \
+             patch.object(mcp_server.handlers.planning_handlers, 'handle_generate_itinerary') as mock_itinerary:
             
             # Setup mock returns
             mock_validate.return_value = {
@@ -337,7 +337,7 @@ class TestMCPToolsExpansion:
             mock_itinerary.return_value = {"success": True, "itinerary": "Test itinerary"}
             
             # Execute enhanced trip planning
-            result = await mcp_server._handle_plan_complete_trip(
+            result = await mcp_server.handlers.planning_handlers.handle_plan_complete_trip(
                 species_names=["Northern Cardinal"],
                 region="US-MA",
                 start_location={"lat": 42.36, "lng": -71.09}
@@ -361,18 +361,18 @@ class TestMCPToolsExpansion:
         """Test that multiple tools can be executed concurrently."""
         import asyncio
         
-        with patch.object(mcp_server, '_handle_get_regional_species_list') as mock_species, \
-             patch.object(mcp_server, '_handle_get_region_details') as mock_region:
+        with patch.object(mcp_server.handlers.species_handlers, 'handle_get_regional_species_list') as mock_species, \
+             patch.object(mcp_server.handlers.location_handlers, 'handle_get_region_details') as mock_region:
             
             mock_species.return_value = {"success": True, "species_list": []}
             mock_region.return_value = {"success": True, "region_info": {}}
             
             # Execute tools concurrently
             tasks = [
-                mcp_server._handle_get_regional_species_list("US-MA"),
-                mcp_server._handle_get_region_details("US-MA"),
-                mcp_server._handle_get_regional_species_list("US-CA"),
-                mcp_server._handle_get_region_details("US-CA")
+                mcp_server.handlers.species_handlers.handle_get_regional_species_list(region_code="US-MA"),
+                mcp_server.handlers.location_handlers.handle_get_region_details(region_code="US-MA"),
+                mcp_server.handlers.species_handlers.handle_get_regional_species_list(region_code="US-CA"),
+                mcp_server.handlers.location_handlers.handle_get_region_details(region_code="US-CA")
             ]
             
             results = await asyncio.gather(*tasks)
@@ -388,7 +388,7 @@ class TestMCPToolsExpansion:
             mock_api.get_nearest_observations.return_value = []
             
             # Test with extreme coordinates
-            result = await mcp_server._handle_find_nearest_species(
+            result = await mcp_server.handlers.location_handlers.handle_find_nearest_species(
                 species_code="norcar",
                 lat=89.9,  # Near north pole
                 lng=179.9,  # Near international date line

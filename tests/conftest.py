@@ -350,13 +350,27 @@ def mock_ebird_api_responses():
 @pytest.fixture
 def mock_ebird_api(mock_ebird_api_responses):
     """Mock the entire eBird API client by patching the EBirdClient class methods."""
-    with patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_taxonomy') as mock_taxonomy, \
+    with patch('bird_travel_recommender.utils.ebird_api.get_client') as mock_get_client, \
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_taxonomy') as mock_taxonomy, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_recent_observations') as mock_recent, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_species_observations') as mock_species, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_hotspots') as mock_hotspots, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_observations') as mock_nearby, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_notable_observations') as mock_notable, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_hotspots') as mock_nearby_hotspots:
+        
+        # Create a mock client instance with all the mocked methods
+        mock_client = Mock()
+        mock_client.get_taxonomy = mock_taxonomy
+        mock_client.get_recent_observations = mock_recent
+        mock_client.get_species_observations = mock_species
+        mock_client.get_hotspots = mock_hotspots
+        mock_client.get_nearby_observations = mock_nearby
+        mock_client.get_notable_observations = mock_notable
+        mock_client.get_nearby_hotspots = mock_nearby_hotspots
+        
+        # Make get_client() return our mock client
+        mock_get_client.return_value = mock_client
         
         mock_taxonomy.side_effect = mock_ebird_api_responses["get_taxonomy"]
         mock_recent.side_effect = mock_ebird_api_responses["get_recent_observations"]
@@ -369,6 +383,8 @@ def mock_ebird_api(mock_ebird_api_responses):
         mock_nearby_hotspots.return_value = []
         
         yield {
+            "client": mock_client,
+            "get_client": mock_get_client,
             "taxonomy": mock_taxonomy,
             "recent_observations": mock_recent,
             "species_observations": mock_species, 

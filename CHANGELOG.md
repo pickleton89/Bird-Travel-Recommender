@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Continued Test Suite Improvements**: Further fixes and infrastructure enhancements for better test reliability
+  - **Pytest configuration improvements**: Removed `--disable-warnings` for better error visibility, marks already properly registered
+  - **MCP method name corrections**: Fixed 6+ incorrect `_handle_*` method calls to use proper handler paths (e.g., `mcp_server.handlers.location_handlers.handle_find_nearest_species()`)
+  - **Enhanced API mocking**: Improved `mock_ebird_api` fixture to properly mock `get_client()` function used by FetchSightingsNode
+  - **Test isolation analysis**: Identified and documented test bleeding issues where tests pass individually but fail in full suite
+  - **Progress achieved**: 98 passed, 26 failed (78.4% pass rate), +1 test improvement from previous session
+
 - **Major Test Suite Improvements**: Comprehensive fixes to achieve high test reliability and coverage
   - **Fixed async/await issues**: Added missing @pytest.mark.asyncio decorators across all test files
   - **Resolved import problems**: Fixed relative import paths for test utilities (test_utils.py)
