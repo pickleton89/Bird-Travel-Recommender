@@ -32,7 +32,9 @@
       "Bash(cat:*)",
       "WebFetch(domain:the-pocket.github.io)",
       "Bash(uv show:*)",
-      "Bash(uv pip show:*)"
+      "Bash(uv pip show:*)",
+      "Bash(git merge:*)",
+      "Bash(git branch:*)"
     ],
     "deny": []
   }
