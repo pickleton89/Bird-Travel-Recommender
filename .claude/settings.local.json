@@ -30,7 +30,9 @@
       "Bash(git checkout:*)",
       "WebFetch(domain:ebird.org)",
       "Bash(cat:*)",
-      "WebFetch(domain:the-pocket.github.io)"
+      "WebFetch(domain:the-pocket.github.io)",
+      "Bash(uv show:*)",
+      "Bash(uv pip show:*)"
     ],
     "deny": []
   }

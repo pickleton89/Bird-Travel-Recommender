@@ -214,3 +214,36 @@ With these fixes implemented, the application would be suitable for production d
 ---
 
 **Note:** This audit was conducted on June 14, 2025. Security landscapes change rapidly - ensure you stay updated with the latest security advisories and best practices.
+
+
+
+---
+## Working Notes 2025-06-15 
+⏺ Update Todos
+  ⎿  ☐ Update MCP to secure version (v1.4.3+) to fix critical vulnerabilities
+     ☐ Fix undefined variable in advisory.py line 38 (context variable)
+     ☐ Create comprehensive input validation framework with decorators
+     ☐ Implement LLM prompt sanitization to prevent injection attacks
+     ☐ Add coordinate validation for lat/lng bounds checking
+     ☐ Fix file permissions on .env files (chmod 600)
+     ☐ Add authentication and authorization to MCP server
+     ☐ Implement rate limiting per user/API key
+     ☐ Add string format validation for region codes, species codes, location IDs
+     ☐ Implement array size limits to prevent DoS attacks
+
+⏺ Based on the security audit reports, I've identified 10 critical security issues that need immediate attention. The most severe
+  problems are:
+
+  1. MCP v1.9.4 vulnerabilities (critical CVEs)
+  2. No input validation framework across the application
+  3. Direct LLM prompt injection vulnerabilities
+  4. Undefined variables causing runtime errors
+  5. Unprotected API endpoints and file permissions
+
+  Let's start with the most critical fixes. Would you like me to begin with:
+
+  Option A: Fix the immediate critical issues (MCP update, undefined variables, file permissions)
+  Option B: Start building the input validation framework first
+  Option C: Focus on LLM prompt sanitization to prevent injection attacks
+
+ 
