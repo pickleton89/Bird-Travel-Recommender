@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Complete - Pipeline Integration Tests**: Fixed all 7 Pipeline Integration tests achieving 100% success rate for BatchNode usage
+  - **BatchNode Pattern Fix**: Corrected fundamental issue where tests passed entire list to exec() instead of iterating individual items
+    * Fixed pattern: `exec_result = fetch_node.exec(prep_result)` → proper iteration through prep_result list
+    * Implemented correct BatchNode flow: prep() returns list → exec() called per item → post() receives list of results
+  - **Tests Fixed**: All 7 integration tests now pass with proper BatchNode handling
+    * `test_end_to_end_pipeline_execution` - Fixed direct BatchNode calls with iteration pattern
+    * `test_pipeline_data_consistency` - Added conditional handling for fetch stage in pipeline loops
+    * `test_pipeline_with_no_valid_species` - Added proper ValueError handling for empty species case
+    * `test_pipeline_performance_with_large_dataset` - Fixed loop-based pipeline execution with stage checking
+    * `test_parallel_processing_benefits` - Fixed both sequential and parallel test functions
+    * `test_constraint_filtering_effectiveness` - Updated full pipeline execution loop
+    * `test_data_preservation_through_pipeline` - Fixed data preservation test with proper BatchNode pattern
+  - **Implementation Pattern**: Added stage name checking in loops (`if stage_name == "fetch"`) to handle BatchNode differently
+  - **Edge Case Handling**: Properly handled FetchSightingsNode.prep() ValueError when no validated species exist
+  - **Test Suite Impact**: All 8 tests in test_integration.py now pass (7 fixed + 1 already passing)
+
 - **Major Test Suite Infrastructure Fixes**: Comprehensive Phase 1 improvements achieving significant reliability gains
   - **Phase 1.1 Complete - FetchSightingsNode Mocking**: Fixed all 14 FetchSightingsNode tests (100% success rate)
     * Corrected API method assertions from `get_recent_observations` to `get_nearby_observations` to match actual implementation
