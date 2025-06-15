@@ -1,14 +1,32 @@
 from pocketflow import Flow
-from .nodes import (
-    ValidateSpeciesNode, 
-    FetchSightingsNode,
-    AsyncFetchSightingsNode,
-    FilterConstraintsNode,
-    ClusterHotspotsNode,
-    ScoreLocationsNode,
-    OptimizeRouteNode,
-    GenerateItineraryNode
-)
+# Import migrated nodes from new locations
+from .nodes.validation.species import ValidateSpeciesNode
+
+# Import remaining nodes from original nodes.py file using importlib
+import importlib.util
+import os
+_nodes_file_path = os.path.join(os.path.dirname(__file__), 'nodes.py')
+_spec = importlib.util.spec_from_file_location("original_nodes_module", _nodes_file_path)
+_original_nodes = importlib.util.module_from_spec(_spec)
+
+# Set up the module's globals to match the original context
+import sys
+_original_nodes.__dict__.update({
+    '__package__': 'bird_travel_recommender',
+    '__spec__': _spec,
+})
+
+# Execute the module
+_spec.loader.exec_module(_original_nodes)
+
+# Import the required classes
+FetchSightingsNode = _original_nodes.FetchSightingsNode
+AsyncFetchSightingsNode = _original_nodes.AsyncFetchSightingsNode  
+FilterConstraintsNode = _original_nodes.FilterConstraintsNode
+ClusterHotspotsNode = _original_nodes.ClusterHotspotsNode
+ScoreLocationsNode = _original_nodes.ScoreLocationsNode
+OptimizeRouteNode = _original_nodes.OptimizeRouteNode
+GenerateItineraryNode = _original_nodes.GenerateItineraryNode
 from .constants import (
     MAX_WORKERS_DEFAULT,
     CLUSTER_RADIUS_KM_DEFAULT,
