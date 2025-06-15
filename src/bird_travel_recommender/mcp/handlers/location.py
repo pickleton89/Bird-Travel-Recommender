@@ -14,6 +14,14 @@ import logging
 from typing import Dict, List, Optional
 
 from ...utils.ebird_api import EBirdClient
+from ..validation import (
+    validate_inputs, 
+    COORDINATE_SCHEMA, 
+    REGION_SCHEMA, 
+    DISTANCE_SCHEMA, 
+    DAYS_BACK_SCHEMA,
+    InputValidator
+)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -24,9 +32,21 @@ class LocationHandlers:
     def __init__(self):
         self.ebird_api = EBirdClient()
     
+    @validate_inputs(REGION_SCHEMA)
     async def handle_get_region_details(self, region_code: str, name_format: str = "detailed"):
-        """Handle get_region_details tool"""
+        """Handle get_region_details tool with input validation"""
         try:
+            # Additional validation for name_format
+            name_format = InputValidator.validate_string_length(name_format, "name_format", 20)
+            if name_format not in ["detailed", "simple", "full"]:
+                return {
+                    "success": False,
+                    "error": f"Invalid name_format. Must be 'detailed', 'simple', or 'full', got '{name_format}'",
+                    "error_code": "INVALID_FORMAT",
+                    "region_code": region_code,
+                    "region_info": {}
+                }
+            
             logger.info(f"Getting region details for {region_code}")
             
             region_info = self.ebird_api.get_region_info(
@@ -116,6 +136,15 @@ class LocationHandlers:
                 "observations": []
             }
     
+    @validate_inputs({
+        **COORDINATE_SCHEMA,
+        **DISTANCE_SCHEMA,
+        **DAYS_BACK_SCHEMA,
+        'max_results': {
+            'type': int,
+            'validator': lambda x: InputValidator.validate_numeric_range(x, 'max_results', 1, 1000)
+        }
+    })
     async def handle_get_nearby_notable_observations(
         self,
         lat: float,

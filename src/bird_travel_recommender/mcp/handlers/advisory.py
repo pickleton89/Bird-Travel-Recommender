@@ -11,6 +11,8 @@ import json
 import logging
 from typing import Any, Dict, List, Optional, Sequence
 
+from ...utils.prompt_sanitizer import sanitize_for_birding_advice, PromptSanitizer
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -98,20 +100,14 @@ class AdvisoryHandlers:
                 if context_parts:
                     context_info = f"\n\nEnhanced Context: {'; '.join(context_parts)}"
             
-            expert_prompt = f"""You are an expert birding guide with decades of field experience and deep knowledge of bird behavior, habitats, and identification techniques. 
+            # Sanitize inputs for safe LLM prompting
+            sanitization_result = sanitize_for_birding_advice(question, context_info)
             
-            Please provide professional birding advice for the following query: {question}{context_info}
+            if not sanitization_result['is_safe']:
+                logger.warning(f"Potentially unsafe input detected: {sanitization_result['threats_detected']}")
+                # In production, you might want to reject the request or apply stricter filtering
             
-            Your response should include:
-            1. Direct answer to the specific question
-            2. Relevant species-specific behavior and habitat information
-            3. Practical field techniques and timing recommendations
-            4. Equipment suggestions if applicable
-            5. Seasonal considerations and migration patterns
-            6. Safety and ethical birding practices
-            
-            Be specific, practical, and draw from ornithological knowledge and field experience. 
-            Provide actionable advice that will help the birder succeed."""
+            expert_prompt = sanitization_result['safe_prompt']
             
             try:
                 advice = call_llm(expert_prompt)
