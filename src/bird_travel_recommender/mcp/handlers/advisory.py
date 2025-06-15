@@ -12,6 +12,8 @@ import logging
 from typing import Any, Dict, List, Optional, Sequence
 
 from ...utils.prompt_sanitizer import sanitize_for_birding_advice, PromptSanitizer
+from ..auth import require_auth
+from ..rate_limiting import rate_limit
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -22,10 +24,13 @@ class AdvisoryHandlers:
     def __init__(self):
         pass
     
+    @require_auth(permissions=["get:advice"])
+    @rate_limit("get_birding_advice")
     async def handle_get_birding_advice(self, handlers_container, question: str, location: str, 
                                        species_of_interest: Optional[List[str]] = None,
                                        time_of_year: str = "current", 
-                                       experience_level: str = "intermediate"):
+                                       experience_level: str = "intermediate", 
+                                       session=None):
         """Handle get_birding_advice tool - Expert birding advice using enhanced LLM prompting"""
         try:
             logger.info(f"Providing birding advice for question: {question[:100]}...")

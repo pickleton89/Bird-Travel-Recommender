@@ -43,6 +43,10 @@ from .handlers.pipeline import PipelineHandlers
 from .handlers.planning import PlanningHandlers
 from .handlers.advisory import AdvisoryHandlers
 
+# Import security modules
+from .auth import AuthManager, require_auth
+from .rate_limiting import RateLimiter, rate_limit
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -50,13 +54,26 @@ logger = logging.getLogger(__name__)
 class HandlersContainer:
     """Container for all handler instances to facilitate cross-handler communication"""
     
-    def __init__(self):
+    def __init__(self, enable_auth: bool = True):
+        # Initialize security components
+        self.auth_manager = AuthManager() if enable_auth else None
+        self.rate_limiter = RateLimiter() if enable_auth else None
+        
+        # Initialize handlers
         self.species_handlers = SpeciesHandlers()
         self.location_handlers = LocationHandlers()
         self.pipeline_handlers = PipelineHandlers()
         self.planning_handlers = PlanningHandlers()
         self.advisory_handlers = AdvisoryHandlers()
         self.community_handlers = CommunityHandlers()
+        
+        # Inject security components into handlers
+        if enable_auth:
+            for handler in [self.species_handlers, self.location_handlers, 
+                          self.pipeline_handlers, self.planning_handlers,
+                          self.advisory_handlers, self.community_handlers]:
+                handler.auth_manager = self.auth_manager
+                handler.rate_limiter = self.rate_limiter
 
 class BirdTravelMCPServer:
     """

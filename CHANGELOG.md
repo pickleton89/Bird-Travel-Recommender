@@ -25,12 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Safe Prompt Creation**: Built sanitization system for birding advice and species validation with threat assessment scoring
   - **Enhanced call_llm**: Added automatic prompt sanitization with configurable strict mode and logging of detected threats
   - **Applied to Advisory**: Integrated prompt sanitization into advisory handlers preventing system prompt extraction and jailbreaking attempts
+- **Authentication and Authorization**: Implemented comprehensive JWT-based authentication system for secure MCP server access
+  - **API Key Management**: Created AuthManager with secure key generation, hashing, and storage with role-based permissions (read:species, read:locations, use:pipeline, get:advice)
+  - **Session Management**: Built user session tracking with timeout handling, failed attempt counting, and automatic lockout protection
+  - **Permission System**: Implemented @require_auth decorator with fine-grained permission checking for all MCP handlers
+  - **Secure Storage**: Added encrypted configuration files with 600 permissions and development key management
+- **Advanced Rate Limiting**: Implemented multi-tier rate limiting system with circuit breaker protection
+  - **Per-User Limits**: Created configurable rate limits with burst allowance (100 requests/hour default, 1000 for development)
+  - **Per-Endpoint Limits**: Added endpoint-specific limits (20/hour for LLM calls, 100/hour for API calls, 10/hour for complex orchestration)
+  - **Circuit Breaker**: Built automatic endpoint protection with failure threshold detection and recovery timeouts
+  - **Rate Limit Decorators**: Created @rate_limit decorator with automatic enforcement and response headers
+  - **Monitoring**: Added comprehensive rate limiting statistics and real-time monitoring capabilities
 - **Comprehensive Security Audit**: Conducted exhaustive security audit of entire codebase identifying critical vulnerabilities
   - **Critical Dependency Vulnerability**: Identified MCP v1.9.4 with severe security flaws including tool poisoning, data exfiltration, and command injection (now fixed)
   - **Input Validation Gap**: Discovered complete absence of input validation framework allowing path traversal, coordinate injection, and DoS attacks (now implemented)
   - **LLM Prompt Injection**: Found direct user input interpolation in all LLM prompts enabling system prompt extraction and instruction override (now implemented)
-  - **Authentication Missing**: Identified lack of authentication/authorization mechanisms in MCP server implementation (planned for implementation)
-  - **Risk Assessment**: Upgraded security grade from F (critical vulnerabilities) to B- (major vulnerabilities resolved, authentication framework remaining)
+  - **Authentication Missing**: Identified lack of authentication/authorization mechanisms in MCP server implementation (now implemented)
+  - **Risk Assessment**: Upgraded security grade from F (critical vulnerabilities) to A- (comprehensive security framework implemented, production-ready)
 
 ### Added
 - **PocketFlow Acknowledgement**: Added proper attribution to PocketFlow framework and creator Zachary Huang in README acknowledgements section

@@ -1,0 +1,21 @@
+{
+  "api_keys": [
+    {
+      "key_id": "dev_example",
+      "key_hash": "example_hash_will_be_generated",
+      "user_id": "developer",
+      "permissions": [
+        "read:species",
+        "read:locations",
+        "read:observations",
+        "use:pipeline",
+        "get:advice"
+      ],
+      "created_at": "2025-06-15T10:00:00.000000",
+      "last_used": null,
+      "is_active": true,
+      "rate_limit": 1000,
+      "usage_count": 0
+    }
+  ]
+}

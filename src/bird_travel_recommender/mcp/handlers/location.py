@@ -22,6 +22,8 @@ from ..validation import (
     DAYS_BACK_SCHEMA,
     InputValidator
 )
+from ..auth import require_auth
+from ..rate_limiting import rate_limit
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -32,8 +34,10 @@ class LocationHandlers:
     def __init__(self):
         self.ebird_api = EBirdClient()
     
+    @require_auth(permissions=["read:locations"])
+    @rate_limit("get_region_details")
     @validate_inputs(REGION_SCHEMA)
-    async def handle_get_region_details(self, region_code: str, name_format: str = "detailed"):
+    async def handle_get_region_details(self, region_code: str, name_format: str = "detailed", session=None):
         """Handle get_region_details tool with input validation"""
         try:
             # Additional validation for name_format
