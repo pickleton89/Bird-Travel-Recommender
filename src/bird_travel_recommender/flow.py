@@ -1,6 +1,8 @@
 from pocketflow import Flow
 # Import migrated nodes from new locations
 from .nodes.validation.species import ValidateSpeciesNode
+from .nodes.fetching.sightings import FetchSightingsNode
+from .nodes.fetching.async_sightings import AsyncFetchSightingsNode
 
 # Import remaining nodes from original nodes.py file using importlib
 import importlib.util
@@ -19,9 +21,7 @@ _original_nodes.__dict__.update({
 # Execute the module
 _spec.loader.exec_module(_original_nodes)
 
-# Import the required classes
-FetchSightingsNode = _original_nodes.FetchSightingsNode
-AsyncFetchSightingsNode = _original_nodes.AsyncFetchSightingsNode  
+# Import the remaining non-migrated classes
 FilterConstraintsNode = _original_nodes.FilterConstraintsNode
 ClusterHotspotsNode = _original_nodes.ClusterHotspotsNode
 ScoreLocationsNode = _original_nodes.ScoreLocationsNode

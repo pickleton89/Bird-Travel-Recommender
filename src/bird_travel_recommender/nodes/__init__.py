@@ -7,6 +7,8 @@ while maintaining the new modular structure.
 
 # Backward compatibility imports - maintain existing import paths
 from .validation.species import ValidateSpeciesNode
+from .fetching.sightings import FetchSightingsNode
+from .fetching.async_sightings import AsyncFetchSightingsNode
 
 # TODO: The following classes will be imported from original nodes.py
 # during the migration process. This will be updated as each class is migrated.
@@ -14,6 +16,8 @@ from .validation.species import ValidateSpeciesNode
 __all__ = [
     # Migrated nodes
     "ValidateSpeciesNode",
+    "FetchSightingsNode", 
+    "AsyncFetchSightingsNode",
 ]
 
 # Note: Other node classes (FetchSightingsNode, AsyncFetchSightingsNode, etc.)
