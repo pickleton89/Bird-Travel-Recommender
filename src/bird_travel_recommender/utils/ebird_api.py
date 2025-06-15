@@ -13,7 +13,7 @@ import logging
 from typing import List, Dict, Any, Optional, Union
 from dotenv import load_dotenv
 
-# Import all specialized modules
+# Import all specialized modules (sync)
 from .ebird_base import EBirdBaseClient, EBirdAPIError
 from .ebird_observations import EBirdObservationsMixin
 from .ebird_locations import EBirdLocationsMixin
@@ -21,6 +21,9 @@ from .ebird_taxonomy import EBirdTaxonomyMixin
 from .ebird_regions import EBirdRegionsMixin
 from .ebird_analysis import EBirdAnalysisMixin
 from .ebird_checklists import EBirdChecklistsMixin
+
+# Import async modules
+from .ebird_async_api import EBirdAsyncClient, get_async_client
 
 from ..constants import (
     EBIRD_MAX_RESULTS_DEFAULT,
@@ -231,6 +234,84 @@ def get_checklist_details(*args, **kwargs):
 def get_user_stats(*args, **kwargs):
     """Convenience function for getting user stats."""
     return get_client().get_user_stats(*args, **kwargs)
+
+
+# ========================================
+# ASYNC CONVENIENCE FUNCTIONS
+# ========================================
+# These provide async alternatives to the sync convenience functions above
+# for better performance with concurrent requests
+
+async def async_get_recent_observations(*args, **kwargs):
+    """Async convenience function for getting recent observations."""
+    client = await get_async_client()
+    return await client.get_recent_observations(*args, **kwargs)
+
+async def async_get_nearby_observations(*args, **kwargs):
+    """Async convenience function for getting nearby observations."""
+    client = await get_async_client()
+    return await client.get_nearby_observations(*args, **kwargs)
+
+async def async_get_notable_observations(*args, **kwargs):
+    """Async convenience function for getting notable observations."""
+    client = await get_async_client()
+    return await client.get_notable_observations(*args, **kwargs)
+
+async def async_get_species_observations(*args, **kwargs):
+    """Async convenience function for getting species observations."""
+    client = await get_async_client()
+    return await client.get_species_observations(*args, **kwargs)
+
+async def async_get_hotspots(*args, **kwargs):
+    """Async convenience function for getting hotspots."""
+    client = await get_async_client()
+    return await client.get_hotspots(*args, **kwargs)
+
+async def async_get_nearby_hotspots(*args, **kwargs):
+    """Async convenience function for getting nearby hotspots."""
+    client = await get_async_client()
+    return await client.get_nearby_hotspots(*args, **kwargs)
+
+async def async_get_taxonomy(*args, **kwargs):
+    """Async convenience function for getting taxonomy."""
+    client = await get_async_client()
+    return await client.get_taxonomy(*args, **kwargs)
+
+async def async_get_nearest_observations(*args, **kwargs):
+    """Async convenience function for getting nearest observations."""
+    client = await get_async_client()
+    return await client.get_nearest_observations(*args, **kwargs)
+
+async def async_get_species_list(*args, **kwargs):
+    """Async convenience function for getting species list."""
+    client = await get_async_client()
+    return await client.get_species_list(*args, **kwargs)
+
+async def async_get_region_info(*args, **kwargs):
+    """Async convenience function for getting region info."""
+    client = await get_async_client()
+    return await client.get_region_info(*args, **kwargs)
+
+async def async_get_hotspot_info(*args, **kwargs):
+    """Async convenience function for getting hotspot info."""
+    client = await get_async_client()
+    return await client.get_hotspot_info(*args, **kwargs)
+
+# Batch operations for performance
+async def async_batch_recent_observations(*args, **kwargs):
+    """Async convenience function for batch recent observations."""
+    client = await get_async_client()
+    return await client.batch_recent_observations(*args, **kwargs)
+
+async def async_batch_nearby_hotspots(*args, **kwargs):
+    """Async convenience function for batch nearby hotspots."""
+    client = await get_async_client()
+    return await client.batch_nearby_hotspots(*args, **kwargs)
+
+async def async_batch_species_validation(*args, **kwargs):
+    """Async convenience function for batch species validation."""
+    client = await get_async_client()
+    return await client.batch_species_validation(*args, **kwargs)
 
 
 if __name__ == "__main__":
