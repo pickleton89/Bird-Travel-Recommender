@@ -19,6 +19,11 @@ __pycache__/
 .env.test
 .env.production
 
+# Configuration files with sensitive data
+config/auth_config.json
+config/*.json
+!config/*.example.json
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json
@@ -89,4 +94,10 @@ coverage/
 .eslintcache
 
 # Optional REPL history
-.node_repl_history 
+.node_repl_history
+
+# Security reports (sensitive information)
+security_analysis_report.md
+SECURITY_AUDIT_REPORT.md
+*security*.txt
+*audit*.txt
