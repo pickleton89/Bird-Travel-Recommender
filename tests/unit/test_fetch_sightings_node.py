@@ -64,7 +64,7 @@ class TestFetchSightingsNode:
         fetch_node.post(shared_store_with_validated_species, prep_result, exec_results)
         
         # Verify that nearby observations was called (start_location is provided)
-        mock_ebird_api["recent_observations"].assert_called()
+        mock_ebird_api["nearby_observations"].assert_called()
         
         # Check results
         assert "all_sightings" in shared_store_with_validated_species
@@ -72,7 +72,7 @@ class TestFetchSightingsNode:
         
         stats = shared_store_with_validated_species["fetch_stats"]
         assert stats["total_species"] == 2
-        assert stats["successful_fetches"] >= 1
+        assert stats["successful_fetches"] == 2  # Both species should succeed now
 
     @pytest.mark.unit
     @pytest.mark.mock
@@ -261,41 +261,40 @@ class TestFetchSightingsNode:
 
     @pytest.mark.unit
     @pytest.mark.mock
-    def test_empty_api_responses(self, fetch_node):
+    def test_empty_api_responses(self, fetch_node, mock_ebird_api):
         """Test handling of empty API responses."""
-        with patch('bird_travel_recommender.utils.ebird_api.get_recent_observations') as mock_recent, \
-             patch('bird_travel_recommender.utils.ebird_api.get_species_observations') as mock_species:
-            
-            mock_recent.return_value = []
-            mock_species.return_value = []
-            
-            shared = {
-                "validated_species": [
-                    {"species_code": "rarebird", "common_name": "Rare Bird", "validation_confidence": 1.0}
-                ],
-                "input": {
-                    "constraints": {
-                        "region": "US-MA",
-                        "days_back": 7
-                    }
+        # Configure mocks to return empty results
+        mock_ebird_api["species_observations"].return_value = []
+        mock_ebird_api["nearby_observations"].return_value = []
+        
+        shared = {
+            "validated_species": [
+                {"species_code": "rarebird", "common_name": "Rare Bird", "confidence": 1.0, "validation_method": "test", "original_name": "Rare Bird"}
+            ],
+            "input": {
+                "constraints": {
+                    "region": "US-MA",
+                    "days_back": 7
                 }
             }
-            
-            prep_result = fetch_node.prep(shared)
-            
-            # For BatchNode, exec() expects individual species, not the full list
-            exec_results = []
-            for species in prep_result:
-                exec_result = fetch_node.exec(species)
-                exec_results.append(exec_result)
-            
-            fetch_node.post(shared, prep_result, exec_results)
-            
-            # Should handle empty responses gracefully
-            stats = shared["fetch_stats"]
-            assert stats["empty_results"] >= 1
-            assert stats["total_observations"] == 0
-            assert shared["all_sightings"] == []
+        }
+        
+        prep_result = fetch_node.prep(shared)
+        
+        # For BatchNode, exec() expects individual species, not the full list
+        exec_results = []
+        for species in prep_result:
+            exec_result = fetch_node.exec(species)
+            exec_results.append(exec_result)
+        
+        fetch_node.post(shared, prep_result, exec_results)
+        
+        # Should handle empty responses gracefully
+        stats = shared["fetch_stats"]
+        assert stats["empty_results"] >= 1
+        assert stats["successful_fetches"] >= 1  # Success with empty results
+        assert stats["total_observations"] == 0
+        assert shared["all_sightings"] == []
 
     @pytest.mark.unit
     @pytest.mark.mock

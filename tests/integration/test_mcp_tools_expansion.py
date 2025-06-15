@@ -15,7 +15,7 @@ and JSON schema validation.
 import pytest
 import json
 from unittest.mock import Mock, patch, AsyncMock
-from src.bird_travel_recommender.mcp.server import BirdTravelMCPServer
+from bird_travel_recommender.mcp.server import BirdTravelMCPServer
 
 
 class TestMCPToolsExpansion:
@@ -216,41 +216,39 @@ class TestMCPToolsExpansion:
 
     # Test error propagation through MCP layer
     @pytest.mark.asyncio
-    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
-    async def test_error_propagation(self, mock_client_class, mcp_server):
+    async def test_error_propagation(self, mcp_server):
         """Test that eBird API errors propagate correctly through MCP layer."""
-        from src.bird_travel_recommender.utils.ebird_api import EBirdAPIError
+        from bird_travel_recommender.utils.ebird_api import EBirdAPIError
         
-        mock_client = Mock()
-        mock_client.get_nearest_observations.side_effect = EBirdAPIError("Species not found")
-        mock_client_class.return_value = mock_client
-        
-        result = await mcp_server.handlers.location_handlers.handle_find_nearest_species(
-            species_code="invalidspecies",
-            lat=42.36,
-            lng=-71.09
-        )
-        
-        assert result["success"] is False
-        assert "Species not found" in result["error"]
-        assert result["species_code"] == "invalidspecies"
-        assert result["observations"] == []
+        # Patch the method on the already-instantiated handler
+        with patch.object(mcp_server.handlers.location_handlers.ebird_api, 'get_nearest_observations') as mock_method:
+            mock_method.side_effect = EBirdAPIError("Species not found")
+            
+            result = await mcp_server.handlers.location_handlers.handle_find_nearest_species(
+                species_code="invalidspecies",
+                lat=42.36,
+                lng=-71.09
+            )
+            
+            assert result["success"] is False
+            assert "Species not found" in result["error"]
+            assert result["species_code"] == "invalidspecies"
+            assert result["observations"] == []
 
     @pytest.mark.asyncio
-    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
-    async def test_region_not_found_error(self, mock_client_class, mcp_server):
+    async def test_region_not_found_error(self, mcp_server):
         """Test handling of region not found errors."""
-        from src.bird_travel_recommender.utils.ebird_api import EBirdAPIError
+        from bird_travel_recommender.utils.ebird_api import EBirdAPIError
         
-        mock_client = Mock()
-        mock_client.get_species_list.side_effect = EBirdAPIError("Invalid region code")
-        mock_client_class.return_value = mock_client
-        
-        result = await mcp_server.handlers.species_handlers.handle_get_regional_species_list(region_code="INVALID")
-        
-        assert result["success"] is False
-        assert "Invalid region code" in result["error"]
-        assert result["species_list"] == []
+        # Patch the method on the already-instantiated handler
+        with patch.object(mcp_server.handlers.species_handlers.ebird_api, 'get_species_list') as mock_method:
+            mock_method.side_effect = EBirdAPIError("Invalid region code")
+            
+            result = await mcp_server.handlers.species_handlers.handle_get_regional_species_list(region_code="INVALID")
+            
+            assert result["success"] is False
+            assert "Invalid region code" in result["error"]
+            assert result["species_list"] == []
 
     # Test tool router integration
     @pytest.mark.asyncio
@@ -292,37 +290,39 @@ class TestMCPToolsExpansion:
 
     # Test enhanced business logic integration
     @pytest.mark.asyncio
-    @patch('src.bird_travel_recommender.utils.ebird_api.EBirdClient')
-    async def test_enhanced_plan_complete_trip_integration(self, mock_client_class, mcp_server, mock_ebird_responses):
+    async def test_enhanced_plan_complete_trip_integration(self, mcp_server, mock_ebird_responses):
         """Test that plan_complete_trip properly uses new endpoints."""
-        mock_client = Mock()
         
-        # Mock all the responses the enhanced trip planner will need
-        mock_client.get_region_info.return_value = mock_ebird_responses['region_info']
-        mock_client.get_species_list.return_value = mock_ebird_responses['species_list']
-        mock_client.get_hotspot_info.return_value = mock_ebird_responses['hotspot_info']
-        mock_client.get_nearest_observations.return_value = mock_ebird_responses['nearest_observations']
-        
-        # Mock other required methods
-        mock_client.get_taxonomy.return_value = [
-            {"speciesCode": "norcar", "comName": "Northern Cardinal"}
-        ]
-        mock_client.get_recent_observations.return_value = []
-        mock_client.get_hotspots.return_value = []
-        
-        mock_client_class.return_value = mock_client
-        
-        # Mock the individual pipeline handlers to avoid complex setup
-        with patch.object(mcp_server.handlers.species_handlers, 'handle_validate_species') as mock_validate, \
+        # Since the planning handlers use multiple API endpoints, we need to mock them individually
+        # as they're used by different handlers that planning calls
+        with patch.object(mcp_server.handlers.species_handlers.ebird_api, 'get_species_list') as mock_species_list, \
+             patch.object(mcp_server.handlers.species_handlers.ebird_api, 'get_taxonomy') as mock_taxonomy, \
+             patch.object(mcp_server.handlers.location_handlers.ebird_api, 'get_region_info') as mock_region_info, \
+             patch.object(mcp_server.handlers.location_handlers.ebird_api, 'get_hotspot_info') as mock_hotspot_info, \
+             patch.object(mcp_server.handlers.location_handlers.ebird_api, 'get_nearest_observations') as mock_nearest:
+            
+            # Mock all the responses the enhanced trip planner will need
+            mock_region_info.return_value = mock_ebird_responses['region_info']
+            mock_species_list.return_value = mock_ebird_responses['species_list']
+            mock_hotspot_info.return_value = mock_ebird_responses['hotspot_info']
+            mock_nearest.return_value = mock_ebird_responses['nearest_observations']
+            
+            # Mock taxonomy for species validation
+            mock_taxonomy.return_value = [
+                {"speciesCode": "norcar", "comName": "Northern Cardinal"}
+            ]
+            
+            # Mock the individual pipeline handlers to avoid complex setup
+            with patch.object(mcp_server.handlers.species_handlers, 'handle_validate_species') as mock_validate, \
              patch.object(mcp_server.handlers.pipeline_handlers, 'handle_fetch_sightings') as mock_fetch, \
              patch.object(mcp_server.handlers.pipeline_handlers, 'handle_filter_constraints') as mock_filter, \
              patch.object(mcp_server.handlers.pipeline_handlers, 'handle_cluster_hotspots') as mock_cluster, \
              patch.object(mcp_server.handlers.pipeline_handlers, 'handle_score_locations') as mock_score, \
              patch.object(mcp_server.handlers.pipeline_handlers, 'handle_optimize_route') as mock_route, \
              patch.object(mcp_server.handlers.planning_handlers, 'handle_generate_itinerary') as mock_itinerary:
-            
-            # Setup mock returns
-            mock_validate.return_value = {
+                
+                # Setup mock returns
+                mock_validate.return_value = {
                 "success": True,
                 "validated_species": [{"species_code": "norcar", "common_name": "Northern Cardinal"}]
             }
@@ -384,8 +384,9 @@ class TestMCPToolsExpansion:
     @pytest.mark.asyncio
     async def test_tool_parameter_edge_cases(self, mcp_server):
         """Test tools with edge case parameters."""
-        with patch.object(mcp_server, 'ebird_api') as mock_api:
-            mock_api.get_nearest_observations.return_value = []
+        # Patch the method on the already-instantiated handler
+        with patch.object(mcp_server.handlers.location_handlers.ebird_api, 'get_nearest_observations') as mock_method:
+            mock_method.return_value = []
             
             # Test with extreme coordinates
             result = await mcp_server.handlers.location_handlers.handle_find_nearest_species(

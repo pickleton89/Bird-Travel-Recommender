@@ -339,25 +339,70 @@ def mock_ebird_api_responses():
             }
         ]
     
+    def mock_get_nearby_observations(lat, lng, distance_km, days_back=14, species_code=None):
+        """Mock get_nearby_observations responses."""
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        
+        # Return observations near the provided location
+        observations = [
+            {
+                "speciesCode": "norcar",
+                "comName": "Northern Cardinal",
+                "sciName": "Cardinalis cardinalis",
+                "locId": "L123456",
+                "locName": "Boston Common",
+                "obsDt": yesterday.strftime("%Y-%m-%d %H:%M"),
+                "howMany": 2,
+                "lat": 42.3601,
+                "lng": -71.0589,
+                "obsValid": True,
+                "obsReviewed": False,
+                "locationPrivate": False
+            },
+            {
+                "speciesCode": "blujay",
+                "comName": "Blue Jay",
+                "sciName": "Cyanocitta cristata",
+                "locId": "L234567", 
+                "locName": "Harvard Yard",
+                "obsDt": today.strftime("%Y-%m-%d %H:%M"),
+                "howMany": 1,
+                "lat": 42.3736,
+                "lng": -71.1097,
+                "obsValid": True,
+                "obsReviewed": True,
+                "locationPrivate": False
+            }
+        ]
+        
+        # Filter by species if specified
+        if species_code:
+            observations = [obs for obs in observations if obs["speciesCode"] == species_code]
+        
+        return observations
+    
     return {
         "get_taxonomy": mock_get_taxonomy,
         "get_recent_observations": mock_get_recent_observations,
         "get_species_observations": mock_get_species_observations,
-        "get_hotspots": mock_get_hotspots
+        "get_hotspots": mock_get_hotspots,
+        "get_nearby_observations": mock_get_nearby_observations
     }
 
 
 @pytest.fixture
 def mock_ebird_api(mock_ebird_api_responses):
     """Mock the entire eBird API client by patching the EBirdClient class methods."""
-    with patch('bird_travel_recommender.utils.ebird_api.get_client') as mock_get_client, \
+    with patch('bird_travel_recommender.nodes.get_client') as mock_get_client, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_taxonomy') as mock_taxonomy, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_recent_observations') as mock_recent, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_species_observations') as mock_species, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_hotspots') as mock_hotspots, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_observations') as mock_nearby, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_notable_observations') as mock_notable, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_hotspots') as mock_nearby_hotspots:
+         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_hotspots') as mock_nearby_hotspots, \
+         patch('bird_travel_recommender.utils.ebird_observations.EBirdObservationsMixin.get_nearby_observations') as mock_nearby_mixin:
         
         # Create a mock client instance with all the mocked methods
         mock_client = Mock()
@@ -376,9 +421,10 @@ def mock_ebird_api(mock_ebird_api_responses):
         mock_recent.side_effect = mock_ebird_api_responses["get_recent_observations"]
         mock_species.side_effect = mock_ebird_api_responses["get_species_observations"]
         mock_hotspots.side_effect = mock_ebird_api_responses["get_hotspots"]
+        mock_nearby.side_effect = mock_ebird_api_responses["get_nearby_observations"]
+        mock_nearby_mixin.side_effect = mock_ebird_api_responses["get_nearby_observations"]
         
         # Add mock responses for additional methods
-        mock_nearby.return_value = []
         mock_notable.return_value = []
         mock_nearby_hotspots.return_value = []
         
