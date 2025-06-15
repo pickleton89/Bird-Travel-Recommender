@@ -19,7 +19,7 @@ classifiers = [
     "Topic :: Other/Nonlisted Topic",
 ]
 dependencies = [
-    "mcp>=1.9.4",
+    "mcp>=1.4.3,<2.0.0",
     "openai>=1.86.0",
     "pocketflow>=0.0.2",
     "pytest>=8.4.0",

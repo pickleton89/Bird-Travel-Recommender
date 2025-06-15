@@ -35,17 +35,25 @@ class AdvisoryHandlers:
             context_info = ""
             enhanced_data = {}
             
+            # Build context from function parameters - fix undefined 'context' variable
+            context = {
+                "species": species_of_interest or [],
+                "location": location,
+                "season": time_of_year,
+                "experience_level": experience_level
+            }
+            
             if context:
                 species = context.get("species", [])
-                location = context.get("location", "")
+                location_ctx = context.get("location", "")
                 season = context.get("season", "")
-                experience_level = context.get("experience_level", "")
+                experience_level_ctx = context.get("experience_level", "")
                 
                 context_parts = []
                 if species:
                     context_parts.append(f"Target species: {', '.join(species)}")
-                if location:
-                    context_parts.append(f"Location: {location}")
+                if location_ctx:
+                    context_parts.append(f"Location: {location_ctx}")
                     
                     # Enhance with regional species list for habitat recommendations
                     try:
@@ -92,7 +100,7 @@ class AdvisoryHandlers:
             
             expert_prompt = f"""You are an expert birding guide with decades of field experience and deep knowledge of bird behavior, habitats, and identification techniques. 
             
-            Please provide professional birding advice for the following query: {query}{context_info}
+            Please provide professional birding advice for the following query: {question}{context_info}
             
             Your response should include:
             1. Direct answer to the specific question
@@ -111,7 +119,7 @@ class AdvisoryHandlers:
                 return {
                     "success": True,
                     "advice": advice,
-                    "query": query,
+                    "query": question,
                     "context": context,
                     "enhanced_data": enhanced_data,
                     "advice_type": "expert_llm_response_enhanced"
@@ -121,12 +129,12 @@ class AdvisoryHandlers:
                 logger.warning(f"LLM advice generation failed: {str(llm_error)}, using fallback")
                 
                 # Fallback advice system
-                fallback_advice = self._generate_fallback_advice(query, context)
+                fallback_advice = self._generate_fallback_advice(question, context)
                 
                 return {
                     "success": True,
                     "advice": fallback_advice,
-                    "query": query,
+                    "query": question,
                     "context": context,
                     "advice_type": "fallback_response",
                     "llm_error": str(llm_error)
@@ -140,13 +148,13 @@ class AdvisoryHandlers:
                 "advice": ""
             }
 
-    def _generate_fallback_advice(self, query: str, context: Optional[Dict] = None) -> str:
+    def _generate_fallback_advice(self, question: str, context: Optional[Dict] = None) -> str:
         """Generate fallback birding advice when LLM is unavailable"""
         
         # Basic advice patterns based on common queries
-        query_lower = query.lower()
+        question_lower = question.lower()
         
-        if "best time" in query_lower or "when" in query_lower:
+        if "best time" in question_lower or "when" in question_lower:
             return """**General Timing Advice:**
             
             • **Dawn (30 minutes before sunrise to 2 hours after):** Peak bird activity, especially songbirds
@@ -157,7 +165,7 @@ class AdvisoryHandlers:
             
             For specific species timing, consult local birding guides or eBird data for your region."""
             
-        elif "equipment" in query_lower or "binoculars" in query_lower:
+        elif "equipment" in question_lower or "binoculars" in question_lower:
             return """**Essential Birding Equipment:**
             
             • **Binoculars:** 8x42 recommended for general birding (good balance of magnification and field of view)
@@ -169,7 +177,7 @@ class AdvisoryHandlers:
             
             Start with quality binoculars - they make the biggest difference in your birding experience."""
             
-        elif "habitat" in query_lower or "where" in query_lower:
+        elif "habitat" in question_lower or "where" in question_lower:
             return """**Habitat-Based Birding Strategy:**
             
             • **Forests:** Dawn chorus offers best songbird activity
@@ -181,7 +189,7 @@ class AdvisoryHandlers:
             Edge habitats (where two habitat types meet) are often most productive for bird diversity."""
             
         else:
-            return f"""**General Birding Advice for: "{query}"**
+            return f"""**General Birding Advice for: "{question}"**
             
             • **Plan your trip:** Check eBird for recent sightings in your target area
             • **Timing matters:** Early morning (dawn + 2 hours) is typically best
