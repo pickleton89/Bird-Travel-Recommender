@@ -22,7 +22,7 @@ def test_response_formatter():
     """Test the response formatter independently"""
     
     try:
-        from utils.response_formatter import format_tool_response
+        from bird_travel_recommender.utils.response_formatter import format_tool_response
         
         print("Testing Enhanced Response Formatter")
         print("=" * 50)
@@ -213,7 +213,7 @@ def test_enhanced_process_results():
     except Exception as e:
         print(f"Test error: {str(e)}")
 
-async def test_complete_enhanced_system_simple():
+def test_complete_enhanced_system_simple():
     """Test the complete enhanced system without MCP server dependencies"""
     
     try:
@@ -221,8 +221,8 @@ async def test_complete_enhanced_system_simple():
         print("=" * 50)
         
         # Test just the NLP and formatting components
-        from utils.enhanced_nlp import EnhancedNLPProcessor
-        from utils.response_formatter import EnhancedResponseFormatter, FormattingContext, ResponseType, ExperienceLevel
+        from bird_travel_recommender.utils.enhanced_nlp import EnhancedNLPProcessor
+        from bird_travel_recommender.utils.response_formatter import EnhancedResponseFormatter, FormattingContext, ResponseType, ExperienceLevel
         
         # Test NLP analysis
         nlp = EnhancedNLPProcessor()
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     test_enhanced_process_results()
     
     # Test 3: Complete system (without MCP dependencies)
-    asyncio.run(test_complete_enhanced_system_simple())
+    test_complete_enhanced_system_simple()
     
     print(f"\n{'=' * 60}")
     print("All Enhanced Response Tests Complete")

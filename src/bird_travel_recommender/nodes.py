@@ -354,7 +354,9 @@ If a name is invalid or unrecognizable, respond with "INVALID" for that entry.
         
         if success_rate < 0.5:
             logger.warning(f"Low validation success rate: {success_rate:.1%}")
-            return "validation_failed"  # Could trigger error handling flow
+            # Instead of returning validation_failed, add a flag to shared store for downstream handling
+            shared["validation_warning"] = True
+            shared["validation_success_rate"] = success_rate
         
         logger.info(f"Species validation completed with {success_rate:.1%} success rate")
         return "default"
@@ -390,7 +392,9 @@ class FetchSightingsNode(BatchNode):
         constraints = shared.get("input", {}).get("constraints", {})
         
         if not validated_species:
-            raise ValueError("No validated species found in shared store")
+            logger.warning("No validated species found in shared store")
+            # Return empty list so BatchNode can handle gracefully
+            return []
         
         # Store constraints for access during exec
         self._constraints = constraints
@@ -607,16 +611,20 @@ class FetchSightingsNode(BatchNode):
         # Check if we got sufficient data
         success_rate = successful_fetches / len(prep_res) if prep_res else 0
         
-        if success_rate < 0.5:
+        # Handle case where no species were provided
+        if len(prep_res) == 0:
+            logger.warning("No species provided for fetching")
+            shared["fetch_warning"] = "No species provided for fetching"
+        elif success_rate < 0.5:
             logger.warning(f"Low fetch success rate: {success_rate:.1%}")
-            return "fetch_failed"
-
-        if total_observations == 0:
+            shared["fetch_warning"] = f"Low fetch success rate: {success_rate:.1%}"
+        elif total_observations == 0:
             logger.warning("No observations found for any species")
-            return "no_observations"
+            shared["fetch_warning"] = "No observations found for any species"
+        else:
+            logger.info(f"Sightings fetch completed: {success_rate:.1%} success rate, "
+                       f"{total_observations} total observations")
 
-        logger.info(f"Sightings fetch completed: {success_rate:.1%} success rate, "
-                   f"{total_observations} total observations")
         return "default"
 
 

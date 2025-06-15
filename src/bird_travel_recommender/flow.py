@@ -53,6 +53,7 @@ def create_birding_flow():
     
     # Connect nodes in pipeline sequence
     # Each node reads from shared store and writes results back to shared store
+    # Error conditions are handled gracefully within the normal flow
     validate_species >> fetch_sightings >> filter_constraints >> cluster_hotspots >> score_locations >> optimize_route >> generate_itinerary
     
     # Create flow starting with species validation
@@ -90,6 +91,8 @@ def create_async_birding_flow():
     generate_itinerary = GenerateItineraryNode(max_retries=MAX_RETRIES_DEFAULT)  # AsyncNode with retry logic
     
     # Connect nodes in pipeline sequence
+    # Each node reads from shared store and writes results back to shared store
+    # Error conditions are handled gracefully within the normal flow
     validate_species >> fetch_sightings >> filter_constraints >> cluster_hotspots >> score_locations >> optimize_route >> generate_itinerary
     
     # Create flow starting with species validation
