@@ -1,32 +1,13 @@
 from pocketflow import Flow
-# Import migrated nodes from new locations
+# Import all migrated nodes from new modular locations
 from .nodes.validation.species import ValidateSpeciesNode
 from .nodes.fetching.sightings import FetchSightingsNode
 from .nodes.fetching.async_sightings import AsyncFetchSightingsNode
-
-# Import remaining nodes from original nodes.py file using importlib
-import importlib.util
-import os
-_nodes_file_path = os.path.join(os.path.dirname(__file__), 'nodes.py')
-_spec = importlib.util.spec_from_file_location("original_nodes_module", _nodes_file_path)
-_original_nodes = importlib.util.module_from_spec(_spec)
-
-# Set up the module's globals to match the original context
-import sys
-_original_nodes.__dict__.update({
-    '__package__': 'bird_travel_recommender',
-    '__spec__': _spec,
-})
-
-# Execute the module
-_spec.loader.exec_module(_original_nodes)
-
-# Import the remaining non-migrated classes
-FilterConstraintsNode = _original_nodes.FilterConstraintsNode
-ClusterHotspotsNode = _original_nodes.ClusterHotspotsNode
-ScoreLocationsNode = _original_nodes.ScoreLocationsNode
-OptimizeRouteNode = _original_nodes.OptimizeRouteNode
-GenerateItineraryNode = _original_nodes.GenerateItineraryNode
+from .nodes.processing.constraints import FilterConstraintsNode
+from .nodes.processing.clustering import ClusterHotspotsNode
+from .nodes.processing.scoring import ScoreLocationsNode
+from .nodes.processing.routing import OptimizeRouteNode
+from .nodes.processing.itinerary import GenerateItineraryNode
 from .constants import (
     MAX_WORKERS_DEFAULT,
     CLUSTER_RADIUS_KM_DEFAULT,
