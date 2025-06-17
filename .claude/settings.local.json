@@ -35,7 +35,9 @@
       "Bash(uv pip show:*)",
       "Bash(git merge:*)",
       "Bash(git branch:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(git fetch:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
