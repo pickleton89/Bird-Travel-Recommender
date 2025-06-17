@@ -37,7 +37,8 @@
       "Bash(git branch:*)",
       "Bash(sed:*)",
       "Bash(git fetch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(NEO4J_PORT=7687 NEO4J_USER=neo4j NEO4J_PASSWORD=graphiti123 docker-compose -f /Users/jeffkiefer/Documents/projects/graphiti/docker-compose.yml up -d)"
     ],
     "deny": []
   }
