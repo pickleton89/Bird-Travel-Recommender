@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **Security Fixes from GitHub**: Merged important security updates from remote repository
+  - Removed `.auth_secret` file from version control and added to `.gitignore`
+  - Added masking for development API keys in logs to prevent credential exposure
+  - Updated MCP authentication documentation with API key-based authentication and optional JWT support
+  - Fixed hardcoded `cwd` paths in MCP config files to use relative paths for better portability
+  - Enhanced auth.py to auto-create `.auth_secret` file if missing, maintaining backward compatibility
+
 ### Changed
 - **Complete Nodes.py Modularization**: Successfully refactored monolithic nodes.py (~2500 lines) into clean modular architecture with 100% backward compatibility
   - **Modular Structure**: Split 8 nodes into focused modules by functional area:
