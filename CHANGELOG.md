@@ -177,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Safe Prompt Creation**: Built sanitization system for birding advice and species validation with threat assessment scoring
   - **Enhanced call_llm**: Added automatic prompt sanitization with configurable strict mode and logging of detected threats
   - **Applied to Advisory**: Integrated prompt sanitization into advisory handlers preventing system prompt extraction and jailbreaking attempts
-- **Authentication and Authorization**: Implemented comprehensive JWT-based authentication system for secure MCP server access
+- **Authentication and Authorization**: Implemented API key-based authentication system for secure MCP server access with optional JWT session tokens
   - **API Key Management**: Created AuthManager with secure key generation, hashing, and storage with role-based permissions (read:species, read:locations, use:pipeline, get:advice)
   - **Session Management**: Built user session tracking with timeout handling, failed attempt counting, and automatic lockout protection
   - **Permission System**: Implemented @require_auth decorator with fine-grained permission checking for all MCP handlers
