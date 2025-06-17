@@ -157,16 +157,15 @@ class TestPipelineIntegration:
         
         # Run fetch (should handle empty species gracefully)
         fetch_node = pipeline_nodes["fetch"]
-        try:
-            prep_result = fetch_node.prep(shared)
-            # This should fail since there are no validated species
-            assert False, "Expected ValueError for no validated species"
-        except ValueError as e:
-            assert "No validated species found" in str(e)
-            # Skip fetch execution since prep failed as expected
-            # Set up expected empty state for filter test
-            shared["all_sightings"] = []
-            shared["fetch_stats"] = {"total_species": 0}
+        prep_result = fetch_node.prep(shared)
+        assert prep_result == []  # Should return empty list for BatchNode
+        
+        # BatchNode pattern - post handles empty list gracefully
+        fetch_node.post(shared, prep_result, [])
+        
+        # Verify empty state was set correctly
+        assert "all_sightings" in shared
+        assert "fetch_stats" in shared
         
         assert shared["all_sightings"] == []
         assert shared["fetch_stats"]["total_species"] == 0

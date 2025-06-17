@@ -338,9 +338,9 @@ class TestFetchSightingsNode:
             }
         }
         
-        # Should raise ValueError when no validated species are provided
-        with pytest.raises(ValueError, match="No validated species found in shared store"):
-            fetch_node.prep(shared)
+        # Should return empty list when no validated species are provided
+        prep_result = fetch_node.prep(shared)
+        assert prep_result == []
 
     @pytest.mark.unit
     @pytest.mark.mock

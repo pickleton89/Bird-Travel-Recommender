@@ -35,8 +35,6 @@ class ValidateSpeciesNode(Node):
     def prep(self, shared):
         """Extract species list from shared store."""
         species_list = shared.get("input", {}).get("species_list", [])
-        if not species_list:
-            raise ValueError("No species list provided in shared['input']['species_list']")
         return species_list
     
     def exec(self, species_list: List[str]) -> Dict[str, Any]:
@@ -57,6 +55,14 @@ class ValidateSpeciesNode(Node):
             "failed_validations": 0,
             "cache_hits": 0
         }
+        
+        # Handle empty species list
+        if not species_list:
+            logger.info("Empty species list provided, returning empty results")
+            return {
+                "validated_species": validated_species,
+                "processing_stats": processing_stats
+            }
         
         # Get full eBird taxonomy for matching
         try:
@@ -327,16 +333,27 @@ If a name is invalid or unrecognizable, respond with "INVALID" for that entry.
     def post(self, shared, prep_res, exec_res):
         """Store validated species in shared store."""
         shared["validated_species"] = exec_res["validated_species"]
-        shared["validation_stats"] = exec_res["processing_stats"]
         
-        success_rate = (exec_res["processing_stats"]["direct_taxonomy_matches"] + 
-                       exec_res["processing_stats"]["llm_fuzzy_matches"]) / exec_res["processing_stats"]["total_input"]
+        # Create validation_stats with both old and new field names for backward compatibility
+        stats = exec_res["processing_stats"].copy()
+        stats["total_input_species"] = stats["total_input"]  # Add old field name
+        stats["successfully_validated"] = stats["direct_taxonomy_matches"] + stats["llm_fuzzy_matches"]
         
-        if success_rate < 0.5:
+        shared["validation_stats"] = stats
+        
+        # Handle division by zero when no species are provided
+        total_input = stats["total_input"]
+        if total_input == 0:
+            success_rate = 0.0
+            logger.info("No species provided for validation")
+        else:
+            success_rate = stats["successfully_validated"] / total_input
+            logger.info(f"Species validation completed with {success_rate:.1%} success rate")
+        
+        if total_input > 0 and success_rate < 0.5:
             logger.warning(f"Low validation success rate: {success_rate:.1%}")
             # Instead of returning validation_failed, add a flag to shared store for downstream handling
             shared["validation_warning"] = True
             shared["validation_success_rate"] = success_rate
         
-        logger.info(f"Species validation completed with {success_rate:.1%} success rate")
         return "default"

@@ -394,7 +394,7 @@ def mock_ebird_api_responses():
 @pytest.fixture
 def mock_ebird_api(mock_ebird_api_responses):
     """Mock the entire eBird API client."""
-    with patch('bird_travel_recommender.nodes.get_client') as mock_get_client, \
+    with patch('bird_travel_recommender.utils.ebird_api.get_client') as mock_get_client, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_taxonomy') as mock_taxonomy, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_recent_observations') as mock_recent, \
          patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_species_observations') as mock_species, \
