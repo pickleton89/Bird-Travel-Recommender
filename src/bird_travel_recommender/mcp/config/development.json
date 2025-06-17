@@ -8,7 +8,7 @@
         "mcp_server.py",
         "--debug"
       ],
-      "cwd": "/Users/jeffkiefer/Documents/projects/Bird-Travel-Recommender",
+      "cwd": ".",
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
         "EBIRD_API_KEY": "${EBIRD_API_KEY}",
