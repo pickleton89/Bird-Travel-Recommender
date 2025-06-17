@@ -157,6 +157,13 @@ Once integrated, you can ask Claude Desktop questions like:
 - **OPENAI_API_KEY**: Get from https://platform.openai.com/api-keys
 - **EBIRD_API_KEY**: Get from https://ebird.org/api/keygen
 
+### MCP Server Authentication
+
+The MCP server uses **API key-based authentication**. Generate keys with the
+`AuthManager` and include the raw key in the `MCP_API_KEY` environment variable
+when making requests. Issued keys can also be converted into signed JWT session
+tokens via `AuthManager.issue_token()` if needed.
+
 ## Acknowledgments
 
 This project is built using [PocketFlow](https://github.com/The-Pocket/PocketFlow), a minimalist 100-line LLM framework created by Zachary Huang and The Pocket team. PocketFlow provides the core pipeline architecture that enables our node-based bird travel recommendation workflow system. PocketFlow is released under the MIT License and offers a lightweight, dependency-free approach to building AI agent workflows with support for multi-agent coordination and task decomposition.

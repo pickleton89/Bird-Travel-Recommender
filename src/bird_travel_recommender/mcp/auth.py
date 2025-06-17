@@ -2,8 +2,9 @@
 """
 Authentication and Authorization Module for Bird Travel Recommender MCP Server
 
-Provides JWT-based authentication, API key management, and role-based access control
-to secure MCP server endpoints and prevent unauthorized access.
+Provides API key-based authentication and role-based access control to secure MCP
+server endpoints. Optional JWT support is available for issuing signed session
+tokens.
 """
 
 import os
@@ -13,6 +14,7 @@ import hmac
 import hashlib
 import secrets
 import logging
+import jwt
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Any
 from dataclasses import dataclass, asdict
@@ -69,7 +71,7 @@ class AuthManager:
         # Default permissions
         self.default_permissions = [
             "read:species",
-            "read:locations", 
+            "read:locations",
             "read:observations",
             "use:pipeline",
             "get:advice"
@@ -81,6 +83,23 @@ class AuthManager:
             "admin:view_stats",
             "admin:rate_limits"
         ]
+
+    def issue_token(self, session: UserSession, expires_in: int = 3600) -> str:
+        """Issue a signed JWT for the given session."""
+        payload = {
+            "sub": session.user_id,
+            "permissions": session.permissions,
+            "iat": datetime.utcnow(),
+            "exp": datetime.utcnow() + timedelta(seconds=expires_in),
+        }
+        return jwt.encode(payload, self.secret_key, algorithm="HS256")
+
+    def verify_token(self, token: str) -> Optional[dict]:
+        """Verify a JWT and return its payload if valid."""
+        try:
+            return jwt.decode(token, self.secret_key, algorithms=["HS256"])
+        except jwt.InvalidTokenError:
+            return None
     
     def _get_default_config_path(self) -> str:
         """Get default path for auth configuration"""
