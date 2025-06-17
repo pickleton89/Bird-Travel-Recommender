@@ -23,6 +23,7 @@ __pycache__/
 config/auth_config.json
 config/*.json
 !config/*.example.json
+config/.auth_secret
 
 # IDE - VSCode
 .vscode/*
