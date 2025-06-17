@@ -5,11 +5,6 @@ Test script to demonstrate the proper tools for finding LeConte's Thrasher in Ar
 
 import asyncio
 import json
-import sys
-import os
-
-# Add the src directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from bird_travel_recommender.mcp.handlers.species import SpeciesHandlers
 from bird_travel_recommender.mcp.handlers.location import LocationHandlers

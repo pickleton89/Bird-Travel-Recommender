@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Code Quality and Portability Issues**: Addressed multiple code hygiene and portability problems identified in codebase review
+  - **Compiled Files**: Removed committed .pyc files and __pycache__ directories from repository
+  - **Hardcoded Paths**: Fixed hardcoded platform-specific paths in scripts/test_merge.py with cross-platform fallback logic
+  - **Import Issues**: Removed improper sys.path manipulations in test scripts, now using proper package imports
+  - **Error Handling**: Fixed bare raise statement in MCP server, replaced with proper sys.exit(1)
+  - **Dependencies**: Verified all required packages are properly declared in pyproject.toml
 - **Test Suite Compatibility with Modular Nodes**: Fixed all test failures after nodes.py refactoring
   - **ValidateSpeciesNode**: Fixed empty species list handling to return empty list instead of raising ValueError
   - **ValidateSpeciesNode**: Added division-by-zero protection in post() method for empty species lists

@@ -275,4 +275,5 @@ if __name__ == "__main__":
         logger.info("Server shut down by user")
     except Exception as e:
         logger.error(f"Server error: {e}")
-        raise
+        import sys
+        sys.exit(1)

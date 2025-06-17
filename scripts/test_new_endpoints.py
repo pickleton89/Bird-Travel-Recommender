@@ -19,16 +19,11 @@ Options:
     --verbose              Enable verbose output
 """
 
-import sys
-import os
 import argparse
 import time
 from typing import List, Dict, Any
 
-# Add project root to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-from src.bird_travel_recommender.utils.ebird_api import EBirdClient, EBirdAPIError
+from bird_travel_recommender.utils.ebird_api import EBirdClient, EBirdAPIError
 
 
 class EndpointTester:
@@ -387,7 +382,7 @@ class EndpointTester:
         print("="*60)
         
         try:
-            from src.bird_travel_recommender.utils.ebird_api import (
+            from bird_travel_recommender.utils.ebird_api import (
                 get_nearest_observations,
                 get_species_list,
                 get_region_info,
@@ -500,4 +495,5 @@ def main():
 
 
 if __name__ == "__main__":
+    import sys
     sys.exit(main())
