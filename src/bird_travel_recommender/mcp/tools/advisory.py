@@ -14,28 +14,28 @@ ADVISORY_TOOLS = [
             "properties": {
                 "question": {
                     "type": "string",
-                    "description": "Birding question or scenario needing expert advice"
+                    "description": "Birding question or scenario needing expert advice",
                 },
                 "location": {
                     "type": "string",
-                    "description": "Location context (city, region, or coordinates)"
+                    "description": "Location context (city, region, or coordinates)",
                 },
                 "species_of_interest": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Specific species the user is interested in (optional)"
+                    "description": "Specific species the user is interested in (optional)",
                 },
                 "time_of_year": {
                     "type": "string",
-                    "description": "Time period for advice (e.g., 'March', 'spring migration', 'current') - defaults to current"
+                    "description": "Time period for advice (e.g., 'March', 'spring migration', 'current') - defaults to current",
                 },
                 "experience_level": {
                     "type": "string",
                     "enum": ["beginner", "intermediate", "advanced"],
-                    "description": "Birder's experience level for tailored advice"
-                }
+                    "description": "Birder's experience level for tailored advice",
+                },
             },
-            "required": ["question", "location"]
-        }
+            "required": ["question", "location"],
+        },
     )
 ]

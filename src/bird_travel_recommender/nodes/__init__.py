@@ -21,7 +21,7 @@ from .processing.itinerary import GenerateItineraryNode
 __all__ = [
     # Migrated nodes
     "ValidateSpeciesNode",
-    "FetchSightingsNode", 
+    "FetchSightingsNode",
     "AsyncFetchSightingsNode",
     "FilterConstraintsNode",
     "ClusterHotspotsNode",

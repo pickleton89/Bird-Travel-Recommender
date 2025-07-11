@@ -35,7 +35,7 @@ def mock_ebird_taxonomy():
             "order": "Passeriformes",
             "familyCode": "cardin1",
             "familyComName": "Cardinals, Grosbeaks, and Allies",
-            "familySciName": "Cardinalidae"
+            "familySciName": "Cardinalidae",
         },
         {
             "sciName": "Cyanocitta cristata",
@@ -49,7 +49,7 @@ def mock_ebird_taxonomy():
             "order": "Passeriformes",
             "familyCode": "corvid1",
             "familyComName": "Crows, Jays, and Magpies",
-            "familySciName": "Corvidae"
+            "familySciName": "Corvidae",
         },
         {
             "sciName": "Turdus migratorius",
@@ -63,8 +63,8 @@ def mock_ebird_taxonomy():
             "order": "Passeriformes",
             "familyCode": "turdid1",
             "familyComName": "Thrushes and Allies",
-            "familySciName": "Turdidae"
-        }
+            "familySciName": "Turdidae",
+        },
     ]
 
 
@@ -73,7 +73,7 @@ def mock_ebird_observations():
     """Mock eBird observations data for testing."""
     today = datetime.now()
     yesterday = today - timedelta(days=1)
-    
+
     return [
         {
             "speciesCode": "norcar",
@@ -88,7 +88,7 @@ def mock_ebird_observations():
             "obsValid": True,
             "obsReviewed": False,
             "locationPrivate": False,
-            "subId": "S123456789"
+            "subId": "S123456789",
         },
         {
             "speciesCode": "blujay",
@@ -103,7 +103,7 @@ def mock_ebird_observations():
             "obsValid": True,
             "obsReviewed": True,
             "locationPrivate": False,
-            "subId": "S234567890"
+            "subId": "S234567890",
         },
         {
             "speciesCode": "amerob",
@@ -118,8 +118,8 @@ def mock_ebird_observations():
             "obsValid": True,
             "obsReviewed": False,
             "locationPrivate": False,
-            "subId": "S345678901"
-        }
+            "subId": "S345678901",
+        },
     ]
 
 
@@ -136,7 +136,7 @@ def mock_ebird_hotspots():
             "lat": 42.3601,
             "lng": -71.0589,
             "latestObsDt": "2025-06-11",
-            "numSpeciesAllTime": 127
+            "numSpeciesAllTime": 127,
         },
         {
             "locId": "L234567",
@@ -147,7 +147,7 @@ def mock_ebird_hotspots():
             "lat": 42.3736,
             "lng": -71.1097,
             "latestObsDt": "2025-06-11",
-            "numSpeciesAllTime": 89
+            "numSpeciesAllTime": 89,
         },
         {
             "locId": "L345678",
@@ -158,8 +158,8 @@ def mock_ebird_hotspots():
             "lat": 40.7829,
             "lng": -73.9654,
             "latestObsDt": "2025-06-11",
-            "numSpeciesAllTime": 312
-        }
+            "numSpeciesAllTime": 312,
+        },
     ]
 
 
@@ -175,7 +175,7 @@ def mock_validated_species():
             "validation_method": "direct_common_name",
             "confidence": 1.0,
             "seasonal_notes": "Year-round resident in most of range",
-            "behavioral_notes": "Seed feeders, dense cover, active at feeders dawn and dusk"
+            "behavioral_notes": "Seed feeders, dense cover, active at feeders dawn and dusk",
         },
         {
             "original_name": "Blue Jay",
@@ -185,8 +185,8 @@ def mock_validated_species():
             "validation_method": "direct_common_name",
             "confidence": 1.0,
             "seasonal_notes": "Year-round resident in most of range",
-            "behavioral_notes": "Vocal and conspicuous, mixed habitats, often in family groups"
-        }
+            "behavioral_notes": "Vocal and conspicuous, mixed habitats, often in family groups",
+        },
     ]
 
 
@@ -199,14 +199,14 @@ def test_constraints():
         "start_location": {"lat": 42.3601, "lng": -71.0589},  # Boston
         "max_daily_distance_km": 100,
         "max_travel_radius_km": 50,
-        "min_observation_quality": "valid"
+        "min_observation_quality": "valid",
     }
 
 
 @pytest.fixture
 def mock_ebird_api_responses():
     """Mock all eBird API endpoints with realistic responses."""
-    
+
     def mock_get_taxonomy(region=None, species_code=None):
         """Mock get_taxonomy responses."""
         taxonomy = [
@@ -215,33 +215,33 @@ def mock_ebird_api_responses():
                 "comName": "Northern Cardinal",
                 "speciesCode": "norcar",
                 "category": "species",
-                "taxonOrder": 37823.0
+                "taxonOrder": 37823.0,
             },
             {
-                "sciName": "Cyanocitta cristata", 
+                "sciName": "Cyanocitta cristata",
                 "comName": "Blue Jay",
                 "speciesCode": "blujay",
                 "category": "species",
-                "taxonOrder": 20362.0
+                "taxonOrder": 20362.0,
             },
             {
                 "sciName": "Turdus migratorius",
-                "comName": "American Robin", 
+                "comName": "American Robin",
                 "speciesCode": "amerob",
                 "category": "species",
-                "taxonOrder": 16764.0
-            }
+                "taxonOrder": 16764.0,
+            },
         ]
-        
+
         if species_code:
             return [t for t in taxonomy if t["speciesCode"] == species_code]
         return taxonomy
-    
+
     def mock_get_recent_observations(region_code, days_back=14):
         """Mock get_recent_observations responses."""
         today = datetime.now()
         yesterday = today - timedelta(days=1)
-        
+
         observations = [
             {
                 "speciesCode": "norcar",
@@ -255,13 +255,13 @@ def mock_ebird_api_responses():
                 "lng": -71.0589,
                 "obsValid": True,
                 "obsReviewed": False,
-                "locationPrivate": False
+                "locationPrivate": False,
             },
             {
                 "speciesCode": "blujay",
                 "comName": "Blue Jay",
                 "sciName": "Cyanocitta cristata",
-                "locId": "L234567", 
+                "locId": "L234567",
                 "locName": "Harvard Yard",
                 "obsDt": today.strftime("%Y-%m-%d %H:%M"),
                 "howMany": 1,
@@ -269,17 +269,17 @@ def mock_ebird_api_responses():
                 "lng": -71.1097,
                 "obsValid": True,
                 "obsReviewed": True,
-                "locationPrivate": False
-            }
+                "locationPrivate": False,
+            },
         ]
-        
+
         return observations
-    
+
     def mock_get_species_observations(region_code, species_code, days_back=30):
         """Mock get_species_observations responses."""
         today = datetime.now()
         yesterday = today - timedelta(days=1)
-        
+
         if species_code == "norcar":
             return [
                 {
@@ -294,7 +294,7 @@ def mock_ebird_api_responses():
                     "lng": -71.0589,
                     "obsValid": True,
                     "obsReviewed": False,
-                    "locationPrivate": False
+                    "locationPrivate": False,
                 }
             ]
         elif species_code == "blujay":
@@ -304,49 +304,51 @@ def mock_ebird_api_responses():
                     "comName": "Blue Jay",
                     "sciName": "Cyanocitta cristata",
                     "locId": "L234567",
-                    "locName": "Harvard Yard", 
+                    "locName": "Harvard Yard",
                     "obsDt": today.strftime("%Y-%m-%d %H:%M"),
                     "howMany": 1,
                     "lat": 42.3736,
                     "lng": -71.1097,
                     "obsValid": True,
                     "obsReviewed": True,
-                    "locationPrivate": False
+                    "locationPrivate": False,
                 }
             ]
         else:
             return []
-    
+
     def mock_get_hotspots(region_code):
         """Mock get_hotspots responses."""
         return [
             {
                 "locId": "L123456",
-                "locName": "Boston Common",  
+                "locName": "Boston Common",
                 "countryCode": "US",
                 "subnational1Code": "US-MA",
                 "lat": 42.3601,
                 "lng": -71.0589,
                 "latestObsDt": "2025-06-11",
-                "numSpeciesAllTime": 127
+                "numSpeciesAllTime": 127,
             },
             {
                 "locId": "L234567",
                 "locName": "Harvard Yard",
-                "countryCode": "US", 
+                "countryCode": "US",
                 "subnational1Code": "US-MA",
                 "lat": 42.3736,
                 "lng": -71.1097,
                 "latestObsDt": "2025-06-11",
-                "numSpeciesAllTime": 89
-            }
+                "numSpeciesAllTime": 89,
+            },
         ]
-    
-    def mock_get_nearby_observations(lat, lng, distance_km, days_back=14, species_code=None):
+
+    def mock_get_nearby_observations(
+        lat, lng, distance_km, days_back=14, species_code=None
+    ):
         """Mock get_nearby_observations responses."""
         today = datetime.now()
         yesterday = today - timedelta(days=1)
-        
+
         # Return observations near the provided location
         observations = [
             {
@@ -361,13 +363,13 @@ def mock_ebird_api_responses():
                 "lng": -71.0589,
                 "obsValid": True,
                 "obsReviewed": False,
-                "locationPrivate": False
+                "locationPrivate": False,
             },
             {
                 "speciesCode": "blujay",
                 "comName": "Blue Jay",
                 "sciName": "Cyanocitta cristata",
-                "locId": "L234567", 
+                "locId": "L234567",
                 "locName": "Harvard Yard",
                 "obsDt": today.strftime("%Y-%m-%d %H:%M"),
                 "howMany": 1,
@@ -375,38 +377,57 @@ def mock_ebird_api_responses():
                 "lng": -71.1097,
                 "obsValid": True,
                 "obsReviewed": True,
-                "locationPrivate": False
-            }
+                "locationPrivate": False,
+            },
         ]
-        
+
         # Filter by species if specified
         if species_code:
-            observations = [obs for obs in observations if obs["speciesCode"] == species_code]
-        
+            observations = [
+                obs for obs in observations if obs["speciesCode"] == species_code
+            ]
+
         return observations
-    
+
     return {
         "get_taxonomy": mock_get_taxonomy,
         "get_recent_observations": mock_get_recent_observations,
         "get_species_observations": mock_get_species_observations,
         "get_hotspots": mock_get_hotspots,
-        "get_nearby_observations": mock_get_nearby_observations
+        "get_nearby_observations": mock_get_nearby_observations,
     }
 
 
 @pytest.fixture
 def mock_ebird_api(mock_ebird_api_responses):
     """Mock the entire eBird API client by patching the EBirdClient class methods."""
-    with patch('bird_travel_recommender.nodes.get_client') as mock_get_client, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_taxonomy') as mock_taxonomy, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_recent_observations') as mock_recent, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_species_observations') as mock_species, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_hotspots') as mock_hotspots, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_observations') as mock_nearby, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_notable_observations') as mock_notable, \
-         patch('bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_hotspots') as mock_nearby_hotspots, \
-         patch('bird_travel_recommender.utils.ebird_observations.EBirdObservationsMixin.get_nearby_observations') as mock_nearby_mixin:
-        
+    with (
+        patch("bird_travel_recommender.nodes.get_client") as mock_get_client,
+        patch(
+            "bird_travel_recommender.utils.ebird_api.EBirdClient.get_taxonomy"
+        ) as mock_taxonomy,
+        patch(
+            "bird_travel_recommender.utils.ebird_api.EBirdClient.get_recent_observations"
+        ) as mock_recent,
+        patch(
+            "bird_travel_recommender.utils.ebird_api.EBirdClient.get_species_observations"
+        ) as mock_species,
+        patch(
+            "bird_travel_recommender.utils.ebird_api.EBirdClient.get_hotspots"
+        ) as mock_hotspots,
+        patch(
+            "bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_observations"
+        ) as mock_nearby,
+        patch(
+            "bird_travel_recommender.utils.ebird_api.EBirdClient.get_notable_observations"
+        ) as mock_notable,
+        patch(
+            "bird_travel_recommender.utils.ebird_api.EBirdClient.get_nearby_hotspots"
+        ) as mock_nearby_hotspots,
+        patch(
+            "bird_travel_recommender.utils.ebird_observations.EBirdObservationsMixin.get_nearby_observations"
+        ) as mock_nearby_mixin,
+    ):
         # Create a mock client instance with all the mocked methods
         mock_client = Mock()
         mock_client.get_taxonomy = mock_taxonomy
@@ -416,31 +437,33 @@ def mock_ebird_api(mock_ebird_api_responses):
         mock_client.get_nearby_observations = mock_nearby
         mock_client.get_notable_observations = mock_notable
         mock_client.get_nearby_hotspots = mock_nearby_hotspots
-        
+
         # Make get_client() return our mock client
         mock_get_client.return_value = mock_client
-        
+
         mock_taxonomy.side_effect = mock_ebird_api_responses["get_taxonomy"]
         mock_recent.side_effect = mock_ebird_api_responses["get_recent_observations"]
         mock_species.side_effect = mock_ebird_api_responses["get_species_observations"]
         mock_hotspots.side_effect = mock_ebird_api_responses["get_hotspots"]
         mock_nearby.side_effect = mock_ebird_api_responses["get_nearby_observations"]
-        mock_nearby_mixin.side_effect = mock_ebird_api_responses["get_nearby_observations"]
-        
+        mock_nearby_mixin.side_effect = mock_ebird_api_responses[
+            "get_nearby_observations"
+        ]
+
         # Add mock responses for additional methods
         mock_notable.return_value = []
         mock_nearby_hotspots.return_value = []
-        
+
         yield {
             "client": mock_client,
             "get_client": mock_get_client,
             "taxonomy": mock_taxonomy,
             "recent_observations": mock_recent,
-            "species_observations": mock_species, 
+            "species_observations": mock_species,
             "hotspots": mock_hotspots,
             "nearby_observations": mock_nearby,
             "notable_observations": mock_notable,
-            "nearby_hotspots": mock_nearby_hotspots
+            "nearby_hotspots": mock_nearby_hotspots,
         }
 
 
@@ -454,8 +477,8 @@ def sample_shared_store():
                 "region": "US-MA",
                 "days_back": 7,
                 "start_location": {"lat": 42.3601, "lng": -71.0589},
-                "max_daily_distance_km": 100
-            }
+                "max_daily_distance_km": 100,
+            },
         }
     }
 
@@ -464,26 +487,61 @@ def sample_shared_store():
 def large_species_dataset():
     """Generate large species dataset for performance testing."""
     valid_species = [
-        "Northern Cardinal", "Blue Jay", "American Robin", "House Sparrow",
-        "Mourning Dove", "Red-winged Blackbird", "American Goldfinch",
-        "Common Grackle", "European Starling", "Song Sparrow",
-        "Downy Woodpecker", "Hairy Woodpecker", "White-breasted Nuthatch",
-        "Carolina Wren", "House Finch", "Purple Finch", "Pine Siskin",
-        "Yellow Warbler", "Black-capped Chickadee", "Tufted Titmouse",
-        "Dark-eyed Junco", "White-throated Sparrow", "Chipping Sparrow",
-        "Field Sparrow", "Savannah Sparrow", "Swamp Sparrow", "Lincoln's Sparrow",
-        "Rose-breasted Grosbeak", "Indigo Bunting", "Painted Bunting",
-        "Scarlet Tanager", "Summer Tanager", "Baltimore Oriole", "Orchard Oriole",
-        "Red-eyed Vireo", "Warbling Vireo", "Yellow-throated Vireo",
-        "Cedar Waxwing", "Brown Thrasher", "Gray Catbird", "Northern Mockingbird",
-        "Ruby-throated Hummingbird", "Chimney Swift", "Belted Kingfisher",
-        "Red-bellied Woodpecker", "Pileated Woodpecker", "Northern Flicker",
-        "Eastern Phoebe", "Great Crested Flycatcher", "Eastern Kingbird"
+        "Northern Cardinal",
+        "Blue Jay",
+        "American Robin",
+        "House Sparrow",
+        "Mourning Dove",
+        "Red-winged Blackbird",
+        "American Goldfinch",
+        "Common Grackle",
+        "European Starling",
+        "Song Sparrow",
+        "Downy Woodpecker",
+        "Hairy Woodpecker",
+        "White-breasted Nuthatch",
+        "Carolina Wren",
+        "House Finch",
+        "Purple Finch",
+        "Pine Siskin",
+        "Yellow Warbler",
+        "Black-capped Chickadee",
+        "Tufted Titmouse",
+        "Dark-eyed Junco",
+        "White-throated Sparrow",
+        "Chipping Sparrow",
+        "Field Sparrow",
+        "Savannah Sparrow",
+        "Swamp Sparrow",
+        "Lincoln's Sparrow",
+        "Rose-breasted Grosbeak",
+        "Indigo Bunting",
+        "Painted Bunting",
+        "Scarlet Tanager",
+        "Summer Tanager",
+        "Baltimore Oriole",
+        "Orchard Oriole",
+        "Red-eyed Vireo",
+        "Warbling Vireo",
+        "Yellow-throated Vireo",
+        "Cedar Waxwing",
+        "Brown Thrasher",
+        "Gray Catbird",
+        "Northern Mockingbird",
+        "Ruby-throated Hummingbird",
+        "Chimney Swift",
+        "Belted Kingfisher",
+        "Red-bellied Woodpecker",
+        "Pileated Woodpecker",
+        "Northern Flicker",
+        "Eastern Phoebe",
+        "Great Crested Flycatcher",
+        "Eastern Kingbird",
     ]
-    
+
     # Add some invalid species to test error handling
     invalid_species = ["Invalid Bird", "Made Up Species", "Nonexistent Fowl"]
-    
+
     return valid_species + invalid_species
 
 

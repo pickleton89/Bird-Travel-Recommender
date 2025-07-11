@@ -14,11 +14,11 @@ LOCATION_TOOLS = [
             "properties": {
                 "region": {
                     "type": "string",
-                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO', 'CR')"
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO', 'CR')",
                 }
             },
-            "required": ["region"]
-        }
+            "required": ["region"],
+        },
     ),
     Tool(
         name="get_hotspot_details",
@@ -28,11 +28,11 @@ LOCATION_TOOLS = [
             "properties": {
                 "location_id": {
                     "type": "string",
-                    "description": "eBird location ID (e.g., 'L99381')"
+                    "description": "eBird location ID (e.g., 'L99381')",
                 }
             },
-            "required": ["location_id"]
-        }
+            "required": ["location_id"],
+        },
     ),
     Tool(
         name="find_nearest_species",
@@ -42,29 +42,23 @@ LOCATION_TOOLS = [
             "properties": {
                 "species_code": {
                     "type": "string",
-                    "description": "eBird species code (e.g., 'baleag' for Bald Eagle)"
+                    "description": "eBird species code (e.g., 'baleag' for Bald Eagle)",
                 },
-                "latitude": {
-                    "type": "number",
-                    "description": "Latitude coordinate"
-                },
-                "longitude": {
-                    "type": "number", 
-                    "description": "Longitude coordinate"
-                },
+                "latitude": {"type": "number", "description": "Latitude coordinate"},
+                "longitude": {"type": "number", "description": "Longitude coordinate"},
                 "radius": {
                     "type": "integer",
                     "description": "Search radius in kilometers (default: 50)",
-                    "default": 50
+                    "default": 50,
                 },
                 "days": {
                     "type": "integer",
                     "description": "Number of days back to search (default: 30)",
-                    "default": 30
-                }
+                    "default": 30,
+                },
             },
-            "required": ["species_code", "latitude", "longitude"]
-        }
+            "required": ["species_code", "latitude", "longitude"],
+        },
     ),
     Tool(
         name="get_nearby_notable_observations",
@@ -72,27 +66,21 @@ LOCATION_TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "latitude": {
-                    "type": "number",
-                    "description": "Latitude coordinate"
-                },
-                "longitude": {
-                    "type": "number",
-                    "description": "Longitude coordinate"
-                },
+                "latitude": {"type": "number", "description": "Latitude coordinate"},
+                "longitude": {"type": "number", "description": "Longitude coordinate"},
                 "radius": {
                     "type": "integer",
                     "description": "Search radius in kilometers (default: 25)",
-                    "default": 25
+                    "default": 25,
                 },
                 "days": {
                     "type": "integer",
                     "description": "Number of days back to search (1-30, default: 14)",
-                    "default": 14
-                }
+                    "default": 14,
+                },
             },
-            "required": ["latitude", "longitude"]
-        }
+            "required": ["latitude", "longitude"],
+        },
     ),
     Tool(
         name="get_nearby_species_observations",
@@ -103,29 +91,23 @@ LOCATION_TOOLS = [
                 "species_codes": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Array of eBird species codes to search for"
+                    "description": "Array of eBird species codes to search for",
                 },
-                "latitude": {
-                    "type": "number",
-                    "description": "Latitude coordinate"
-                },
-                "longitude": {
-                    "type": "number",
-                    "description": "Longitude coordinate"
-                },
+                "latitude": {"type": "number", "description": "Latitude coordinate"},
+                "longitude": {"type": "number", "description": "Longitude coordinate"},
                 "radius": {
                     "type": "integer",
                     "description": "Search radius in kilometers (default: 25)",
-                    "default": 25
+                    "default": 25,
                 },
                 "days": {
                     "type": "integer",
                     "description": "Number of days back to search (1-30, default: 14)",
-                    "default": 14
-                }
+                    "default": 14,
+                },
             },
-            "required": ["species_codes", "latitude", "longitude"]
-        }
+            "required": ["species_codes", "latitude", "longitude"],
+        },
     ),
     Tool(
         name="get_top_locations",
@@ -135,26 +117,26 @@ LOCATION_TOOLS = [
             "properties": {
                 "region": {
                     "type": "string",
-                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')"
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')",
                 },
                 "days_back": {
                     "type": "integer",
                     "description": "Number of days back to consider (1-30, default: 7)",
-                    "default": 7
+                    "default": 7,
                 },
                 "max_results": {
-                    "type": "integer", 
+                    "type": "integer",
                     "description": "Maximum locations to return (default: 100, max: 200)",
-                    "default": 100
+                    "default": 100,
                 },
                 "locale": {
                     "type": "string",
                     "description": "Language code for common names (default: 'en')",
-                    "default": "en"
-                }
+                    "default": "en",
+                },
             },
-            "required": ["region"]
-        }
+            "required": ["region"],
+        },
     ),
     Tool(
         name="get_regional_statistics",
@@ -164,21 +146,21 @@ LOCATION_TOOLS = [
             "properties": {
                 "region": {
                     "type": "string",
-                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')"
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-ROO')",
                 },
                 "days_back": {
                     "type": "integer",
                     "description": "Number of days back to analyze (1-30, default: 30)",
-                    "default": 30
+                    "default": 30,
                 },
                 "locale": {
                     "type": "string",
                     "description": "Language code for common names (default: 'en')",
-                    "default": "en"
-                }
+                    "default": "en",
+                },
             },
-            "required": ["region"]
-        }
+            "required": ["region"],
+        },
     ),
     Tool(
         name="get_location_species_list",
@@ -188,16 +170,16 @@ LOCATION_TOOLS = [
             "properties": {
                 "location_id": {
                     "type": "string",
-                    "description": "eBird location ID (e.g., 'L99381') or coordinates as 'lat,lng'"
+                    "description": "eBird location ID (e.g., 'L99381') or coordinates as 'lat,lng'",
                 },
                 "locale": {
                     "type": "string",
                     "description": "Language code for common names (default: 'en')",
-                    "default": "en"
-                }
+                    "default": "en",
+                },
             },
-            "required": ["location_id"]
-        }
+            "required": ["location_id"],
+        },
     ),
     Tool(
         name="get_subregions",
@@ -207,17 +189,17 @@ LOCATION_TOOLS = [
             "properties": {
                 "region_code": {
                     "type": "string",
-                    "description": "eBird region code (e.g., 'US' for states, 'US-CA' for counties)"
+                    "description": "eBird region code (e.g., 'US' for states, 'US-CA' for counties)",
                 },
                 "region_type": {
                     "type": "string",
                     "description": "Type of subregions to return",
                     "enum": ["country", "subnational1", "subnational2"],
-                    "default": "subnational1"
-                }
+                    "default": "subnational1",
+                },
             },
-            "required": ["region_code"]
-        }
+            "required": ["region_code"],
+        },
     ),
     Tool(
         name="get_adjacent_regions",
@@ -227,11 +209,11 @@ LOCATION_TOOLS = [
             "properties": {
                 "region_code": {
                     "type": "string",
-                    "description": "eBird region code (e.g., 'US-CA', 'MX-BCN')"
+                    "description": "eBird region code (e.g., 'US-CA', 'MX-BCN')",
                 }
             },
-            "required": ["region_code"]
-        }
+            "required": ["region_code"],
+        },
     ),
     Tool(
         name="get_elevation_data",
@@ -239,21 +221,15 @@ LOCATION_TOOLS = [
         inputSchema={
             "type": "object",
             "properties": {
-                "latitude": {
-                    "type": "number",
-                    "description": "Latitude coordinate"
-                },
-                "longitude": {
-                    "type": "number",
-                    "description": "Longitude coordinate"
-                },
+                "latitude": {"type": "number", "description": "Latitude coordinate"},
+                "longitude": {"type": "number", "description": "Longitude coordinate"},
                 "radius_km": {
                     "type": "integer",
                     "description": "Search radius in kilometers (default: 25, max: 50)",
-                    "default": 25
-                }
+                    "default": 25,
+                },
             },
-            "required": ["latitude", "longitude"]
-        }
-    )
+            "required": ["latitude", "longitude"],
+        },
+    ),
 ]

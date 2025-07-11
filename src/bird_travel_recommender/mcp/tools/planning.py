@@ -14,7 +14,7 @@ PLANNING_TOOLS = [
             "properties": {
                 "data": {
                     "type": "object",
-                    "description": "Optimized route data from optimize_route"
+                    "description": "Optimized route data from optimize_route",
                 },
                 "trip_preferences": {
                     "type": "object",
@@ -22,13 +22,13 @@ PLANNING_TOOLS = [
                         "trip_duration_days": {"type": "integer"},
                         "daily_start_time": {"type": "string"},
                         "birding_hours_per_day": {"type": "number"},
-                        "accommodation_preferences": {"type": "string"}
+                        "accommodation_preferences": {"type": "string"},
                     },
-                    "description": "Trip planning preferences"
-                }
+                    "description": "Trip planning preferences",
+                },
             },
-            "required": ["data"]
-        }
+            "required": ["data"],
+        },
     ),
     Tool(
         name="plan_complete_trip",
@@ -39,29 +39,29 @@ PLANNING_TOOLS = [
                 "target_species": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "List of target bird species names"
+                    "description": "List of target bird species names",
                 },
                 "regions": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "eBird region codes to search within"
+                    "description": "eBird region codes to search within",
                 },
                 "trip_duration_days": {
                     "type": "integer",
-                    "description": "Duration of the trip in days"
+                    "description": "Duration of the trip in days",
                 },
                 "max_daily_driving_hours": {
                     "type": "number",
                     "description": "Maximum driving hours per day (default: 4)",
-                    "default": 4
+                    "default": 4,
                 },
                 "birding_skill_level": {
                     "type": "string",
                     "enum": ["beginner", "intermediate", "advanced"],
-                    "description": "Birder's skill level for appropriate recommendations"
-                }
+                    "description": "Birder's skill level for appropriate recommendations",
+                },
             },
-            "required": ["target_species", "regions", "trip_duration_days"]
-        }
-    )
+            "required": ["target_species", "regions", "trip_duration_days"],
+        },
+    ),
 ]

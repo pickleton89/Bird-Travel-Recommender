@@ -15,11 +15,11 @@ SPECIES_TOOLS = [
                 "species_names": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Array of species names to validate"
+                    "description": "Array of species names to validate",
                 }
             },
-            "required": ["species_names"]
-        }
+            "required": ["species_names"],
+        },
     ),
     Tool(
         name="get_regional_species_list",
@@ -29,10 +29,10 @@ SPECIES_TOOLS = [
             "properties": {
                 "region": {
                     "type": "string",
-                    "description": "eBird region code (e.g., 'US-CA' for California, 'MX' for Mexico)"
+                    "description": "eBird region code (e.g., 'US-CA' for California, 'MX' for Mexico)",
                 }
             },
-            "required": ["region"]
-        }
-    )
+            "required": ["region"],
+        },
+    ),
 ]

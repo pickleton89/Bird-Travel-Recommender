@@ -21,17 +21,17 @@ from src.bird_travel_recommender.utils.ebird_api import EBirdClient, EBirdAPIErr
 
 class TestEBirdAPIExpansion:
     """Test suite for new eBird API expansion endpoints."""
-    
+
     @pytest.fixture
     def client(self):
         """Create EBirdClient instance for testing."""
-        with patch.dict('os.environ', {'EBIRD_API_KEY': 'test_key_12345'}):
+        with patch.dict("os.environ", {"EBIRD_API_KEY": "test_key_12345"}):
             return EBirdClient()
-    
+
     @pytest.fixture
     def mock_session(self, client):
         """Mock the requests session for controlled testing."""
-        with patch.object(client, 'session') as mock_session:
+        with patch.object(client, "session") as mock_session:
             yield mock_session
 
     # Tests for get_nearest_observations()
@@ -49,35 +49,35 @@ class TestEBirdAPIExpansion:
                 "locName": "Central Park",
                 "locId": "L123456",
                 "obsDate": "2024-01-15",
-                "distance": 1.2
+                "distance": 1.2,
             },
             {
-                "speciesCode": "norcar", 
+                "speciesCode": "norcar",
                 "comName": "Northern Cardinal",
                 "lat": 42.3701,
                 "lng": -71.0915,
                 "locName": "Boston Common",
                 "locId": "L123457",
                 "obsDate": "2024-01-14",
-                "distance": 2.1
-            }
+                "distance": 2.1,
+            },
         ]
         mock_session.get.return_value = mock_response
-        
+
         # Test the method
         result = client.get_nearest_observations(
             species_code="norcar",
             lat=42.3601,
             lng=-71.0942,
             days_back=14,
-            distance_km=25
+            distance_km=25,
         )
-        
+
         # Verify results
         assert len(result) == 2
         assert result[0]["speciesCode"] == "norcar"
         assert result[0]["distance"] == 1.2
-        
+
         # Verify API call parameters
         mock_session.get.assert_called_once()
         call_args = mock_session.get.call_args
@@ -93,7 +93,7 @@ class TestEBirdAPIExpansion:
         mock_response.status_code = 200
         mock_response.json.return_value = []
         mock_session.get.return_value = mock_response
-        
+
         # Test parameter limits are enforced
         client.get_nearest_observations(
             species_code="norcar",
@@ -101,13 +101,13 @@ class TestEBirdAPIExpansion:
             lng=-71.0942,
             days_back=35,  # Should be limited to 30
             distance_km=75,  # Should be limited to 50
-            max_results=5000  # Should be limited to 3000
+            max_results=5000,  # Should be limited to 3000
         )
-        
+
         call_args = mock_session.get.call_args
         params = call_args[1]["params"]
         assert params["back"] == 30  # Limited
-        assert params["dist"] == 50   # Limited
+        assert params["dist"] == 50  # Limited
         assert params["maxResults"] == 3000  # Limited
 
     def test_get_nearest_observations_404_error(self, client, mock_session):
@@ -115,12 +115,12 @@ class TestEBirdAPIExpansion:
         mock_response = Mock()
         mock_response.status_code = 404
         mock_session.get.return_value = mock_response
-        
-        with pytest.raises(EBirdAPIError, match="Not found: Invalid region or species code"):
+
+        with pytest.raises(
+            EBirdAPIError, match="Not found: Invalid region or species code"
+        ):
             client.get_nearest_observations(
-                species_code="invalidspecies",
-                lat=42.3601,
-                lng=-71.0942
+                species_code="invalidspecies", lat=42.3601, lng=-71.0942
             )
 
     def test_get_nearest_observations_empty_response(self, client, mock_session):
@@ -129,13 +129,11 @@ class TestEBirdAPIExpansion:
         mock_response.status_code = 200
         mock_response.json.return_value = []
         mock_session.get.return_value = mock_response
-        
+
         result = client.get_nearest_observations(
-            species_code="rarebird",
-            lat=42.3601,
-            lng=-71.0942
+            species_code="rarebird", lat=42.3601, lng=-71.0942
         )
-        
+
         assert result == []
 
     # Tests for get_species_list()
@@ -144,16 +142,21 @@ class TestEBirdAPIExpansion:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = [
-            "norcar", "blujay", "amerob", "houspa", "eurost", "commgr"
+            "norcar",
+            "blujay",
+            "amerob",
+            "houspa",
+            "eurost",
+            "commgr",
         ]
         mock_session.get.return_value = mock_response
-        
+
         result = client.get_species_list("US-MA")
-        
+
         assert len(result) == 6
         assert "norcar" in result
         assert "blujay" in result
-        
+
         # Verify API call
         mock_session.get.assert_called_once()
         call_args = mock_session.get.call_args
@@ -164,22 +167,24 @@ class TestEBirdAPIExpansion:
         mock_response = Mock()
         mock_response.status_code = 404
         mock_session.get.return_value = mock_response
-        
-        with pytest.raises(EBirdAPIError, match="Not found: Invalid region or species code"):
+
+        with pytest.raises(
+            EBirdAPIError, match="Not found: Invalid region or species code"
+        ):
             client.get_species_list("INVALID-REGION")
 
     def test_get_species_list_large_response(self, client, mock_session):
         """Test handling of large species lists."""
         # Generate a large mock response (like for a country)
         large_species_list = [f"species{i:04d}" for i in range(1000)]
-        
+
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = large_species_list
         mock_session.get.return_value = mock_response
-        
+
         result = client.get_species_list("US")
-        
+
         assert len(result) == 1000
         assert result[0] == "species0000"
         assert result[-1] == "species0999"
@@ -198,17 +203,17 @@ class TestEBirdAPIExpansion:
                 "minLat": 41.2371,
                 "maxLat": 42.8868,
                 "minLng": -73.5081,
-                "maxLng": -69.9258
-            }
+                "maxLng": -69.9258,
+            },
         }
         mock_session.get.return_value = mock_response
-        
+
         result = client.get_region_info("US-MA")
-        
+
         assert result["code"] == "US-MA"
         assert result["name"] == "Massachusetts, United States"
         assert "bounds" in result
-        
+
         # Verify API call
         mock_session.get.assert_called_once()
         call_args = mock_session.get.call_args
@@ -222,12 +227,12 @@ class TestEBirdAPIExpansion:
         mock_response.json.return_value = {
             "code": "US-MA",
             "name": "Massachusetts",
-            "nameFormat": "short"
+            "nameFormat": "short",
         }
         mock_session.get.return_value = mock_response
-        
+
         client.get_region_info("US-MA", name_format="short")
-        
+
         call_args = mock_session.get.call_args
         assert call_args[1]["params"]["nameFormat"] == "short"
 
@@ -239,10 +244,10 @@ class TestEBirdAPIExpansion:
         mock_response.json.return_value = {
             "code": "US",
             "name": "United States",
-            "type": "country"
+            "type": "country",
         }
         mock_session.get.return_value = mock_response
-        
+
         result = client.get_region_info("US")
         assert result["code"] == "US"
         assert result["type"] == "country"
@@ -261,17 +266,17 @@ class TestEBirdAPIExpansion:
             "subnational1Code": "US-NY",
             "isHotspot": True,
             "numSpeciesAllTime": 287,
-            "numChecklistsAllTime": 15432
+            "numChecklistsAllTime": 15432,
         }
         mock_session.get.return_value = mock_response
-        
+
         result = client.get_hotspot_info("L123456")
-        
+
         assert result["locId"] == "L123456"
         assert result["name"] == "Central Park"
         assert result["numSpeciesAllTime"] == 287
         assert result["isHotspot"] is True
-        
+
         # Verify API call
         mock_session.get.assert_called_once()
         call_args = mock_session.get.call_args
@@ -282,8 +287,10 @@ class TestEBirdAPIExpansion:
         mock_response = Mock()
         mock_response.status_code = 404
         mock_session.get.return_value = mock_response
-        
-        with pytest.raises(EBirdAPIError, match="Not found: Invalid region or species code"):
+
+        with pytest.raises(
+            EBirdAPIError, match="Not found: Invalid region or species code"
+        ):
             client.get_hotspot_info("INVALID-LOCATION")
 
     def test_get_hotspot_info_non_hotspot_location(self, client, mock_session):
@@ -295,10 +302,10 @@ class TestEBirdAPIExpansion:
             "name": "Personal Location",
             "isHotspot": False,
             "numSpeciesAllTime": 0,
-            "numChecklistsAllTime": 1
+            "numChecklistsAllTime": 1,
         }
         mock_session.get.return_value = mock_response
-        
+
         result = client.get_hotspot_info("L987654")
         assert result["isHotspot"] is False
         assert result["numSpeciesAllTime"] == 0
@@ -307,32 +314,29 @@ class TestEBirdAPIExpansion:
     def test_rate_limiting_retry(self, client, mock_session):
         """Test rate limiting and retry behavior."""
         # First call returns 429, second call succeeds
-        mock_responses = [
-            Mock(status_code=429),
-            Mock(status_code=200)
-        ]
+        mock_responses = [Mock(status_code=429), Mock(status_code=200)]
         mock_responses[1].json.return_value = ["norcar", "blujay"]
         mock_session.get.side_effect = mock_responses
-        
-        with patch('time.sleep'):  # Mock sleep to speed up test
+
+        with patch("time.sleep"):  # Mock sleep to speed up test
             result = client.get_species_list("US-MA")
-            
+
         assert result == ["norcar", "blujay"]
         assert mock_session.get.call_count == 2
 
     def test_server_error_retry(self, client, mock_session):
         """Test server error retry behavior."""
         # First call returns 500, second call succeeds
-        mock_responses = [
-            Mock(status_code=500),
-            Mock(status_code=200)
-        ]
-        mock_responses[1].json.return_value = {"locId": "L123456", "name": "Test Location"}
+        mock_responses = [Mock(status_code=500), Mock(status_code=200)]
+        mock_responses[1].json.return_value = {
+            "locId": "L123456",
+            "name": "Test Location",
+        }
         mock_session.get.side_effect = mock_responses
-        
-        with patch('time.sleep'):  # Mock sleep to speed up test
+
+        with patch("time.sleep"):  # Mock sleep to speed up test
             result = client.get_hotspot_info("L123456")
-            
+
         assert result["locId"] == "L123456"
         assert mock_session.get.call_count == 2
 
@@ -340,26 +344,26 @@ class TestEBirdAPIExpansion:
         """Test behavior when max retries are exceeded."""
         mock_response = Mock(status_code=429)
         mock_session.get.return_value = mock_response
-        
-        with patch('time.sleep'):  # Mock sleep to speed up test
+
+        with patch("time.sleep"):  # Mock sleep to speed up test
             with pytest.raises(EBirdAPIError, match="Rate limit exceeded"):
                 client.get_species_list("US-MA")
-        
+
         assert mock_session.get.call_count == 3  # Initial + 2 retries
 
     def test_connection_error_handling(self, client, mock_session):
         """Test handling of connection errors."""
         mock_session.get.side_effect = ConnectionError("Connection failed")
-        
-        with patch('time.sleep'):  # Mock sleep to speed up test
+
+        with patch("time.sleep"):  # Mock sleep to speed up test
             with pytest.raises(EBirdAPIError, match="Connection error"):
                 client.get_region_info("US-MA")
 
     def test_timeout_error_handling(self, client, mock_session):
         """Test handling of timeout errors."""
         mock_session.get.side_effect = Timeout("Request timed out")
-        
-        with patch('time.sleep'):  # Mock sleep to speed up test
+
+        with patch("time.sleep"):  # Mock sleep to speed up test
             with pytest.raises(EBirdAPIError, match="Request timeout"):
                 client.get_nearest_observations("norcar", 42.36, -71.09)
 
@@ -370,38 +374,40 @@ class TestEBirdAPIExpansion:
             get_nearest_observations,
             get_species_list,
             get_region_info,
-            get_hotspot_info
+            get_hotspot_info,
         )
-        
+
         # Verify functions exist and are callable
         assert callable(get_nearest_observations)
         assert callable(get_species_list)
         assert callable(get_region_info)
         assert callable(get_hotspot_info)
 
-    @patch('src.bird_travel_recommender.utils.ebird_api.get_client')
+    @patch("src.bird_travel_recommender.utils.ebird_api.get_client")
     def test_convenience_functions_delegate(self, mock_get_client):
         """Test that convenience functions properly delegate to client methods."""
         from src.bird_travel_recommender.utils.ebird_api import (
             get_nearest_observations,
             get_species_list,
             get_region_info,
-            get_hotspot_info
+            get_hotspot_info,
         )
-        
+
         mock_client = Mock()
         mock_get_client.return_value = mock_client
-        
+
         # Test each convenience function
         get_nearest_observations("norcar", 42.36, -71.09)
-        mock_client.get_nearest_observations.assert_called_once_with("norcar", 42.36, -71.09)
-        
+        mock_client.get_nearest_observations.assert_called_once_with(
+            "norcar", 42.36, -71.09
+        )
+
         get_species_list("US-MA")
         mock_client.get_species_list.assert_called_once_with("US-MA")
-        
+
         get_region_info("US-MA")
         mock_client.get_region_info.assert_called_once_with("US-MA")
-        
+
         get_hotspot_info("L123456")
         mock_client.get_hotspot_info.assert_called_once_with("L123456")
 

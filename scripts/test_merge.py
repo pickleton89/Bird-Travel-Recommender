@@ -4,7 +4,8 @@ from pathlib import Path
 
 # Load existing config with fallback paths
 config_paths = [
-    Path.home() / "Library/Application Support/Claude/claude_desktop_config.json",  # macOS
+    Path.home()
+    / "Library/Application Support/Claude/claude_desktop_config.json",  # macOS
     Path.home() / ".config/claude/claude_desktop_config.json",  # Linux
     Path.home() / "AppData/Roaming/Claude/claude_desktop_config.json",  # Windows
 ]
@@ -24,12 +25,12 @@ with open(config_path) as f:
     config = json.load(f)
 
 # Check if bird-travel-recommender exists
-servers = config.get('mcpServers', {})
+servers = config.get("mcpServers", {})
 print("Total servers in config:", len(servers))
 print("Server names:", sorted(servers.keys()))
-print("\n'bird-travel-recommender' exists:", 'bird-travel-recommender' in servers)
+print("\n'bird-travel-recommender' exists:", "bird-travel-recommender" in servers)
 
 # Check for similar names
 for server in servers:
-    if 'bird' in server.lower() or 'travel' in server.lower():
+    if "bird" in server.lower() or "travel" in server.lower():
         print("Found similar server:", server)

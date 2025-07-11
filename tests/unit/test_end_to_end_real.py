@@ -48,10 +48,10 @@ class TestEndToEndRealAPI:
                 "input": {
                     "species_list": [
                         "Yellow Warbler",
-                        "Black-throated Blue Warbler", 
+                        "Black-throated Blue Warbler",
                         "American Redstart",
                         "Bay-breasted Warbler",
-                        "Blackpoll Warbler"
+                        "Blackpoll Warbler",
                     ],
                     "constraints": {
                         "start_location": {"lat": 42.3601, "lng": -71.0589},  # Boston
@@ -59,9 +59,9 @@ class TestEndToEndRealAPI:
                         "max_daily_distance_km": 150,
                         "region": "US-MA",
                         "days_back": 14,  # Fall migration timing
-                        "max_locations_per_day": 6
-                    }
-                }
+                        "max_locations_per_day": 6,
+                    },
+                },
             },
             "winter_waterfowl_boston": {
                 "name": "Winter Birding Trip",
@@ -72,7 +72,7 @@ class TestEndToEndRealAPI:
                         "Common Goldeneye",
                         "Bufflehead",
                         "Red-breasted Merganser",
-                        "Canada Goose"
+                        "Canada Goose",
                     ],
                     "constraints": {
                         "start_location": {"lat": 42.3601, "lng": -71.0589},  # Boston
@@ -80,9 +80,9 @@ class TestEndToEndRealAPI:
                         "max_daily_distance_km": 200,  # ~2 hours drive
                         "region": "US-MA",
                         "days_back": 7,
-                        "max_locations_per_day": 8
-                    }
-                }
+                        "max_locations_per_day": 8,
+                    },
+                },
             },
             "quick_cardinal_lookup": {
                 "name": "Quick Lookup",
@@ -93,11 +93,11 @@ class TestEndToEndRealAPI:
                         "start_location": {"lat": 42.3601, "lng": -71.0589},  # Boston
                         "max_days": 1,
                         "max_daily_distance_km": 50,
-                        "region": "US-MA", 
+                        "region": "US-MA",
                         "days_back": 7,
-                        "max_locations_per_day": 5
-                    }
-                }
+                        "max_locations_per_day": 5,
+                    },
+                },
             },
             "hartford_hotspots": {
                 "name": "Hotspot Discovery",
@@ -105,20 +105,23 @@ class TestEndToEndRealAPI:
                 "input": {
                     "species_list": [
                         "American Robin",
-                        "Blue Jay", 
+                        "Blue Jay",
                         "House Sparrow",
-                        "Mourning Dove"
+                        "Mourning Dove",
                     ],
                     "constraints": {
-                        "start_location": {"lat": 41.7658, "lng": -72.6734},  # Hartford, CT
+                        "start_location": {
+                            "lat": 41.7658,
+                            "lng": -72.6734,
+                        },  # Hartford, CT
                         "max_days": 1,
                         "max_daily_distance_km": 100,  # 50km radius
                         "region": "US-CT",
                         "days_back": 7,
-                        "max_locations_per_day": 8
-                    }
-                }
-            }
+                        "max_locations_per_day": 8,
+                    },
+                },
+            },
         }
 
     @pytest.mark.api
@@ -129,36 +132,42 @@ class TestEndToEndRealAPI:
             # Test basic API call
             observations = api_client.get_recent_observations("US-MA", days_back=1)
             assert isinstance(observations, list)
-            logger.info(f"API connectivity test successful: {len(observations)} recent observations")
+            logger.info(
+                f"API connectivity test successful: {len(observations)} recent observations"
+            )
         except Exception as e:
             pytest.fail(f"eBird API connectivity failed: {e}")
 
     @pytest.mark.api
     @pytest.mark.slow
-    def test_end_to_end_pipeline_with_real_data(self, api_client, performance_helper, real_test_scenarios):
+    def test_end_to_end_pipeline_with_real_data(
+        self, api_client, performance_helper, real_test_scenarios
+    ):
         """Test complete pipeline execution with real eBird API data."""
-        
+
         # Use the quick cardinal lookup for fast testing
         scenario = real_test_scenarios["quick_cardinal_lookup"]
         test_input = {"input": scenario["input"]}
-        
+
         logger.info(f"Testing scenario: {scenario['name']}")
         logger.info(f"Description: {scenario['description']}")
-        
+
         # Time the complete pipeline execution
         def run_pipeline():
             return run_birding_pipeline(input_data=test_input, debug=True)
-        
+
         result, duration = performance_helper.time_function(run_pipeline)
-        
+
         # Verify pipeline success
-        assert result["success"], f"Pipeline failed: {result.get('error', 'Unknown error')}"
-        
+        assert result["success"], (
+            f"Pipeline failed: {result.get('error', 'Unknown error')}"
+        )
+
         # Verify basic result structure
         assert "itinerary_markdown" in result
         assert "pipeline_statistics" in result
         assert len(result["itinerary_markdown"]) > 0
-        
+
         # Verify statistics contain expected data
         stats = result["pipeline_statistics"]
         assert "validation_stats" in stats
@@ -168,68 +177,83 @@ class TestEndToEndRealAPI:
         assert "scoring_stats" in stats
         assert "route_optimization_stats" in stats
         assert "itinerary_generation_stats" in stats
-        
+
         # Log performance metrics
         logger.info(f"Pipeline execution completed in {duration:.2f} seconds")
-        successful_validations = stats['validation_stats']['direct_taxonomy_matches'] + stats['validation_stats']['llm_fuzzy_matches']
+        successful_validations = (
+            stats["validation_stats"]["direct_taxonomy_matches"]
+            + stats["validation_stats"]["llm_fuzzy_matches"]
+        )
         logger.info(f"Species validated: {successful_validations}")
-        logger.info(f"Observations fetched: {stats['fetch_stats']['total_observations']}")
-        logger.info(f"Clusters created: {stats['clustering_stats']['clusters_created']}")
-        
+        logger.info(
+            f"Observations fetched: {stats['fetch_stats']['total_observations']}"
+        )
+        logger.info(
+            f"Clusters created: {stats['clustering_stats']['clusters_created']}"
+        )
+
         # Verify reasonable performance (should complete within 30 seconds)
         assert duration < 30.0, f"Pipeline took too long: {duration:.2f} seconds"
 
     @pytest.mark.api
     @pytest.mark.slow
-    def test_multiple_scenarios(self, api_client, real_test_scenarios, performance_helper):
+    def test_multiple_scenarios(
+        self, api_client, real_test_scenarios, performance_helper
+    ):
         """Test multiple real-world scenarios."""
-        
+
         results = {}
         total_start_time = time.time()
-        
+
         # Test each scenario (limit to 2 for CI speed)
         scenarios_to_test = ["quick_cardinal_lookup", "winter_waterfowl_boston"]
-        
+
         for scenario_name in scenarios_to_test:
             scenario = real_test_scenarios[scenario_name]
             test_input = {"input": scenario["input"]}
-            
+
             logger.info(f"\n--- Testing Scenario: {scenario['name']} ---")
-            
+
             try:
                 result, duration = performance_helper.time_function(
                     lambda: run_birding_pipeline(input_data=test_input, debug=False)
                 )
-                
-                assert result["success"], f"Scenario {scenario_name} failed: {result.get('error')}"
-                
+
+                assert result["success"], (
+                    f"Scenario {scenario_name} failed: {result.get('error')}"
+                )
+
                 results[scenario_name] = {
                     "success": True,
                     "duration": duration,
                     "stats": result["pipeline_statistics"],
-                    "itinerary_length": len(result["itinerary_markdown"])
+                    "itinerary_length": len(result["itinerary_markdown"]),
                 }
-                
+
                 logger.info(f"✅ {scenario['name']} completed in {duration:.2f}s")
-                
+
             except Exception as e:
                 logger.error(f"❌ {scenario['name']} failed: {e}")
                 results[scenario_name] = {
                     "success": False,
                     "error": str(e),
-                    "duration": 0
+                    "duration": 0,
                 }
-        
+
         total_duration = time.time() - total_start_time
-        
+
         # Verify at least one scenario succeeded
-        successful_scenarios = [name for name, result in results.items() if result["success"]]
+        successful_scenarios = [
+            name for name, result in results.items() if result["success"]
+        ]
         assert len(successful_scenarios) > 0, "No scenarios completed successfully"
-        
+
         logger.info("\n📊 MULTI-SCENARIO TEST RESULTS:")
         logger.info(f"Total execution time: {total_duration:.2f} seconds")
-        logger.info(f"Successful scenarios: {len(successful_scenarios)}/{len(scenarios_to_test)}")
-        
+        logger.info(
+            f"Successful scenarios: {len(successful_scenarios)}/{len(scenarios_to_test)}"
+        )
+
         for name, result in results.items():
             if result["success"]:
                 logger.info(f"  ✅ {name}: {result['duration']:.2f}s")
@@ -240,7 +264,7 @@ class TestEndToEndRealAPI:
     @pytest.mark.slow
     def test_error_handling_with_real_api(self, api_client):
         """Test error handling with edge cases using real API."""
-        
+
         # Test with invalid species
         invalid_species_input = {
             "input": {
@@ -250,82 +274,88 @@ class TestEndToEndRealAPI:
                     "max_days": 1,
                     "max_daily_distance_km": 50,
                     "region": "US-MA",
-                    "days_back": 7
-                }
+                    "days_back": 7,
+                },
             }
         }
-        
+
         result = run_birding_pipeline(input_data=invalid_species_input, debug=True)
-        
+
         # Pipeline should still succeed with graceful handling
         assert result["success"], "Pipeline should handle invalid species gracefully"
-        
+
         # Check that validation stats show failed validations
         validation_stats = result["pipeline_statistics"]["validation_stats"]
         assert validation_stats["failed_validations"] > 0
-        
+
         logger.info("✅ Invalid species handled gracefully")
 
     @pytest.mark.api
-    @pytest.mark.slow  
+    @pytest.mark.slow
     def test_performance_benchmarking(self, api_client, performance_helper):
         """Benchmark pipeline performance with real API data."""
-        
+
         # Create a moderately complex scenario for benchmarking
         benchmark_input = {
             "input": {
                 "species_list": [
-                    "Northern Cardinal", "Blue Jay", "American Robin", 
-                    "House Sparrow", "Mourning Dove", "Rock Pigeon"
+                    "Northern Cardinal",
+                    "Blue Jay",
+                    "American Robin",
+                    "House Sparrow",
+                    "Mourning Dove",
+                    "Rock Pigeon",
                 ],
                 "constraints": {
                     "start_location": {"lat": 42.3601, "lng": -71.0589},
-                    "max_days": 2, 
+                    "max_days": 2,
                     "max_daily_distance_km": 100,
                     "region": "US-MA",
                     "days_back": 7,
-                    "max_locations_per_day": 6
-                }
+                    "max_locations_per_day": 6,
+                },
             }
         }
-        
+
         # Run multiple iterations for performance measurement
         iterations = 3
         durations = []
-        
+
         for i in range(iterations):
-            logger.info(f"Performance test iteration {i+1}/{iterations}")
-            
+            logger.info(f"Performance test iteration {i + 1}/{iterations}")
+
             result, duration = performance_helper.time_function(
                 lambda: run_birding_pipeline(input_data=benchmark_input, debug=False)
             )
-            
-            assert result["success"], f"Benchmark iteration {i+1} failed"
+
+            assert result["success"], f"Benchmark iteration {i + 1} failed"
             durations.append(duration)
-        
+
         # Calculate performance metrics
         avg_duration = sum(durations) / len(durations)
         min_duration = min(durations)
         max_duration = max(durations)
-        
+
         logger.info("\n📊 PERFORMANCE BENCHMARK RESULTS:")
         logger.info(f"Average execution time: {avg_duration:.2f}s")
         logger.info(f"Fastest execution: {min_duration:.2f}s")
         logger.info(f"Slowest execution: {max_duration:.2f}s")
         logger.info(f"Performance variation: {max_duration - min_duration:.2f}s")
-        
+
         # Reasonable performance expectations
         assert avg_duration < 25.0, f"Average performance too slow: {avg_duration:.2f}s"
-        assert max_duration < 40.0, f"Worst case performance too slow: {max_duration:.2f}s"
+        assert max_duration < 40.0, (
+            f"Worst case performance too slow: {max_duration:.2f}s"
+        )
 
     @pytest.mark.api
     @pytest.mark.slow
     def test_data_quality_validation(self, api_client):
         """Test data quality and validation with real API responses."""
-        
+
         # Import inside test to get fresh flow instance
         from bird_travel_recommender.flow import create_birding_flow
-        
+
         test_input = {
             "input": {
                 "species_list": ["Northern Cardinal", "Blue Jay"],
@@ -334,22 +364,22 @@ class TestEndToEndRealAPI:
                     "max_days": 1,
                     "max_daily_distance_km": 30,
                     "region": "US-MA",
-                    "days_back": 7
-                }
+                    "days_back": 7,
+                },
             }
         }
-        
+
         # Create a fresh flow instance for this test
         fresh_flow = create_birding_flow()
-        
+
         # Run the flow directly instead of using run_birding_pipeline
         try:
             # Create a shared store to track state
             shared_store = test_input.copy()
-            
+
             # Execute the flow
             fresh_flow.run(shared_store)
-            
+
             # Build result structure similar to run_birding_pipeline
             result = {
                 "success": True,
@@ -360,44 +390,51 @@ class TestEndToEndRealAPI:
                     "filtering_stats": shared_store.get("filtering_stats", {}),
                     "clustering_stats": shared_store.get("clustering_stats", {}),
                     "scoring_stats": shared_store.get("scoring_stats", {}),
-                    "route_optimization_stats": shared_store.get("route_optimization_stats", {}),
-                    "itinerary_generation_stats": shared_store.get("itinerary_generation_stats", {})
-                }
+                    "route_optimization_stats": shared_store.get(
+                        "route_optimization_stats", {}
+                    ),
+                    "itinerary_generation_stats": shared_store.get(
+                        "itinerary_generation_stats", {}
+                    ),
+                },
             }
         except Exception as e:
             pytest.fail(f"Pipeline execution failed: {e}")
-        
+
         # Get the full shared store for detailed validation
         # Note: This requires modifying the flow to return shared store data
         stats = result["pipeline_statistics"]
-        
+
         # Validate species validation stage
         validation_stats = stats["validation_stats"]
         assert validation_stats["total_input"] == 2
-        successful_validations = validation_stats["direct_taxonomy_matches"] + validation_stats["llm_fuzzy_matches"]
+        successful_validations = (
+            validation_stats["direct_taxonomy_matches"]
+            + validation_stats["llm_fuzzy_matches"]
+        )
         assert successful_validations > 0
-        
+
         # Validate fetch stage
         fetch_stats = stats["fetch_stats"]
         assert fetch_stats["total_observations"] >= 0  # Could be 0 for rare species
-        
+
         # Validate clustering stage
         clustering_stats = stats["clustering_stats"]
         assert "clusters_created" in clustering_stats
         assert clustering_stats["clusters_created"] >= 0
-        
+
         # Validate basic presence of other stats sections
         assert "filtering_stats" in stats
         assert "scoring_stats" in stats
         assert "route_optimization_stats" in stats
         assert "itinerary_generation_stats" in stats
-        
+
         logger.info("✅ Data quality validation passed")
 
     @pytest.mark.api
     def test_save_real_test_results(self, api_client, tmp_path):
         """Save real test results for analysis and debugging."""
-        
+
         test_input = {
             "input": {
                 "species_list": ["Northern Cardinal"],
@@ -406,17 +443,17 @@ class TestEndToEndRealAPI:
                     "max_days": 1,
                     "max_daily_distance_km": 25,
                     "region": "US-MA",
-                    "days_back": 3
-                }
+                    "days_back": 3,
+                },
             }
         }
-        
+
         result = run_birding_pipeline(input_data=test_input, debug=True)
         assert result["success"], "Pipeline execution failed"
-        
+
         # Save results for analysis
         results_file = tmp_path / "real_api_test_results.json"
-        
+
         # Prepare results for JSON serialization
         test_results = {
             "test_timestamp": datetime.now().isoformat(),
@@ -424,14 +461,16 @@ class TestEndToEndRealAPI:
             "pipeline_success": result["success"],
             "pipeline_statistics": result["pipeline_statistics"],
             "itinerary_length": len(result["itinerary_markdown"]),
-            "itinerary_preview": result["itinerary_markdown"][:500] + "..." if len(result["itinerary_markdown"]) > 500 else result["itinerary_markdown"]
+            "itinerary_preview": result["itinerary_markdown"][:500] + "..."
+            if len(result["itinerary_markdown"]) > 500
+            else result["itinerary_markdown"],
         }
-        
-        with open(results_file, 'w') as f:
+
+        with open(results_file, "w") as f:
             json.dump(test_results, f, indent=2)
-        
+
         logger.info(f"Test results saved to: {results_file}")
-        
+
         # Verify file was created and has content
         assert results_file.exists()
         assert results_file.stat().st_size > 0
