@@ -84,7 +84,7 @@ def test_fetch_sightings_node():
             fetch_node.post(shared, prep_result, exec_result)
             
             # Display results
-            print(f"\nFetch Results:")
+            print("\nFetch Results:")
             print(f"  Total observations: {shared['fetch_stats']['total_observations']}")
             print(f"  Unique locations: {shared['fetch_stats']['unique_locations']}")
             print(f"  Success rate: {shared['fetch_stats']['successful_fetches']}/{shared['fetch_stats']['total_species']}")
@@ -94,7 +94,7 @@ def test_fetch_sightings_node():
             
             # Show sample sightings
             if shared['all_sightings']:
-                print(f"\nSample Sightings (showing first 3):")
+                print("\nSample Sightings (showing first 3):")
                 for j, sighting in enumerate(shared['all_sightings'][:3]):
                     print(f"  {j+1}. {sighting.get('comName', 'Unknown')} at {sighting.get('locName', 'Unknown location')}")
                     print(f"     Date: {sighting.get('obsDt', 'Unknown')}, Count: {sighting.get('howMany', 'X')}")
@@ -163,7 +163,7 @@ def test_fetch_with_mock_data():
         exec_result = fetch_node.exec(prep_result)
         fetch_node.post(shared, prep_result, exec_result)
         
-        print(f"\nMock Test Results:")
+        print("\nMock Test Results:")
         print(f"  Total observations: {shared['fetch_stats']['total_observations']}")
         print(f"  Success rate: {shared['fetch_stats']['successful_fetches']}/{shared['fetch_stats']['total_species']}")
         print(f"  Fetch methods: {shared['fetch_stats']['fetch_method_stats']}")

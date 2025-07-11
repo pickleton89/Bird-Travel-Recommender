@@ -10,12 +10,10 @@ WARNING: These tests make real API calls and may take longer to execute.
 import pytest
 import time
 import json
-import os
 from datetime import datetime
-from typing import Dict, Any, List
 
-from bird_travel_recommender.flow import run_birding_pipeline, create_test_input
-from bird_travel_recommender.utils.ebird_api import get_client, EBirdAPIError
+from bird_travel_recommender.flow import run_birding_pipeline
+from bird_travel_recommender.utils.ebird_api import get_client
 from .test_utils import PerformanceTestHelper
 import logging
 
@@ -151,7 +149,6 @@ class TestEndToEndRealAPI:
         def run_pipeline():
             return run_birding_pipeline(input_data=test_input, debug=True)
         
-        start_time = time.time()
         result, duration = performance_helper.time_function(run_pipeline)
         
         # Verify pipeline success
@@ -229,7 +226,7 @@ class TestEndToEndRealAPI:
         successful_scenarios = [name for name, result in results.items() if result["success"]]
         assert len(successful_scenarios) > 0, "No scenarios completed successfully"
         
-        logger.info(f"\n📊 MULTI-SCENARIO TEST RESULTS:")
+        logger.info("\n📊 MULTI-SCENARIO TEST RESULTS:")
         logger.info(f"Total execution time: {total_duration:.2f} seconds")
         logger.info(f"Successful scenarios: {len(successful_scenarios)}/{len(scenarios_to_test)}")
         
@@ -311,7 +308,7 @@ class TestEndToEndRealAPI:
         min_duration = min(durations)
         max_duration = max(durations)
         
-        logger.info(f"\n📊 PERFORMANCE BENCHMARK RESULTS:")
+        logger.info("\n📊 PERFORMANCE BENCHMARK RESULTS:")
         logger.info(f"Average execution time: {avg_duration:.2f}s")
         logger.info(f"Fastest execution: {min_duration:.2f}s")
         logger.info(f"Slowest execution: {max_duration:.2f}s")
@@ -351,7 +348,7 @@ class TestEndToEndRealAPI:
             shared_store = test_input.copy()
             
             # Execute the flow
-            flow_result = fresh_flow.run(shared_store)
+            fresh_flow.run(shared_store)
             
             # Build result structure similar to run_birding_pipeline
             result = {

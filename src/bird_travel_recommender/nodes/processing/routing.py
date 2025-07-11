@@ -128,7 +128,7 @@ class OptimizeRouteNode(Node):
         """
         # Extract route planning constraints
         max_locations = constraints.get("max_locations_per_day", self.max_locations_for_optimization)
-        max_daily_distance = constraints.get("max_daily_distance_km", 400)
+        constraints.get("max_daily_distance_km", 400)
         min_score_threshold = constraints.get("min_location_score", 0.3)
         
         # Filter by minimum score

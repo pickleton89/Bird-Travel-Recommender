@@ -10,7 +10,7 @@ Tests cover:
 """
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from bird_travel_recommender.nodes import ValidateSpeciesNode
 
 
@@ -241,9 +241,6 @@ class TestValidateSpeciesNode:
         validate_node.post(shared, prep_result, exec_result)
         
         # Should handle duplicates appropriately
-        species_codes = [s["species_code"] for s in shared["validated_species"]]
-        unique_codes = list(set(species_codes))
-        
         # Check that we don't have duplicate species codes (but multiple matches for "cardinal" variations is OK)
         assert len(shared["validated_species"]) >= 2
 

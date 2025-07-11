@@ -8,7 +8,6 @@ produce equivalent results for birding requests.
 """
 
 import asyncio
-import json
 import logging
 import sys
 import time
@@ -402,7 +401,7 @@ class MCPPocketFlowParityTester:
         avg_mcp_time = sum(r.execution_time_mcp for r in results) / total_tests
         avg_pocketflow_time = sum(r.execution_time_pocketflow for r in results) / total_tests
         
-        print(f"\\nPerformance Comparison:")
+        print("\\nPerformance Comparison:")
         print(f"  Average MCP Time: {avg_mcp_time:.2f}s")
         print(f"  Average PocketFlow Time: {avg_pocketflow_time:.2f}s")
         print(f"  MCP vs PocketFlow: {avg_mcp_time/avg_pocketflow_time:.2f}x")
@@ -411,14 +410,14 @@ class MCPPocketFlowParityTester:
         mcp_success_rate = sum(1 for r in results if r.mcp_success) / total_tests * 100
         pocketflow_success_rate = sum(1 for r in results if r.pocketflow_success) / total_tests * 100
         
-        print(f"\\nSuccess Rates:")
+        print("\\nSuccess Rates:")
         print(f"  MCP Success Rate: {mcp_success_rate:.1f}%")
         print(f"  PocketFlow Success Rate: {pocketflow_success_rate:.1f}%")
         
         # Failed tests details
         failed_tests = [r for r in results if not r.overall_parity]
         if failed_tests:
-            print(f"\\nFailed Tests:")
+            print("\\nFailed Tests:")
             for result in failed_tests:
                 print(f"  ❌ {result.test_name}")
                 if result.differences:

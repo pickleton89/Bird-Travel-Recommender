@@ -5,7 +5,7 @@ This module provides methods for retrieving location data from the eBird API,
 including hotspots, top birding locations, and seasonal location analysis.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import logging
 from .ebird_base import EBirdBaseClient, EBirdAPIError
 

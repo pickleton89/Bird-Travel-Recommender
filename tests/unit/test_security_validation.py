@@ -3,7 +3,6 @@
 Quick test script for security validation framework
 """
 
-import asyncio
 import sys
 import os
 

@@ -10,7 +10,7 @@ This node implements a BatchNode for parallel species queries with:
 
 from pocketflow import BatchNode
 from ...utils.ebird_api import get_client, EBirdAPIError
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any, Optional
 import threading
 import time
 import logging

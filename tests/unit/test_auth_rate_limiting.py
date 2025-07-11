@@ -8,7 +8,6 @@ import sys
 import asyncio
 import tempfile
 import pytest
-from pathlib import Path
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
@@ -87,9 +86,9 @@ def test_rate_limiter():
     # Test request that should be rate limited
     status = rate_limiter.check_rate_limit(user_id, endpoint)
     if status.is_exceeded:
-        print(f"✅ Request 5: Correctly rate limited")
+        print("✅ Request 5: Correctly rate limited")
     else:
-        print(f"❌ Request 5: Should have been rate limited")
+        print("❌ Request 5: Should have been rate limited")
     
     # Test system stats
     stats = rate_limiter.get_system_stats()
@@ -102,7 +101,6 @@ def test_circuit_breaker():
     
     rate_limiter = RateLimiter()
     endpoint = "test_endpoint"
-    user_id = "test_user"
     
     # Get circuit breaker for endpoint
     circuit_breaker = rate_limiter.circuit_breakers.get(endpoint)

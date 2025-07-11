@@ -11,9 +11,7 @@ This module provides:
 import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
-import json
 import os
-from typing import Dict, List, Any
 
 
 @pytest.fixture

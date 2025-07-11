@@ -8,7 +8,7 @@ in LLM prompts to prevent prompt injection attacks and ensure safe AI interactio
 
 import re
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

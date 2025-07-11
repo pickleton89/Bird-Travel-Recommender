@@ -14,7 +14,7 @@ and JSON schema validation.
 
 import pytest
 import json
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import patch
 from bird_travel_recommender.mcp.server import BirdTravelMCPServer
 
 

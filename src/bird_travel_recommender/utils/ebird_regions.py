@@ -5,7 +5,7 @@ This module provides methods for retrieving regional information from the eBird 
 including region metadata, statistics, subregions, and geographic data.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import logging
 from .ebird_base import EBirdBaseClient, EBirdAPIError
 from ..constants import (
@@ -263,7 +263,7 @@ class EBirdRegionsMixin:
                         
                         logger.info(f"Generated {len(potential_adjacent)} potential adjacent regions for {region_code}")
                         return potential_adjacent
-                    except:
+                    except Exception:
                         pass
                 
                 logger.info(f"No adjacent regions data available for {region_code}")

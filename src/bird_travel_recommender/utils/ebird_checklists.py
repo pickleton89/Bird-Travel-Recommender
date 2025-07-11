@@ -5,7 +5,7 @@ This module provides methods for retrieving checklist data and user statistics f
 including recent checklists, checklist details, and user birding statistics.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any
 import logging
 from .ebird_base import EBirdBaseClient, EBirdAPIError
 from ..constants import (

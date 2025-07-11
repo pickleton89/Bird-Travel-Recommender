@@ -6,7 +6,7 @@ filtering to bird sightings while preserving original data through enrichment-in
 """
 
 from pocketflow import Node
-from typing import List, Dict, Any
+from typing import Dict, Any
 import logging
 
 logger = logging.getLogger(__name__)

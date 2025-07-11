@@ -72,3 +72,9 @@ exclude_lines = [
     "if 0:",
     "if __name__ == .__main__.:",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.2",
+    "ty>=0.0.1a14",
+]

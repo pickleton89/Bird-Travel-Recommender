@@ -13,7 +13,7 @@ Provides advanced rate limiting capabilities including:
 import time
 import logging
 from collections import defaultdict, deque
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
@@ -379,7 +379,7 @@ def rate_limit(endpoint: str):
                 
                 return result
                 
-            except Exception as e:
+            except Exception:
                 # Record failed request
                 self.rate_limiter.record_request(user_id, endpoint, success=False)
                 raise

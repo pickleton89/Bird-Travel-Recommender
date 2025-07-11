@@ -9,7 +9,6 @@ Contains handler methods for community and checklist tools:
 """
 
 import logging
-from typing import Any, Dict
 
 # Import eBird API client
 from ...utils.ebird_api import EBirdClient

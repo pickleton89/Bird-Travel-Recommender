@@ -468,7 +468,6 @@ class EBirdAsyncAnalysisMixin:
             
             # Analyze time patterns from recent observations
             hourly_counts = {}
-            daily_counts = {}
             
             for obs in recent_observations:
                 # Extract timing information (if available in observation data)
@@ -479,7 +478,7 @@ class EBirdAsyncAnalysisMixin:
                         if "T" in obs_date and ":" in obs_date:
                             hour = int(obs_date.split("T")[1].split(":")[0])
                             hourly_counts[hour] = hourly_counts.get(hour, 0) + 1
-                    except:
+                    except Exception:
                         pass
             
             # Determine optimal times based on bird behavior patterns

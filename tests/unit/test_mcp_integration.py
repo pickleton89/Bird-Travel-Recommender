@@ -9,10 +9,8 @@ This script tests the complete MCP server functionality including:
 """
 
 import asyncio
-import json
 import logging
 import sys
-from typing import Dict, Any
 import pytest
 
 # Skip entire module if agent_flow is not available

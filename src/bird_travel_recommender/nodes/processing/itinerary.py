@@ -64,8 +64,8 @@ class GenerateItineraryNode(Node):
         optimized_route = prep_data["optimized_route"]
         route_segments = prep_data["route_segments"]
         validated_species = prep_data["validated_species"]
-        constraints = prep_data["constraints"]
-        pipeline_stats = prep_data["pipeline_stats"]
+        prep_data["constraints"]
+        prep_data["pipeline_stats"]
         
         generation_stats = {
             "itinerary_method": "none",

@@ -109,7 +109,7 @@ Example usage:
             
             # Display summary statistics
             stats = result["pipeline_statistics"]
-            print(f"\n📊 PIPELINE STATISTICS:")
+            print("\n📊 PIPELINE STATISTICS:")
             print(f"   Species validated: {stats.get('validation_stats', {}).get('total_input', 0)}")
             print(f"   Observations analyzed: {stats.get('fetch_stats', {}).get('total_observations', 0)}")
             print(f"   Locations clustered: {stats.get('clustering_stats', {}).get('clusters_created', 0)}")
@@ -128,7 +128,7 @@ Example usage:
                     logger.error(f"Failed to save output file {args.output}: {e}")
                     print(f"\n❌ Failed to save output file: {e}")
             else:
-                print(f"\n📋 GENERATED ITINERARY:")
+                print("\n📋 GENERATED ITINERARY:")
                 print("-" * 40)
                 # Print first 1000 characters for preview
                 preview = itinerary[:1000] + "..." if len(itinerary) > 1000 else itinerary

@@ -6,8 +6,7 @@ multiple birding locations efficiently, with fallback strategies for
 computational constraints.
 """
 
-import math
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any
 from .geo_utils import haversine_distance
 from ..constants import AVERAGE_DRIVING_SPEED
 import logging

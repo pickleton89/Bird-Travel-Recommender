@@ -10,7 +10,7 @@ import asyncio
 import logging
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any, Dict, Optional, Callable
 from functools import wraps
 
 logger = logging.getLogger(__name__)

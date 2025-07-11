@@ -10,24 +10,18 @@ Contains handler methods for core birding pipeline processing tools:
 - optimize_route
 """
 
-import asyncio
-import json
 import logging
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Dict, List, Optional
 
 # Import birding pipeline components
 from ...utils.ebird_api import EBirdClient
 from ...nodes import (
-    ValidateSpeciesNode, 
     FetchSightingsNode, 
     FilterConstraintsNode,
     ClusterHotspotsNode,
     ScoreLocationsNode,
-    OptimizeRouteNode,
-    GenerateItineraryNode
+    OptimizeRouteNode
 )
-from ...utils.route_optimizer import optimize_birding_route
-from ...utils.geo_utils import haversine_distance
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -93,7 +87,7 @@ class PipelineHandlers:
                 "success": True,
                 "sightings": all_sightings,
                 "statistics": sighting_stats,
-                "region": region,
+                "regions": regions,
                 "days_back": days_back
             }
             

@@ -5,7 +5,7 @@ This module provides async methods for retrieving checklist data and user statis
 including recent checklists, checklist details, and user birding statistics.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any
 import logging
 from .ebird_async_base import EBirdAsyncBaseClient, EBirdAPIError
 from ..constants import (

@@ -57,7 +57,7 @@ async def test_leconte_thrasher():
         print(f"Error finding nearest species: {e}")
     
     # 3. Try searching in known LeConte's Thrasher habitat (Yuma area)
-    print(f"\n3. Searching in Yuma area (known habitat)...")
+    print("\n3. Searching in Yuma area (known habitat)...")
     try:
         # Yuma area coordinates
         yuma_lat, yuma_lon = 32.6927, -114.6277

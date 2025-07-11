@@ -11,8 +11,7 @@ Tests cover:
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from concurrent.futures import ThreadPoolExecutor
+from unittest.mock import patch
 import time
 from bird_travel_recommender.nodes import FetchSightingsNode
 

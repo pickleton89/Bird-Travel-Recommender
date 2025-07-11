@@ -239,7 +239,7 @@ If a name is invalid or unrecognizable, respond with "INVALID" for that entry.
 """
         
         try:
-            llm_response = call_llm(llm_validation_prompt)
+            call_llm(llm_validation_prompt)
             # Parse LLM response (simplified for this implementation)
             # In production, would need more robust parsing
             

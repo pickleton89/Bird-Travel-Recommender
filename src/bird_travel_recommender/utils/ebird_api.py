@@ -8,9 +8,7 @@ and response formatting based on the working JavaScript patterns from moonbirdai
 This is the main entry point for all eBird API functionality in the Bird Travel Recommender.
 """
 
-import os
 import logging
-from typing import List, Dict, Any, Optional, Union
 from dotenv import load_dotenv
 
 # Import all specialized modules (sync)
@@ -23,26 +21,10 @@ from .ebird_analysis import EBirdAnalysisMixin
 from .ebird_checklists import EBirdChecklistsMixin
 
 # Import async modules
-from .ebird_async_api import EBirdAsyncClient, get_async_client
+from .ebird_async_api import get_async_client
 
-from ..constants import (
-    EBIRD_MAX_RESULTS_DEFAULT,
-    EBIRD_MAX_RESULTS_LIMIT, 
-    EBIRD_DAYS_BACK_DEFAULT,
-    EBIRD_DAYS_BACK_MAX,
-    EBIRD_RADIUS_KM_DEFAULT,
-    EBIRD_RADIUS_KM_MAX,
-    HTTP_TIMEOUT_DEFAULT,
-    DEFAULT_ELEVATION_M,
-    SIMULATED_SPECIES_MIN,
-    SIMULATED_SPECIES_MAX,
-    SIMULATED_CHECKLISTS_MIN,
-    SIMULATED_CHECKLISTS_MAX,
-    LATITUDE_MIN,
-    LATITUDE_MAX,
-    LONGITUDE_MIN,
-    LONGITUDE_MAX
-)
+# Export the main classes and functions
+__all__ = ['EBirdClient', 'EBirdAPIError', 'get_client', 'get_async_client']
 
 # Load environment variables
 load_dotenv()

@@ -11,7 +11,6 @@ Provides:
 import pytest
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
-import json
 import time
 from bird_travel_recommender.utils.geo_utils import haversine_distance
 

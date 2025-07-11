@@ -7,20 +7,11 @@ Contains handler methods for itinerary generation and trip planning tools:
 - plan_complete_trip
 """
 
-import asyncio
-import json
 import logging
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Dict, List
 
 # Import birding pipeline components
-from ...utils.ebird_api import EBirdClient
 from ...nodes import (
-    ValidateSpeciesNode, 
-    FetchSightingsNode, 
-    FilterConstraintsNode,
-    ClusterHotspotsNode,
-    ScoreLocationsNode,
-    OptimizeRouteNode,
     GenerateItineraryNode
 )
 
@@ -80,7 +71,8 @@ class PlanningHandlers:
     
     async def handle_plan_complete_trip(self, handlers_container, target_species: List[str], regions: List[str], 
                                        trip_duration_days: int, max_daily_driving_hours: float = 4,
-                                       birding_skill_level: str = "intermediate"):
+                                       birding_skill_level: str = "intermediate", start_location: dict = None,
+                                       max_distance_km: float = 150, days_back: int = 30):
         """Handle plan_complete_trip tool - End-to-end birding trip planning"""
         try:
             logger.info(f"Planning complete trip for {len(target_species)} species in {regions}")
@@ -88,35 +80,36 @@ class PlanningHandlers:
             pipeline_results = {}
             
             # Step 0: Get Region Information for user-friendly display
+            primary_region = regions[0] if regions else "US"
             try:
-                region_info_result = await handlers_container.location_handlers.handle_get_region_details(region)
+                region_info_result = await handlers_container.location_handlers.handle_get_region_details(primary_region)
                 if region_info_result["success"]:
                     pipeline_results["region_info"] = region_info_result
-                    region_display_name = region_info_result["region_info"].get("name", region)
+                    region_display_name = region_info_result["region_info"].get("name", primary_region)
                     logger.info(f"Trip planning for region: {region_display_name}")
                 else:
-                    region_display_name = region
-                    logger.warning(f"Could not get region info for {region}, using code as display name")
+                    region_display_name = primary_region
+                    logger.warning(f"Could not get region info for {primary_region}, using code as display name")
             except Exception as e:
-                region_display_name = region
+                region_display_name = primary_region
                 logger.warning(f"Error getting region info: {e}")
             
             # Step 0.5: Get Regional Species List for validation and suggestions
             try:
-                regional_species_result = await handlers_container.species_handlers.handle_get_regional_species_list(region)
+                regional_species_result = await handlers_container.species_handlers.handle_get_regional_species_list(primary_region)
                 if regional_species_result["success"]:
                     pipeline_results["regional_species"] = regional_species_result
                     regional_species_codes = regional_species_result["species_list"]
                     logger.info(f"Found {len(regional_species_codes)} species ever reported in {region_display_name}")
                 else:
                     regional_species_codes = []
-                    logger.warning(f"Could not get species list for {region}")
+                    logger.warning(f"Could not get species list for {primary_region}")
             except Exception as e:
                 regional_species_codes = []
                 logger.warning(f"Error getting regional species list: {e}")
             
             # Step 1: Validate Species
-            validate_result = await handlers_container.species_handlers.handle_validate_species(species_names)
+            validate_result = await handlers_container.species_handlers.handle_validate_species(target_species)
             if not validate_result["success"]:
                 return {
                     "success": False,
@@ -127,7 +120,8 @@ class PlanningHandlers:
             validated_species = validate_result["validated_species"]
             
             # Step 2: Fetch Sightings
-            fetch_result = await handlers_container.pipeline_handlers.handle_fetch_sightings(validated_species, region, days_back)
+            validated_species_codes = [species["species_code"] for species in validated_species]
+            fetch_result = await handlers_container.pipeline_handlers.handle_fetch_sightings(validated_species_codes, regions, days_back)
             if not fetch_result["success"]:
                 return {
                     "success": False,
@@ -151,7 +145,7 @@ class PlanningHandlers:
             filtered_sightings = filter_result["filtered_sightings"]
             
             # Step 4: Cluster Hotspots
-            cluster_result = await handlers_container.pipeline_handlers.handle_cluster_hotspots(filtered_sightings, region)
+            cluster_result = await handlers_container.pipeline_handlers.handle_cluster_hotspots(filtered_sightings, primary_region)
             if not cluster_result["success"]:
                 return {
                     "success": False,
@@ -205,7 +199,7 @@ class PlanningHandlers:
             logger.info(f"Enriched {len(enriched_clusters)} hotspot clusters with detailed information")
             
             # Step 5: Score Locations
-            score_result = await handlers_container.pipeline_handlers.handle_score_locations(hotspot_clusters, species_names)
+            score_result = await handlers_container.pipeline_handlers.handle_score_locations(hotspot_clusters, target_species)
             if not score_result["success"]:
                 return {
                     "success": False,
@@ -229,7 +223,7 @@ class PlanningHandlers:
             optimized_route = route_result["optimized_route"]
             
             # Step 7: Generate Itinerary
-            itinerary_result = await self.handle_generate_itinerary(optimized_route, species_names, trip_duration_days)
+            itinerary_result = await self.handle_generate_itinerary(optimized_route, target_species, trip_duration_days)
             if not itinerary_result["success"]:
                 return {
                     "success": False,
@@ -245,13 +239,16 @@ class PlanningHandlers:
                 species_code = species.get("species_code", "")
                 if species_code:
                     try:
-                        nearest_obs_result = await handlers_container.location_handlers.handle_find_nearest_species(
-                            species_code=species_code,
-                            lat=start_location["lat"],
-                            lng=start_location["lng"],
-                            days_back=days_back,
-                            distance_km=max_distance_km
-                        )
+                        if start_location:
+                            nearest_obs_result = await handlers_container.location_handlers.handle_find_nearest_species(
+                                species_code=species_code,
+                                lat=start_location["lat"],
+                                lng=start_location["lng"],
+                                days_back=days_back,
+                                distance_km=max_distance_km
+                            )
+                        else:
+                            nearest_obs_result = {"success": False, "observations": []}
                         if nearest_obs_result["success"] and nearest_obs_result["observations"]:
                             species_finding_recommendations.append({
                                 "species": species,
@@ -272,8 +269,8 @@ class PlanningHandlers:
             return {
                 "success": True,
                 "trip_plan": {
-                    "species_names": species_names,
-                    "region": region,
+                    "species_names": target_species,
+                    "region": primary_region,
                     "region_display_name": region_display_name,
                     "start_location": start_location,
                     "trip_duration_days": trip_duration_days,

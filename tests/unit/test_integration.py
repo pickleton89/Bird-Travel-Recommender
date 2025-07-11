@@ -11,7 +11,6 @@ Tests cover:
 
 import pytest
 from unittest.mock import patch
-import time
 from bird_travel_recommender.nodes import ValidateSpeciesNode, FetchSightingsNode, FilterConstraintsNode
 from .test_utils import TestDataValidator, PerformanceTestHelper
 
@@ -346,8 +345,8 @@ class TestPipelineIntegration:
         
         # But some filtering should have occurred
         if shared["all_sightings"]:
-            compliant_ratio = compliance_summary["fully_compliant_count"] / len(shared["all_sightings"])
             # Don't assert specific ratio since mock data is artificial, just verify structure
+            pass
 
     @pytest.mark.integration
     @pytest.mark.mock

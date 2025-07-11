@@ -105,7 +105,7 @@ class EBirdTaxonomyMixin:
             # Assume coordinates format "lat,lng"
             try:
                 lat, lng = location_id.split(",")
-                endpoint = f"/product/spplist/geo"
+                endpoint = "/product/spplist/geo"
                 # For coordinates, we need to use different parameters
             except ValueError:
                 raise EBirdAPIError(f"Invalid location format: {location_id}. Use location ID (L12345) or coordinates (lat,lng)")

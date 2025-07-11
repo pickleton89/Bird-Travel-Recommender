@@ -9,7 +9,6 @@ MCP server in different environments (development, production, local).
 import argparse
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -106,7 +105,7 @@ class MCPDeploymentManager:
         failed_checks = [k for k, v in checks.items() if not v]
         
         if failed_checks:
-            print(f"❌ Environment validation failed:")
+            print("❌ Environment validation failed:")
             for check in failed_checks:
                 print(f"  - {check}")
             
@@ -193,18 +192,18 @@ class MCPDeploymentManager:
         server_info = list(config["mcpServers"].items())[0]
         server_name, server_config = server_info
         
-        print(f"\\n📋 Deployment Summary:")
+        print("\\n📋 Deployment Summary:")
         print(f"  Environment: {environment}")
         print(f"  Server Name: {server_name}")
         print(f"  Working Directory: {server_config['cwd']}")
         print(f"  Command: {server_config['command']} {' '.join(server_config['args'])}")
         print(f"  Configuration File: {self.get_config_path(environment)}")
         
-        print(f"\\n✅ MCP server deployment complete!")
-        print(f"\\n📖 Next Steps:")
-        print(f"1. Copy the configuration to your Claude CLI config:")
+        print("\\n✅ MCP server deployment complete!")
+        print("\\n📖 Next Steps:")
+        print("1. Copy the configuration to your Claude CLI config:")
         print(f"   cp {self.get_config_path(environment)} ~/.claude/mcp_servers.json")
-        print(f"2. Restart Claude CLI to load the new server")
+        print("2. Restart Claude CLI to load the new server")
         print(f"3. Test the server with: claude chat --server {server_name}")
 
 

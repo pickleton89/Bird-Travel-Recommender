@@ -7,7 +7,7 @@ including recent observations, nearby sightings, notable birds, and species-spec
 
 from typing import List, Dict, Any, Optional
 import logging
-from .ebird_async_base import EBirdAsyncBaseClient, EBirdAPIError
+from .ebird_async_base import EBirdAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ class EBirdAsyncObservationsMixin:
         Returns:
             List of nearby observations with species, location, date, count
         """
-        endpoint = f"/data/obs/geo/recent"
+        endpoint = "/data/obs/geo/recent"
         if species_code:
             endpoint += f"/{species_code}"
             
@@ -214,7 +214,7 @@ class EBirdAsyncObservationsMixin:
         Returns:
             List of nearby notable observations
         """
-        endpoint = f"/data/obs/geo/recent/notable"
+        endpoint = "/data/obs/geo/recent/notable"
         
         params = {
             "lat": lat,

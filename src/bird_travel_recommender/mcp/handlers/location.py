@@ -11,7 +11,6 @@ These handlers provide location-specific eBird API functionality including:
 """
 
 import logging
-from typing import Dict, List, Optional
 
 from ...utils.ebird_api import EBirdClient
 from ..validation import (

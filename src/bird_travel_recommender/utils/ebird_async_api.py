@@ -8,14 +8,13 @@ and response formatting based on the working JavaScript patterns from moonbirdai
 This is the main entry point for all async eBird API functionality in the Bird Travel Recommender.
 """
 
-import os
 import logging
 import asyncio
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 
 # Import all specialized async modules
-from .ebird_async_base import EBirdAsyncBaseClient, EBirdAPIError
+from .ebird_async_base import EBirdAsyncBaseClient
 from .ebird_async_observations import EBirdAsyncObservationsMixin
 from .ebird_async_locations import EBirdAsyncLocationsMixin
 from .ebird_async_taxonomy import EBirdAsyncTaxonomyMixin
@@ -23,24 +22,6 @@ from .ebird_async_regions import EBirdAsyncRegionsMixin
 from .ebird_async_analysis import EBirdAsyncAnalysisMixin
 from .ebird_async_checklists import EBirdAsyncChecklistsMixin
 
-from ..constants import (
-    EBIRD_MAX_RESULTS_DEFAULT,
-    EBIRD_MAX_RESULTS_LIMIT, 
-    EBIRD_DAYS_BACK_DEFAULT,
-    EBIRD_DAYS_BACK_MAX,
-    EBIRD_RADIUS_KM_DEFAULT,
-    EBIRD_RADIUS_KM_MAX,
-    HTTP_TIMEOUT_DEFAULT,
-    DEFAULT_ELEVATION_M,
-    SIMULATED_SPECIES_MIN,
-    SIMULATED_SPECIES_MAX,
-    SIMULATED_CHECKLISTS_MIN,
-    SIMULATED_CHECKLISTS_MAX,
-    LATITUDE_MIN,
-    LATITUDE_MAX,
-    LONGITUDE_MIN,
-    LONGITUDE_MAX
-)
 
 # Load environment variables
 load_dotenv()

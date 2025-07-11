@@ -6,7 +6,6 @@ Tests all 30 MCP tools across 6 categories with the current modular architecture
 """
 
 import pytest
-import json
 import asyncio
 from unittest.mock import patch
 
@@ -104,7 +103,7 @@ class TestMCPToolsComprehensive:
     async def test_unknown_tool_error(self, mcp_server):
         """Test error handling for unknown tools."""
         try:
-            result = await mcp_server._route_tool_call("unknown_tool", {"param": "value"})
+            await mcp_server._route_tool_call("unknown_tool", {"param": "value"})
             assert False, "Should have raised an exception"
         except ValueError as e:
             assert "Unknown tool: unknown_tool" in str(e)
@@ -115,7 +114,7 @@ class TestMCPToolsComprehensive:
         mock_validate.side_effect = ValueError("Test error message")
         
         try:
-            result = await mcp_server._route_tool_call(
+            await mcp_server._route_tool_call(
                 "validate_species", 
                 {"species_names": ["Test Species"]}
             )

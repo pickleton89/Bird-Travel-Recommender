@@ -7,7 +7,7 @@ including species lists, taxonomic information, and location-specific species da
 
 from typing import List, Dict, Any, Optional
 import logging
-from .ebird_async_base import EBirdAsyncBaseClient, EBirdAPIError
+from .ebird_async_base import EBirdAPIError
 
 logger = logging.getLogger(__name__)
 

@@ -21,7 +21,6 @@ Options:
 
 import argparse
 import time
-from typing import List, Dict, Any
 
 from bird_travel_recommender.utils.ebird_api import EBirdClient, EBirdAPIError
 
@@ -362,7 +361,7 @@ class EndpointTester:
             
             for name, func in endpoints:
                 start_time = time.time()
-                result = func()
+                func()
                 end_time = time.time()
                 duration = end_time - start_time
                 

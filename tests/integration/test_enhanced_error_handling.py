@@ -8,7 +8,7 @@ including validation, retries, timeouts, and circuit breakers.
 
 import pytest
 import asyncio
-from unittest.mock import patch, Mock, AsyncMock
+from unittest.mock import patch
 
 # Import enhanced error handling framework
 from src.bird_travel_recommender.mcp.utils.error_handling import (
@@ -294,7 +294,7 @@ class TestEnhancedErrorHandling:
         """Test that errors are properly logged for monitoring"""
         
         # Test validation error logging
-        result = await enhanced_handler.handle_validate_species(species_names=[])
+        await enhanced_handler.handle_validate_species(species_names=[])
         assert "Validation error" in caplog.text
         
         # Test API error logging
@@ -302,7 +302,7 @@ class TestEnhancedErrorHandling:
             from src.bird_travel_recommender.utils.ebird_api import EBirdAPIError
             mock_api.side_effect = EBirdAPIError("Test API error")
             
-            result = await enhanced_handler.handle_get_regional_species_list(region="US-MA")
+            await enhanced_handler.handle_get_regional_species_list(region="US-MA")
             assert "API error" in caplog.text or "eBird API error" in caplog.text
 
 

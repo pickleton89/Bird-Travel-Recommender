@@ -7,10 +7,8 @@ Contains handler methods for species-related tools:
 - get_regional_species_list
 """
 
-import asyncio
-import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import List
 
 # Import dependencies
 from ...utils.ebird_api import EBirdClient

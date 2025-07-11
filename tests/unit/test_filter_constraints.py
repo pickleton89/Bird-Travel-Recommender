@@ -21,7 +21,6 @@ def create_mock_sightings():
     # Create test sightings with various characteristics
     today = datetime.now()
     yesterday = today - timedelta(days=1)
-    week_ago = today - timedelta(days=7)
     month_ago = today - timedelta(days=30)
     
     mock_sightings = [
@@ -233,7 +232,7 @@ def test_filter_constraints_node():
             filtering_stats = shared['filtering_stats']
             enriched_sightings = shared['all_sightings']
             
-            print(f"\nFiltering Results:")
+            print("\nFiltering Results:")
             print(f"  Total processed: {filtering_stats['total_input_sightings']}")
             print(f"  Valid coordinates: {filtering_stats['valid_coordinates']}")
             print(f"  Within travel radius: {filtering_stats['within_travel_radius']}")
@@ -244,7 +243,7 @@ def test_filter_constraints_node():
             print(f"  Travel feasible: {filtering_stats['travel_feasible']}")
             
             compliance_summary = filtering_stats['constraint_compliance_summary']
-            print(f"\nCompliance Summary:")
+            print("\nCompliance Summary:")
             print(f"  Fully compliant sightings: {compliance_summary['fully_compliant_count']}")
             print(f"  Valid coordinates: {compliance_summary['valid_coordinates_pct']:.1f}%")
             print(f"  Within travel radius: {compliance_summary['within_travel_radius_pct']:.1f}%")
@@ -253,7 +252,7 @@ def test_filter_constraints_node():
             print(f"  Travel feasible: {compliance_summary['travel_feasible_pct']:.1f}%")
             
             # Show enriched sighting examples
-            print(f"\nEnriched Sighting Examples:")
+            print("\nEnriched Sighting Examples:")
             compliant_sightings = [s for s in enriched_sightings if s.get("meets_all_constraints", False)]
             non_compliant_sightings = [s for s in enriched_sightings if not s.get("meets_all_constraints", False)]
             
@@ -274,7 +273,7 @@ def test_filter_constraints_node():
                 print(f"  Non-compliant sightings ({len(non_compliant_sightings)}) - showing first 2:")
                 for sighting in non_compliant_sightings[:2]:
                     print(f"    • {sighting['comName']} at {sighting['locName']}")
-                    print(f"      Issues: ", end="")
+                    print("      Issues: ", end="")
                     issues = []
                     if not sighting['has_valid_gps']:
                         issues.append("invalid GPS")

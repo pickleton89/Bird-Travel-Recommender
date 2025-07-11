@@ -7,7 +7,7 @@ including hotspots, top birding locations, and seasonal location analysis.
 
 from typing import List, Dict, Any, Optional
 import logging
-from .ebird_async_base import EBirdAsyncBaseClient, EBirdAPIError
+from .ebird_async_base import EBirdAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class EBirdAsyncLocationsMixin:
         Returns:
             List of nearby hotspots with coordinates and metadata
         """
-        endpoint = f"/ref/hotspot/geo"
+        endpoint = "/ref/hotspot/geo"
         params = {
             "lat": lat,
             "lng": lng,

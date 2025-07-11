@@ -8,7 +8,7 @@ This serves as a template for enhancing all other handler categories.
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # Import dependencies
 from ...utils.ebird_api import EBirdClient, EBirdAPIError
@@ -122,7 +122,7 @@ class EnhancedSpeciesHandlers:
             
             # Validate API response
             if not isinstance(species_list, list):
-                raise APIError(f"Invalid response format from eBird API", endpoint="species_list")
+                raise APIError("Invalid response format from eBird API", endpoint="species_list")
             
             # Log statistics for monitoring
             logger.info(f"Successfully retrieved {len(species_list)} species for region {region}")
@@ -144,7 +144,7 @@ class EnhancedSpeciesHandlers:
                 raise ValidationError(f"Invalid region code: {region}", "region", region)
             elif "rate limit" in str(e).lower():
                 from ..utils.error_handling import RateLimitError
-                raise RateLimitError(f"eBird API rate limit exceeded for region query")
+                raise RateLimitError("eBird API rate limit exceeded for region query")
             else:
                 raise APIError(f"eBird API error: {str(e)}", endpoint="species_list")
     

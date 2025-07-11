@@ -29,7 +29,6 @@ class TestFilterConstraintsNode:
         """Comprehensive mock sightings data for testing various constraint scenarios."""
         today = datetime.now()
         yesterday = today - timedelta(days=1)
-        week_ago = today - timedelta(days=7)
         month_ago = today - timedelta(days=30)
         
         # Boston area coordinates
@@ -413,7 +412,7 @@ class TestFilterConstraintsNode:
             # Travel radius constraints should be marked as compliant when no location provided
             # BUT only for sightings with valid GPS coordinates
             if "within_travel_radius" in sighting and sighting.get("has_valid_gps", False):
-                assert sighting["within_travel_radius"] == True
+                assert sighting["within_travel_radius"]
 
     @pytest.mark.unit
     @pytest.mark.mock

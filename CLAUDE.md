@@ -20,7 +20,12 @@ Bird-Travel-Recommender/
 ├── src/bird_travel_recommender/    # Main package
 │   ├── main.py                     # Application entry point
 │   ├── flow.py                     # PocketFlow workflow definition  
-│   ├── nodes.py                    # Custom node implementations
+│   ├── nodes.py                    # Node imports (modularized)
+│   ├── nodes/                      # Modularized node implementations
+│   │   ├── validation/            # Species validation nodes
+│   │   ├── fetching/              # Data fetching nodes
+│   │   ├── processing/            # Data processing nodes
+│   │   └── ...                     # Other node categories
 │   ├── utils/                      # Utility modules
 │   │   ├── call_llm.py            # OpenAI API integration
 │   │   ├── ebird_api.py           # eBird API client
@@ -40,17 +45,20 @@ Bird-Travel-Recommender/
 
 ## Architecture Overview
 
-This is a sophisticated PocketFlow-based Bird Travel Recommender system that leverages eBird API integration and expert birding knowledge. The architecture has evolved from a simple Q&A flow to a comprehensive birding travel planning system with 9 MCP tools and robust error handling.
+This is a sophisticated PocketFlow-based Bird Travel Recommender system that leverages eBird API integration and expert birding knowledge. The architecture has evolved from a simple Q&A flow to a comprehensive birding travel planning system with 30 MCP tools and robust error handling.
 
 ### Enhanced Flow Architecture
 
 The system now features a comprehensive MCP tool architecture with:
 
-#### Core eBird Data Tools
-- **FetchSightingsNode** - Retrieves recent bird sightings data
-- **ClusterHotspotsNode** - Identifies optimal birding locations
-- **ValidateSpeciesNode** - Validates bird species with taxonomic lookup
-- **makeRequest() Pattern** - Centralized API request handling with robust error management
+#### Core Node Architecture (Modularized)
+- **FetchSightingsNode** - Retrieves recent bird sightings data (nodes/fetching/)
+- **ClusterHotspotsNode** - Identifies optimal birding locations (nodes/processing/)
+- **ValidateSpeciesNode** - Validates bird species with taxonomic lookup (nodes/validation/)
+- **FilterConstraintsNode** - Filters data based on user constraints (nodes/processing/)
+- **ScoreLocationsNode** - Scores birding locations (nodes/processing/)
+- **OptimizeRouteNode** - Optimizes travel routes (nodes/processing/)
+- **GenerateItineraryNode** - Creates detailed itineraries (nodes/processing/)
 
 #### Business Logic Tools
 - **DecideBirdingToolNode** - Enhanced with expert birding knowledge for species-specific advice, habitat assessment, and optimal observation timing
@@ -69,7 +77,7 @@ The architecture leverages proven patterns from the moonbirdai/ebird-mcp-server 
 ## Environment Requirements
 
 ### API Keys Setup
-1. Copy `.env.example` to `.env`: `cp config/.env.example .env`
+1. Copy `.env.example` to `.env`: `cp .env.example .env`
 2. Fill in your actual API keys in the `.env` file:
    - **OPENAI_API_KEY**: Get from https://platform.openai.com/api-keys
    - **EBIRD_API_KEY**: Get from https://ebird.org/api/keygen

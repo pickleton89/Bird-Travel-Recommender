@@ -14,7 +14,7 @@ and rate limiting behavior with comprehensive mock responses.
 
 import pytest
 import requests
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from src.bird_travel_recommender.utils.ebird_api import EBirdClient, EBirdAPIError
 
 
@@ -225,7 +225,7 @@ class TestEBirdAPIExpansion:
         }
         mock_session.get.return_value = mock_response
         
-        result = client.get_region_info("US-MA", name_format="short")
+        client.get_region_info("US-MA", name_format="short")
         
         call_args = mock_session.get.call_args
         assert call_args[1]["params"]["nameFormat"] == "short"

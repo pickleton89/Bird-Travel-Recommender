@@ -6,7 +6,7 @@ functions for eBird observation data processing.
 """
 
 import math
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Optional
 from datetime import datetime, timedelta
 import logging
 

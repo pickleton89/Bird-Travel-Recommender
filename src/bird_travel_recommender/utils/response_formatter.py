@@ -6,12 +6,10 @@ MCP tool outputs into user-friendly, contextual, and engaging responses
 tailored to different experience levels and birding interests.
 """
 
-import json
 import logging
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Union
 from dataclasses import dataclass
 from enum import Enum
-import re
 
 from .call_llm import call_llm
 

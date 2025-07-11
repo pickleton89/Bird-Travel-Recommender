@@ -9,10 +9,7 @@ This script tests the complete enhanced agent system including:
 - User-centric language adaptation
 """
 
-import asyncio
-import json
 import logging
-from typing import Dict, Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -232,7 +229,7 @@ def test_complete_enhanced_system_simple():
         
         analysis = nlp.analyze_birding_request(request, context)
         
-        print(f"Intent Analysis:")
+        print("Intent Analysis:")
         print(f"  Intent: {analysis.primary_intent.value}")
         print(f"  Confidence: {analysis.confidence_score:.2f}")
         print(f"  Species: {analysis.parameters.species}")
@@ -272,7 +269,7 @@ def test_complete_enhanced_system_simple():
         
         formatted_response = formatter.format_response(mock_result, formatting_context)
         
-        print(f"\nFormatted Response:")
+        print("\nFormatted Response:")
         print(f"  Type: {formatted_response.get('type', 'unknown')}")
         print(f"  Title: {formatted_response.get('title', 'No title')}")
         if formatted_response.get('summary'):

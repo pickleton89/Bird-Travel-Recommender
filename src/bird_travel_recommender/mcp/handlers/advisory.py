@@ -6,12 +6,10 @@ Contains handler methods for LLM-enhanced birding advice tools:
 - get_birding_advice
 """
 
-import asyncio
-import json
 import logging
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Dict, List, Optional
 
-from ...utils.prompt_sanitizer import sanitize_for_birding_advice, PromptSanitizer
+from ...utils.prompt_sanitizer import sanitize_for_birding_advice
 from ..auth import require_auth
 from ..rate_limiting import rate_limit
 
@@ -54,7 +52,6 @@ class AdvisoryHandlers:
                 species = context.get("species", [])
                 location_ctx = context.get("location", "")
                 season = context.get("season", "")
-                experience_level_ctx = context.get("experience_level", "")
                 
                 context_parts = []
                 if species:

@@ -10,14 +10,13 @@ tokens.
 import os
 import json
 import time
-import hmac
 import hashlib
 import secrets
 import logging
 import jwt
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Any
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
 

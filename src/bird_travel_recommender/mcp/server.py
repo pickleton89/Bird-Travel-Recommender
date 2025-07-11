@@ -11,7 +11,7 @@ Modularized architecture with separate tool and handler modules for maintainabil
 import asyncio
 import json
 import logging
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict
 
 from mcp.server.models import InitializationOptions
 from mcp.server import NotificationOptions, Server
@@ -19,11 +19,8 @@ import mcp.server.stdio
 from mcp.types import (
     CallToolRequest, 
     CallToolResult,
-    ListToolsRequest,
     Tool,
     TextContent,
-    ImageContent,
-    EmbeddedResource,
 )
 import mcp.types as types
 
@@ -44,8 +41,8 @@ from .handlers.planning import PlanningHandlers
 from .handlers.advisory import AdvisoryHandlers
 
 # Import security modules
-from .auth import AuthManager, require_auth
-from .rate_limiting import RateLimiter, rate_limit
+from .auth import AuthManager
+from .rate_limiting import RateLimiter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
