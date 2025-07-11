@@ -254,7 +254,7 @@ def validate_inputs(schema: Dict[str, Any]):
                 return await func(*args, **kwargs)
                 
             except ValidationError as e:
-                logger.warning(f"Validation error in {func.__name__}: {e.message}")
+                logger.warning(f"Validation error in {getattr(func, '__name__', str(func))}: {e.message}")
                 return {
                     "success": False,
                     "error": e.message,
@@ -263,7 +263,7 @@ def validate_inputs(schema: Dict[str, Any]):
                     "value": str(e.value)
                 }
             except Exception as e:
-                logger.error(f"Unexpected error in {func.__name__}: {str(e)}")
+                logger.error(f"Unexpected error in {getattr(func, '__name__', str(func))}: {str(e)}")
                 return {
                     "success": False,
                     "error": "Internal validation error",

@@ -1,5 +1,5 @@
 """Content generation nodes."""
 
-from .itinerary import GenerateItineraryNode
+from ..processing.itinerary import GenerateItineraryNode
 
 __all__ = ["GenerateItineraryNode"]

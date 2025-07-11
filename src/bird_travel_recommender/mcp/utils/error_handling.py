@@ -212,7 +212,7 @@ def handle_errors_gracefully(fallback_value: Any = None) -> Callable:
                 }
             
             except RateLimitError as e:
-                logger.error(f"Rate limit error in {func.__name__}: {e.message}")
+                logger.error(f"Rate limit error in {getattr(func, '__name__', str(func))}: {e.message}")
                 return {
                     "success": False,
                     "error": f"Rate limit exceeded: {e.message}",
@@ -223,7 +223,7 @@ def handle_errors_gracefully(fallback_value: Any = None) -> Callable:
                 }
             
             except MCPError as e:
-                logger.error(f"MCP error in {func.__name__}: {e.message}")
+                logger.error(f"MCP error in {getattr(func, '__name__', str(func))}: {e.message}")
                 return {
                     "success": False,
                     "error": e.message,
@@ -232,12 +232,12 @@ def handle_errors_gracefully(fallback_value: Any = None) -> Callable:
                 }
             
             except Exception as e:
-                logger.error(f"Unexpected error in {func.__name__}: {str(e)}", exc_info=True)
+                logger.error(f"Unexpected error in {getattr(func, '__name__', str(func))}: {str(e)}", exc_info=True)
                 return {
                     "success": False,
                     "error": f"Unexpected error: {str(e)}",
                     "error_category": ErrorCategory.UNKNOWN_ERROR.value,
-                    "function": func.__name__
+                    "function": getattr(func, '__name__', str(func))
                 }
         return wrapper
     return decorator
