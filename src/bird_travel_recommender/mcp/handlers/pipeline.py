@@ -330,7 +330,7 @@ class PipelineHandlers:
         region: str,
         species_code: str = "",
         start_year: int = 2020,
-        end_year: int = None,
+        end_year: Optional[int] = None,
         locale: str = "en"
     ):
         """Handle get_seasonal_trends tool"""
@@ -417,7 +417,7 @@ class PipelineHandlers:
         self,
         species_code: str,
         region_code: str = "US",
-        months: List[int] = None
+        months: Optional[List[int]] = None
     ):
         """Handle get_migration_data tool"""
         try:

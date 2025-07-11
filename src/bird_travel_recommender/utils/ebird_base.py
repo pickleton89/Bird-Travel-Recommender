@@ -8,6 +8,7 @@ including error handling, session management, and the core request mechanism.
 import os
 import time
 import requests
+from requests.exceptions import Timeout, ConnectionError
 from typing import Dict, Any, Optional, Union, List
 from dotenv import load_dotenv
 import logging
@@ -113,7 +114,7 @@ class EBirdBaseClient:
                 else:
                     raise EBirdAPIError(f"Unexpected response: {response.status_code}")
                     
-            except requests.exceptions.Timeout:
+            except Timeout:
                 if attempt < self.MAX_RETRIES - 1:
                     logger.warning(f"Request timeout, retrying in {delay}s")
                     time.sleep(delay)
@@ -122,7 +123,7 @@ class EBirdBaseClient:
                 else:
                     raise EBirdAPIError("Request timeout - eBird API is not responding")
                     
-            except requests.exceptions.ConnectionError:
+            except ConnectionError:
                 if attempt < self.MAX_RETRIES - 1:
                     logger.warning(f"Connection error, retrying in {delay}s")
                     time.sleep(delay)

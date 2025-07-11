@@ -226,7 +226,7 @@ class EBirdAsyncClient(
 
 
 # Global async client instance for convenience (optional)
-_async_client = None
+_async_client: Optional['EBirdAsyncClient'] = None
 
 async def get_async_client() -> EBirdAsyncClient:
     """Get or create the global async eBird client instance."""

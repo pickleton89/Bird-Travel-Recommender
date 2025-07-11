@@ -132,7 +132,7 @@ def with_timeout(timeout_seconds: int = 30) -> Callable:
                 raise MCPError(
                     f"Operation timed out after {timeout_seconds} seconds",
                     ErrorCategory.TIMEOUT_ERROR,
-                    {"timeout_seconds": timeout_seconds, "function": func.__name__}
+                    {"timeout_seconds": timeout_seconds, "function": getattr(func, '__name__', str(func))}
                 )
         return wrapper
     return decorator
@@ -169,7 +169,10 @@ def with_retry(max_retries: int = 3, delay: float = 1.0, backoff_factor: float =
                     last_exception = e
                     break
             
-            raise last_exception
+            if last_exception:
+                raise last_exception
+            else:
+                raise MCPError("Maximum retries exceeded", ErrorCategory.API_ERROR)
         return wrapper
     return decorator
 
@@ -188,7 +191,7 @@ def handle_errors_gracefully(fallback_value: Any = None) -> Callable:
                 return await func(*args, **kwargs)
                 
             except ValidationError as e:
-                logger.error(f"Validation error in {func.__name__}: {e.message}")
+                logger.error(f"Validation error in {getattr(func, '__name__', str(func))}: {e.message}")
                 return {
                     "success": False,
                     "error": e.message,
@@ -198,7 +201,7 @@ def handle_errors_gracefully(fallback_value: Any = None) -> Callable:
                 }
             
             except APIError as e:
-                logger.error(f"API error in {func.__name__}: {e.message}")
+                logger.error(f"API error in {getattr(func, '__name__', str(func))}: {e.message}")
                 return {
                     "success": False,
                     "error": f"eBird API error: {e.message}",

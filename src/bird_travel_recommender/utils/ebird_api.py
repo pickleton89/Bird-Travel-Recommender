@@ -9,6 +9,7 @@ This is the main entry point for all eBird API functionality in the Bird Travel 
 """
 
 import logging
+from typing import Optional
 from dotenv import load_dotenv
 
 # Import all specialized modules (sync)
@@ -92,7 +93,7 @@ class EBirdClient(
 
 
 # Global client instance for convenience
-_client = None
+_client: Optional['EBirdClient'] = None
 
 def get_client() -> EBirdClient:
     """Get or create the global eBird client instance."""

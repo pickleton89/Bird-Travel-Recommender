@@ -10,8 +10,8 @@ import logging
 from typing import Dict, List, Optional
 
 from ...utils.prompt_sanitizer import sanitize_for_birding_advice
-from ..auth import require_auth
-from ..rate_limiting import rate_limit
+from ..auth import require_auth, AuthManager
+from ..rate_limiting import rate_limit, RateLimiter
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -20,7 +20,9 @@ class AdvisoryHandlers:
     """Handler methods for LLM-enhanced birding advice MCP tools"""
     
     def __init__(self):
-        pass
+        # Initialize auth and rate limiting components
+        self.auth_manager: Optional[AuthManager] = None
+        self.rate_limiter: Optional[RateLimiter] = None
     
     @require_auth(permissions=["get:advice"])
     @rate_limit("get_birding_advice")

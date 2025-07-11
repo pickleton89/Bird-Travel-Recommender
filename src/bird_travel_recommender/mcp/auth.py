@@ -337,7 +337,7 @@ class AuthManager:
         
         return stats
 
-def require_auth(permissions: List[str] = None):
+def require_auth(permissions: Optional[List[str]] = None):
     """Decorator to require authentication and authorization"""
     def decorator(func):
         @wraps(func)

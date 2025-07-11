@@ -9,7 +9,7 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import argparse
 import sys
 
@@ -27,7 +27,7 @@ def load_json_file(filepath: Path) -> Dict[str, Any]:
         sys.exit(1)
 
 
-def backup_config(config_path: Path) -> Path:
+def backup_config(config_path: Path) -> Optional[Path]:
     """Create timestamped backup of existing config."""
     if not config_path.exists():
         return None

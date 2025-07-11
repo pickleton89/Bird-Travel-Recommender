@@ -14,6 +14,7 @@ and rate limiting behavior with comprehensive mock responses.
 
 import pytest
 import requests
+from requests.exceptions import ConnectionError, Timeout
 from unittest.mock import Mock, patch
 from src.bird_travel_recommender.utils.ebird_api import EBirdClient, EBirdAPIError
 
@@ -348,7 +349,7 @@ class TestEBirdAPIExpansion:
 
     def test_connection_error_handling(self, client, mock_session):
         """Test handling of connection errors."""
-        mock_session.get.side_effect = requests.exceptions.ConnectionError("Connection failed")
+        mock_session.get.side_effect = ConnectionError("Connection failed")
         
         with patch('time.sleep'):  # Mock sleep to speed up test
             with pytest.raises(EBirdAPIError, match="Connection error"):
@@ -356,7 +357,7 @@ class TestEBirdAPIExpansion:
 
     def test_timeout_error_handling(self, client, mock_session):
         """Test handling of timeout errors."""
-        mock_session.get.side_effect = requests.exceptions.Timeout("Request timed out")
+        mock_session.get.side_effect = Timeout("Request timed out")
         
         with patch('time.sleep'):  # Mock sleep to speed up test
             with pytest.raises(EBirdAPIError, match="Request timeout"):

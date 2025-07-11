@@ -11,7 +11,7 @@ import asyncio
 import logging
 import sys
 import time
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from dataclasses import dataclass
 import pytest
 
@@ -33,7 +33,7 @@ class ParityTestCase:
     user_request: str
     context: Dict[str, Any]
     comparison_fields: List[str]  # Fields to compare between implementations
-    tolerance: Dict[str, float] = None  # Tolerance for numeric comparisons
+    tolerance: Optional[Dict[str, float]] = None  # Tolerance for numeric comparisons
 
 
 @dataclass 

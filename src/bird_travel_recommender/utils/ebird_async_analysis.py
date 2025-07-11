@@ -317,7 +317,7 @@ class EBirdAsyncAnalysisMixin:
                     },
                     "species_insights": {
                         "total_species_across_years": len(all_species),
-                        "consistent_species": len(set.intersection(*[set(yearly_data[y]["species_list"]) for y in years if yearly_data[y]["species_list"]])) if len(years) > 1 else 0,
+                        "consistent_species": len(set.intersection(*[set(yearly_data[y]["species_list"]) for y in years if yearly_data[y]["species_list"]])) if len(years) > 1 and any(yearly_data[y]["species_list"] for y in years) else 0,
                         "all_species_list": list(all_species)
                     },
                     "recommendations": {

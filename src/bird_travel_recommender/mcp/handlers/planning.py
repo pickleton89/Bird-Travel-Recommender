@@ -8,7 +8,7 @@ Contains handler methods for itinerary generation and trip planning tools:
 """
 
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 # Import birding pipeline components
 from ...nodes import (
@@ -71,7 +71,7 @@ class PlanningHandlers:
     
     async def handle_plan_complete_trip(self, handlers_container, target_species: List[str], regions: List[str], 
                                        trip_duration_days: int, max_daily_driving_hours: float = 4,
-                                       birding_skill_level: str = "intermediate", start_location: dict = None,
+                                       birding_skill_level: str = "intermediate", start_location: Optional[dict] = None,
                                        max_distance_km: float = 150, days_back: int = 30):
         """Handle plan_complete_trip tool - End-to-end birding trip planning"""
         try:
