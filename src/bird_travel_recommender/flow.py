@@ -2,14 +2,14 @@ from pocketflow import Flow
 
 # Import unified nodes from the new architecture
 from .core.nodes.factory import NodeFactory, NodeDependencies, ExecutionMode
-from .core.nodes.implementations import (
-    UnifiedSightingsNode,
-    UnifiedSpeciesValidationNode,
-    UnifiedClusterHotspotsNode,
-    UnifiedFilterConstraintsNode,
-    UnifiedScoreLocationsNode,
-    UnifiedOptimizeRouteNode,
-    UnifiedGenerateItineraryNode,
+from .core.nodes.pocketflow_adapters import (
+    create_sightings_node,
+    create_species_validation_node,
+    create_cluster_hotspots_node,
+    create_filter_constraints_node,
+    create_score_locations_node,
+    create_optimize_route_node,
+    create_generate_itinerary_node,
 )
 
 # Legacy imports for backward compatibility (deprecated)
@@ -58,17 +58,14 @@ def create_unified_birding_flow(execution_mode: ExecutionMode = ExecutionMode.AS
     """
     logger.info(f"Creating unified birding flow with {execution_mode.value} execution mode")
     
-    # Create shared dependencies for all nodes
-    shared_dependencies = NodeDependencies.create_default(execution_mode)
-    
-    # Create all nodes using the factory with shared dependencies
-    validate_species = UnifiedSpeciesValidationNode(shared_dependencies)
-    fetch_sightings = UnifiedSightingsNode(shared_dependencies, max_workers=MAX_WORKERS_DEFAULT)
-    filter_constraints = UnifiedFilterConstraintsNode(shared_dependencies)
-    cluster_hotspots = UnifiedClusterHotspotsNode(shared_dependencies, cluster_radius_km=CLUSTER_RADIUS_KM_DEFAULT)
-    score_locations = UnifiedScoreLocationsNode(shared_dependencies)
-    optimize_route = UnifiedOptimizeRouteNode(shared_dependencies, max_locations_for_optimization=MAX_LOCATIONS_FOR_OPTIMIZATION)
-    generate_itinerary = UnifiedGenerateItineraryNode(shared_dependencies, max_retries=MAX_RETRIES_DEFAULT)
+    # Create all nodes using PocketFlow-compatible adapters
+    validate_species = create_species_validation_node(execution_mode)
+    fetch_sightings = create_sightings_node(execution_mode, max_workers=MAX_WORKERS_DEFAULT)
+    filter_constraints = create_filter_constraints_node(execution_mode)
+    cluster_hotspots = create_cluster_hotspots_node(execution_mode, cluster_radius_km=CLUSTER_RADIUS_KM_DEFAULT)
+    score_locations = create_score_locations_node(execution_mode)
+    optimize_route = create_optimize_route_node(execution_mode, max_locations_for_optimization=MAX_LOCATIONS_FOR_OPTIMIZATION)
+    generate_itinerary = create_generate_itinerary_node(execution_mode, max_retries=MAX_RETRIES_DEFAULT)
     
     # Connect nodes in pipeline sequence
     (
@@ -237,9 +234,9 @@ def create_test_input():
     }
 
 
-# Create the main birding flow using existing architecture for compatibility
-# TODO: Switch to unified architecture once PocketFlow compatibility is resolved
-birding_flow = create_async_birding_flow()
+# Create the main birding flow using unified architecture (PocketFlow compatible!)
+# This now provides both sync and async capabilities through the same interface
+birding_flow = create_unified_birding_flow(ExecutionMode.ASYNC)
 
 # Legacy flows for backward compatibility (deprecated)
 legacy_sync_flow = None  # Lazy-loaded to avoid deprecation warnings at module import
