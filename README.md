@@ -1,5 +1,7 @@
 # Bird Travel Recommender
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pickleton89/Bird-Travel-Recommender)
+
 ## 🏆 **Production-Ready** | ✅ **Near-100% Test Reliability** | 🚀 **30 MCP Tools**
 
 An advanced birding travel planning system with enhanced natural language understanding. Features intelligent trip planning, species identification, and personalized recommendations through Claude Desktop integration. **Recently transformed with comprehensive test suite overhaul achieving near-100% reliability** (up from 78.4%).
