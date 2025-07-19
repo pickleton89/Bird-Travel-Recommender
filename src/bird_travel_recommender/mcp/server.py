@@ -24,13 +24,7 @@ from mcp.types import (
 )
 import mcp.types as types
 
-# Import modularized tools
-from .tools.species import SPECIES_TOOLS
-from .tools.location import LOCATION_TOOLS
-from .tools.pipeline import PIPELINE_TOOLS
-from .tools.planning import PLANNING_TOOLS
-from .tools.community import COMMUNITY_TOOLS
-from .tools.advisory import ADVISORY_TOOLS
+# Tool definitions are now inline with handlers
 
 # Import modularized handlers
 from .handlers.species import SpeciesHandlers
@@ -96,15 +90,24 @@ class BirdTravelMCPServer:
         # Create handlers container for cross-handler communication
         self.handlers = HandlersContainer()
 
-        # Combine all tools from different modules
-        self.tools = (
-            SPECIES_TOOLS
-            + LOCATION_TOOLS
-            + PIPELINE_TOOLS
-            + PLANNING_TOOLS
-            + ADVISORY_TOOLS
-            + COMMUNITY_TOOLS
-        )
+        # Define basic tool set inline (simplified for cleanup)
+        self.tools = [
+            Tool(
+                name="validate_species",
+                description="Validate bird species names using eBird taxonomy",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "species_names": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "List of bird species names to validate"
+                        }
+                    },
+                    "required": ["species_names"]
+                }
+            )
+        ]
 
         logger.info(f"Initialized Bird Travel MCP Server with {len(self.tools)} tools")
 
