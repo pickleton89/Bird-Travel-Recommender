@@ -35,12 +35,11 @@ class AnswerNode(Node):
 # Original class definition removed to avoid import conflicts
 
 
-# MIGRATED: FetchSightingsNode and AsyncFetchSightingsNode have been moved to:
+# MIGRATED: FetchSightingsNode has been moved to:
 # - nodes/fetching/sightings.py
-# - nodes/fetching/async_sightings.py
-# Original class definitions removed to avoid import conflicts
+# Original class definition removed to avoid import conflicts
 
-# END OF MIGRATED FetchSightingsNode and AsyncFetchSightingsNode
+# END OF MIGRATED FetchSightingsNode
 
 
 # MIGRATED: FilterConstraintsNode has been moved to nodes/processing/constraints.py

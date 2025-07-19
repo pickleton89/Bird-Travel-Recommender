@@ -8,7 +8,6 @@ while maintaining the new modular structure.
 # Backward compatibility imports - maintain existing import paths
 from .validation.species import ValidateSpeciesNode
 from .fetching.sightings import FetchSightingsNode
-from .fetching.async_sightings import AsyncFetchSightingsNode
 from .processing.constraints import FilterConstraintsNode
 from .processing.clustering import ClusterHotspotsNode
 from .processing.scoring import ScoreLocationsNode
@@ -22,7 +21,6 @@ __all__ = [
     # Migrated nodes
     "ValidateSpeciesNode",
     "FetchSightingsNode",
-    "AsyncFetchSightingsNode",
     "FilterConstraintsNode",
     "ClusterHotspotsNode",
     "ScoreLocationsNode",
@@ -30,6 +28,6 @@ __all__ = [
     "GenerateItineraryNode",
 ]
 
-# Note: Other node classes (FetchSightingsNode, AsyncFetchSightingsNode, etc.)
+# Note: Other node classes (FetchSightingsNode, etc.)
 # are temporarily unavailable through this import path during migration.
 # Import them directly from bird_travel_recommender.nodes (original module) if needed.

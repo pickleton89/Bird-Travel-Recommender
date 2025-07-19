@@ -21,11 +21,8 @@ from .ebird_regions import EBirdRegionsMixin
 from .ebird_analysis import EBirdAnalysisMixin
 from .ebird_checklists import EBirdChecklistsMixin
 
-# Import async modules
-from .ebird_async_api import get_async_client
-
 # Export the main classes and functions
-__all__ = ["EBirdClient", "EBirdAPIError", "get_client", "get_async_client"]
+__all__ = ["EBirdClient", "EBirdAPIError", "get_client"]
 
 # Load environment variables
 load_dotenv()

@@ -15,7 +15,6 @@ from .core.nodes.pocketflow_adapters import (
 # Legacy imports for backward compatibility (deprecated)
 from .nodes.validation.species import ValidateSpeciesNode
 from .nodes.fetching.sightings import FetchSightingsNode
-from .nodes.fetching.async_sightings import AsyncFetchSightingsNode
 from .nodes.processing.constraints import FilterConstraintsNode
 from .nodes.processing.clustering import ClusterHotspotsNode
 from .nodes.processing.scoring import ScoreLocationsNode
@@ -170,9 +169,9 @@ def create_async_birding_flow():
     
     logger.info("Creating legacy async birding travel recommendation flow (DEPRECATED)")
 
-    # Create all pipeline nodes (same as sync version except fetch node)
+    # Create all pipeline nodes (using regular fetch node for legacy compatibility)
     validate_species = ValidateSpeciesNode()
-    fetch_sightings = AsyncFetchSightingsNode()  # AsyncNode for concurrent requests
+    fetch_sightings = FetchSightingsNode(max_workers=MAX_WORKERS_DEFAULT)  # Use sync node for legacy
     filter_constraints = FilterConstraintsNode()
     cluster_hotspots = ClusterHotspotsNode(cluster_radius_km=CLUSTER_RADIUS_KM_DEFAULT)
     score_locations = ScoreLocationsNode()
