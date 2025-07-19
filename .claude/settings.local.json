@@ -38,7 +38,12 @@
       "Bash(sed:*)",
       "Bash(git fetch:*)",
       "Bash(git push:*)",
-      "Bash(NEO4J_PORT=7687 NEO4J_USER=neo4j NEO4J_PASSWORD=graphiti123 docker-compose -f /Users/jeffkiefer/Documents/projects/graphiti/docker-compose.yml up -d)"
+      "Bash(NEO4J_PORT=7687 NEO4J_USER=neo4j NEO4J_PASSWORD=graphiti123 docker-compose -f /Users/jeffkiefer/Documents/projects/graphiti/docker-compose.yml up -d)",
+      "Bash(for file in ebird_analysis ebird_api ebird_async_analysis ebird_async_api ebird_async_base ebird_async_checklists ebird_async_locations ebird_async_observations ebird_async_regions ebird_async_taxonomy ebird_base ebird_checklists ebird_locations ebird_observations ebird_regions ebird_taxonomy)",
+      "Bash(do echo \"=== Checking imports for $file ===\")",
+      "Bash(echo)",
+      "Bash(done)",
+      "Bash(for:*)"
     ],
     "deny": []
   }
