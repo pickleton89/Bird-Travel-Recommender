@@ -24,6 +24,17 @@ from .protocols import (
 from .transport import HttpxTransport, AiohttpTransport
 from .middleware.rate_limiting import RateLimitMiddleware
 from .middleware.caching import CachingMiddleware, MemoryCache
+from .mixins.taxonomy import TaxonomyMixin
+from .mixins.observations import ObservationsMixin
+from .mixins.locations import LocationsMixin
+from .mixins.regions import RegionsMixin
+from .mixins.checklists import ChecklistsMixin
+from .adapters import (
+    EBirdAPIClient,
+    EBirdAsyncAPIClient,
+    create_legacy_ebird_client,
+    create_legacy_async_ebird_client,
+)
 
 __all__ = [
     # Main client
@@ -48,4 +59,15 @@ __all__ = [
     "RateLimitMiddleware",
     "CachingMiddleware",
     "MemoryCache",
+    # Mixins
+    "TaxonomyMixin",
+    "ObservationsMixin",
+    "LocationsMixin",
+    "RegionsMixin",
+    "ChecklistsMixin",
+    # Backward compatibility
+    "EBirdAPIClient",
+    "EBirdAsyncAPIClient", 
+    "create_legacy_ebird_client",
+    "create_legacy_async_ebird_client",
 ]

@@ -17,9 +17,12 @@ from .middleware.rate_limiting import RateLimitMiddleware
 from .middleware.caching import CachingMiddleware
 from .mixins.taxonomy import TaxonomyMixin
 from .mixins.observations import ObservationsMixin
+from .mixins.locations import LocationsMixin
+from .mixins.regions import RegionsMixin
+from .mixins.checklists import ChecklistsMixin
 
 
-class EBirdClient(TaxonomyMixin, ObservationsMixin):
+class EBirdClient(TaxonomyMixin, ObservationsMixin, LocationsMixin, RegionsMixin, ChecklistsMixin):
     """
     Unified eBird client with sync/async support.
     
