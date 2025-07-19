@@ -1,0 +1,1 @@
+"""Consolidated MCP tool implementations."""

@@ -1,0 +1,1 @@
+"""Unified node architecture with factory pattern."""
