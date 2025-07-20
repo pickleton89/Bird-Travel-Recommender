@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - 2025-07-20
+- **Documentation Updates**: Updated README.md to accurately reflect recent refactoring achievements
+  - Replaced outdated "5-phase test suite overhaul" references with current "4-phase refactoring" accomplishment
+  - Updated tagline to highlight "Unified Architecture" and "Zero Breaking Changes"
+  - Added code examples showing the new `create_unified_birding_flow()` API with runtime mode selection
+  - Aligned feature descriptions with actual achievements: ~1,750 lines of duplicate code eliminated
+
 ### 🎉 **FILE CLEANUP COMPLETE** - 2025-07-19
 - **🧹 COMPREHENSIVE CODE DEDUPLICATION ACHIEVED**: Successfully eliminated ~1,750 lines of duplicate code across 4 systematic phases
   - **Phase 1 Complete**: Removed AsyncFetchSightingsNode import references from 3 import files

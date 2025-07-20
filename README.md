@@ -2,14 +2,15 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/pickleton89/Bird-Travel-Recommender)
 
-## 🏆 **Production-Ready** | ✅ **Near-100% Test Reliability** | 🚀 **30 MCP Tools**
+## 🏆 **Production-Ready** | 🚀 **Unified Architecture** | ✅ **Zero Breaking Changes**
 
-An advanced birding travel planning system with enhanced natural language understanding. Features intelligent trip planning, species identification, and personalized recommendations through Claude Desktop integration. **Recently transformed with comprehensive test suite overhaul achieving near-100% reliability** (up from 78.4%).
+An advanced birding travel planning system with enhanced natural language understanding. Features intelligent trip planning, species identification, and personalized recommendations through Claude Desktop integration. **Recently transformed with comprehensive 4-phase refactoring eliminating ~1,750 lines of duplicate code** while maintaining 100% backward compatibility.
 
 ## 🌟 Key Features
 
-- **🏆 Production-Ready Architecture**: Comprehensive 5-phase test suite overhaul achieving near-100% reliability (27+ test fixes)
-- **⚡ Robust Error Handling**: Advanced error recovery with graceful degradation and comprehensive fallback systems
+- **🏆 Unified Architecture**: Single codebase supporting both sync/async execution modes (eliminated ~1,750 lines of duplicate code)
+- **✅ Zero Breaking Changes**: Complete backward compatibility maintained throughout architectural transformation
+- **⚡ Professional Standards**: Dependency injection, type safety with Pydantic, structured error handling
 - **Enhanced Natural Language Understanding**: Semantic intent recognition with increased accuracy
 - **Intelligent Trip Planning**: Optimized routes based on recent eBird sightings
 - **Experience-Level Adaptation**: Responses tailored from beginner to expert birders
@@ -35,7 +36,7 @@ An advanced birding travel planning system with enhanced natural language unders
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 - **[Contributing](CONTRIBUTING.md)** - How to contribute to the project
 - **[Changelog](CHANGELOG.md)** - Detailed project history and updates
-- **[Testing Guide](tests/README.md)** - Comprehensive testing framework with near-100% reliability (5-phase transformation)
+- **[Testing Guide](tests/README.md)** - Comprehensive testing framework with unified architecture support
 - **[Design Document](docs/design.md)** - Original system design and requirements
 
 ## 🚀 Quick Start
@@ -87,11 +88,11 @@ When you run the application, you'll enter an interactive chat interface where y
 You can also import and use the components directly in your Python code:
 
 ```python
-from bird_travel_recommender.flow import create_birding_flow
-from bird_travel_recommender.utils.ebird_api import EBirdClient
+# Recommended: Unified architecture (supports both sync/async)
+from bird_travel_recommender.flow import create_unified_birding_flow, ExecutionMode
 
-# Create a birding flow
-flow = create_birding_flow()
+# Create a unified flow with runtime mode selection
+flow = create_unified_birding_flow(ExecutionMode.ASYNC)  # or ExecutionMode.SYNC
 
 # Use the flow to process queries
 result = flow.run({
@@ -100,9 +101,9 @@ result = flow.run({
     "radius": 25
 })
 
-# Or use individual components
-client = EBirdClient()
-sightings = client.get_recent_observations("US-TX", days_back=7)
+# Legacy approach (still supported with deprecation warnings)
+from bird_travel_recommender.flow import create_birding_flow
+flow = create_birding_flow()
 ```
 
 ## 🤖 Claude Desktop MCP Integration
