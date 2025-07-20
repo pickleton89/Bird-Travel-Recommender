@@ -43,7 +43,8 @@
       "Bash(do echo \"=== Checking imports for $file ===\")",
       "Bash(echo)",
       "Bash(done)",
-      "Bash(for:*)"
+      "Bash(for:*)",
+      "Bash(BIRD_TRAVEL_MCP_SERVER=1 uv run python -m bird_travel_recommender.mcp.server)"
     ],
     "deny": []
   }
