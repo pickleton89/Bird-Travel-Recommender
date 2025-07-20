@@ -1,11 +1,8 @@
 """Tool registry for MCP server with decorator-based registration."""
 
-from typing import Dict, Any, List, Callable, Optional, Type, Union
-from functools import wraps
+from typing import Dict, Any, List, Callable, Optional, Union
 from dataclasses import dataclass, field
 import inspect
-import asyncio
-from datetime import datetime
 import uuid
 
 import logging
@@ -149,15 +146,15 @@ def generate_schema_from_function(func: Callable) -> Dict[str, Any]:
         param_schema = {"type": "string"}  # Default type
         
         # Map Python types to JSON schema types
-        if param_type == int:
+        if param_type is int:
             param_schema = {"type": "integer"}
-        elif param_type == float:
+        elif param_type is float:
             param_schema = {"type": "number"}
-        elif param_type == bool:
+        elif param_type is bool:
             param_schema = {"type": "boolean"}
-        elif param_type == list or param_type == List:
+        elif param_type is list or param_type is List:
             param_schema = {"type": "array"}
-        elif param_type == dict or param_type == Dict:
+        elif param_type is dict or param_type is Dict:
             param_schema = {"type": "object"}
         elif hasattr(param_type, '__origin__'):
             # Handle generic types like Optional[str], List[str], etc.
@@ -198,13 +195,13 @@ def generate_schema_from_function(func: Callable) -> Dict[str, Any]:
 
 def _type_to_schema(type_hint) -> Dict[str, Any]:
     """Convert a type hint to JSON schema."""
-    if type_hint == int:
+    if type_hint is int:
         return {"type": "integer"}
-    elif type_hint == float:
+    elif type_hint is float:
         return {"type": "number"}
-    elif type_hint == bool:
+    elif type_hint is bool:
         return {"type": "boolean"}
-    elif type_hint == str:
+    elif type_hint is str:
         return {"type": "string"}
     elif type_hint in (list, List):
         return {"type": "array"}

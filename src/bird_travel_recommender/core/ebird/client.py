@@ -6,11 +6,11 @@ the massive duplication between sync and async eBird API clients.
 This single file replaces 16 duplicate files (~2,600 lines).
 """
 
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional
 from ..config.settings import settings
 from ..config.logging import get_logger
 from ..config.constants import ExecutionMode
-from ..exceptions import EBirdAPIError, EBirdAuthenticationError, ConfigurationError
+from ..exceptions import ConfigurationError
 from .protocols import EBirdTransportProtocol, MiddlewareProtocol
 from .transport import HttpxTransport, AiohttpTransport
 from .middleware.rate_limiting import RateLimitMiddleware

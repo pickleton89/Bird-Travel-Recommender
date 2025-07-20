@@ -7,7 +7,6 @@ decorator-based tool registry and middleware system.
 import asyncio
 import json
 import logging
-from typing import Any, Dict
 
 from mcp.server.models import InitializationOptions
 from mcp.server import NotificationOptions, Server
@@ -84,7 +83,7 @@ class ModernBirdTravelMCPServer:
         # Create adapter to bridge new registry with existing handlers
         self.adapter = create_adapter(self.handlers)
         
-        logger.info(f"Initialized Modern Bird Travel MCP Server")
+        logger.info("Initialized Modern Bird Travel MCP Server")
         
         # Log registry statistics
         stats = self.adapter.get_registry_stats()

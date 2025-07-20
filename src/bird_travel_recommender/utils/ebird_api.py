@@ -91,6 +91,7 @@ class EBirdClient(
 
 # Global client instance for convenience
 _client: Optional["EBirdClient"] = None
+_async_client: Optional["EBirdClient"] = None
 
 
 def get_client() -> EBirdClient:
@@ -99,6 +100,14 @@ def get_client() -> EBirdClient:
     if _client is None:
         _client = EBirdClient()
     return _client
+
+
+async def get_async_client() -> EBirdClient:
+    """Get or create the global async eBird client instance."""
+    global _async_client
+    if _async_client is None:
+        _async_client = EBirdClient()
+    return _async_client
 
 
 # Convenience functions that use the global client

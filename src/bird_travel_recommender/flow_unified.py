@@ -11,15 +11,10 @@ import logging
 
 # Import unified nodes from the new architecture
 from .core.nodes import (
-    NodeFactory, 
     ExecutionMode, 
     NodeDependencies,
     create_workflow_nodes,
     validate_workflow_nodes
-)
-from .core.nodes.implementations import (
-    UnifiedSightingsNode,
-    UnifiedSpeciesValidationNode
 )
 
 # Import remaining nodes that haven't been migrated yet
@@ -30,7 +25,6 @@ from .nodes.processing.routing import OptimizeRouteNode
 from .nodes.processing.itinerary import GenerateItineraryNode
 
 from .constants import (
-    MAX_WORKERS_DEFAULT,
     CLUSTER_RADIUS_KM_DEFAULT,
     MAX_LOCATIONS_FOR_OPTIMIZATION,
     MAX_RETRIES_DEFAULT,

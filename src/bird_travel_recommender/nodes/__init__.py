@@ -14,8 +14,7 @@ from .processing.scoring import ScoreLocationsNode
 from .processing.routing import OptimizeRouteNode
 from .processing.itinerary import GenerateItineraryNode
 
-# TODO: The following classes will be imported from original nodes.py
-# during the migration process. This will be updated as each class is migrated.
+# Note: All node classes have been successfully migrated to the new modular structure
 
 __all__ = [
     # Migrated nodes

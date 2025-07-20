@@ -7,13 +7,11 @@ by providing a single implementation that works in both sync and async modes.
 
 from typing import Dict, Any, List, Optional
 import time
-import asyncio
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from ..base import BaseNode, NodeInput, NodeOutput, BatchProcessingMixin
 from ..factory import register_node
 from ..mixins import LoggingMixin, ValidationMixin, CachingMixin, MetricsMixin, ErrorHandlingMixin
-from ...ebird.client import EBirdClient
 from ...exceptions.ebird import EBirdAPIError
 
 
@@ -175,8 +173,8 @@ class UnifiedSightingsNode(
             return output
             
         except Exception as e:
-            error_response = self.handle_api_error(e, "sightings_fetch", 
-                                                 species_count=len(shared_store.get("validated_species", [])))
+            self.handle_api_error(e, "sightings_fetch", 
+                                species_count=len(shared_store.get("validated_species", [])))
             
             execution_time = (time.time() - start_time) * 1000
             self.log_execution_end("sightings_fetch", False, execution_time)

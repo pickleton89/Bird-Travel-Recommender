@@ -13,7 +13,6 @@ and rate limiting behavior with comprehensive mock responses.
 """
 
 import pytest
-import requests
 from requests.exceptions import ConnectionError, Timeout
 from unittest.mock import Mock, patch
 from src.bird_travel_recommender.utils.ebird_api import EBirdClient, EBirdAPIError

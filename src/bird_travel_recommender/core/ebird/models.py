@@ -6,8 +6,7 @@ for duplicate response handling in sync and async clients.
 """
 
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Union
-from datetime import datetime
+from typing import Optional, List
 
 
 class TaxonomyModel(BaseModel):

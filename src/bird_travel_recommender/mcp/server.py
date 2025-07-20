@@ -111,14 +111,6 @@ class BirdTravelMCPServer:
 
         logger.info(f"Initialized Bird Travel MCP Server with {len(self.tools)} tools")
 
-        # Log tool categories
-        logger.info(f"Species tools: {len(SPECIES_TOOLS)}")
-        logger.info(f"Location tools: {len(LOCATION_TOOLS)}")
-        logger.info(f"Pipeline tools: {len(PIPELINE_TOOLS)}")
-        logger.info(f"Planning tools: {len(PLANNING_TOOLS)}")
-        logger.info(f"Advisory tools: {len(ADVISORY_TOOLS)}")
-        logger.info(f"Community tools: {len(COMMUNITY_TOOLS)}")
-
     async def handle_call_tool(self, request: CallToolRequest) -> CallToolResult:
         """Handle tool execution requests with modular handler delegation"""
         tool_name = request.params.name

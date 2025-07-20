@@ -6,8 +6,8 @@ using multiple criteria including species diversity, observation recency, hotspo
 popularity, and LLM-enhanced habitat evaluation.
 """
 
-from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from typing import List, Dict, Any
+from pydantic import Field
 import logging
 
 from ..base import BaseNode, NodeInput, NodeOutput

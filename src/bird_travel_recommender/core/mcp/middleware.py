@@ -4,7 +4,7 @@ import asyncio
 import time
 import traceback
 from functools import wraps
-from typing import Dict, Any, Callable, Optional, Union
+from typing import Dict, Any, Callable, Union
 from datetime import datetime
 
 import logging
@@ -20,7 +20,7 @@ def middleware(func: Callable) -> Callable:
 async def error_handling_middleware(tool_func: Callable, kwargs: Dict[str, Any], 
                                   correlation_id: str) -> Dict[str, Any]:
     """Comprehensive error handling middleware."""
-    logger = logging.getLogger(f"middleware.error_handling")
+    logger = logging.getLogger("middleware.error_handling")
     
     # Add error context to kwargs
     kwargs['_error_context'] = {
@@ -42,7 +42,7 @@ async def error_handling_middleware(tool_func: Callable, kwargs: Dict[str, Any],
 async def validation_middleware(tool_func: Callable, kwargs: Dict[str, Any], 
                               correlation_id: str) -> Dict[str, Any]:
     """Input validation middleware."""
-    logger = logging.getLogger(f"middleware.validation")
+    logger = logging.getLogger("middleware.validation")
     
     # Get function signature for validation
     import inspect
@@ -99,7 +99,7 @@ async def validation_middleware(tool_func: Callable, kwargs: Dict[str, Any],
 async def performance_middleware(tool_func: Callable, kwargs: Dict[str, Any], 
                                correlation_id: str) -> Dict[str, Any]:
     """Performance monitoring middleware."""
-    logger = logging.getLogger(f"middleware.performance")
+    # Performance logger is available as module-level logger
     
     # Add performance tracking to kwargs
     kwargs['_performance_context'] = {
@@ -231,8 +231,8 @@ def performance_monitor(log_execution: bool = True, track_memory: bool = False):
                     try:
                         end_memory = process.memory_info().rss / 1024 / 1024  # MB
                         metrics["memory_used_mb"] = end_memory - start_memory
-                    except:
-                        pass
+                    except (AttributeError, OSError) as e:
+                        logger.debug(f"Failed to get memory usage: {e}")
                 
                 if log_execution:
                     logger.info(f"Completed execution of {func.__name__}", extra=metrics)

@@ -6,12 +6,12 @@ compatible with PocketFlow's Node interface while preserving all the benefits
 of the unified architecture.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from pocketflow import Node, AsyncNode
 import asyncio
 import logging
 
-from .factory import NodeFactory, NodeDependencies, ExecutionMode
+from .factory import NodeDependencies, ExecutionMode
 from .implementations import (
     UnifiedSightingsNode,
     UnifiedSpeciesValidationNode,

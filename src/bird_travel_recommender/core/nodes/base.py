@@ -6,16 +6,17 @@ supporting both sync and async execution modes through a common interface.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Protocol
+from typing import Dict, Any, Optional, Protocol, TYPE_CHECKING
 from enum import Enum
 from pydantic import BaseModel, Field
-import logging
 import asyncio
-import inspect
 from datetime import datetime
 
 from ..config.logging import get_logger
 from ..exceptions.base import BirdTravelRecommenderError
+
+if TYPE_CHECKING:
+    from .factory import NodeDependencies
 
 
 class ExecutionMode(Enum):

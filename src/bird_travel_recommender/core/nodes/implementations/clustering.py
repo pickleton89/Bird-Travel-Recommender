@@ -6,7 +6,7 @@ Node Factory Pattern with dependency injection and sync/async transparency.
 """
 
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
 import logging
 
 from ..base import BaseNode, NodeInput, NodeOutput

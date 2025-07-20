@@ -7,7 +7,6 @@ the duplication between sync and async clients.
 
 from typing import List, Optional
 from ..models import TaxonomyModel
-from ..protocols import EBirdClientProtocol
 from ...config.logging import get_logger
 
 

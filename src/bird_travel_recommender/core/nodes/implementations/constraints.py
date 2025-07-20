@@ -6,7 +6,7 @@ filtering to bird sightings while preserving original data through enrichment-in
 """
 
 from typing import Dict, Any, List, Set
-from pydantic import BaseModel, Field
+from pydantic import Field
 import logging
 
 from ..base import BaseNode, NodeInput, NodeOutput
@@ -114,7 +114,7 @@ class UnifiedFilterConstraintsNode(BaseNode, ValidationMixin, LoggingMixin, Erro
 
             # Extract constraint parameters
             start_location = constraints.get("start_location")
-            max_daily_distance_km = input_data.max_daily_distance_km
+            # max_daily_distance_km = input_data.max_daily_distance_km  # Currently unused
             max_travel_radius_km = input_data.max_travel_radius_km
             date_range_start = constraints.get("date_range", {}).get("start")
             date_range_end = constraints.get("date_range", {}).get("end")

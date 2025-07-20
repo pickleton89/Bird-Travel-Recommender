@@ -6,8 +6,7 @@ the duplication between sync and async clients.
 """
 
 from typing import List, Optional, Dict, Any
-from ..models import HotspotModel, LocationModel
-from ..protocols import EBirdClientProtocol
+from ..models import HotspotModel
 from ...config.logging import get_logger
 from ...config.constants import EBIRD_MAX_RESULTS_DEFAULT
 

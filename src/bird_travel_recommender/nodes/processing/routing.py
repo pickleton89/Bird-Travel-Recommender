@@ -180,7 +180,7 @@ class OptimizeRouteNode(Node):
         else:
             selected_locations = candidate_locations
 
-        # TODO: Could add additional filtering based on geographic clustering
+        # Note: Future enhancement could add geographic clustering
         # to ensure locations aren't too spread out for daily_distance constraints
 
         return selected_locations

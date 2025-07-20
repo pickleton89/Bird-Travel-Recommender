@@ -9,9 +9,7 @@ from typing import Dict, Any, Optional, List
 import time
 import hashlib
 import json
-from abc import ABC
 
-from ..config.logging import get_logger
 from ..exceptions.base import BirdTravelRecommenderError
 
 

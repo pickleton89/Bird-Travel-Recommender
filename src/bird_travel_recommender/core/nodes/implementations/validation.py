@@ -7,12 +7,11 @@ supporting both sync and async execution modes.
 
 from typing import Dict, Any, List, Optional
 import time
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from ..base import BaseNode, NodeInput, NodeOutput
 from ..factory import register_node
 from ..mixins import LoggingMixin, ValidationMixin, CachingMixin, MetricsMixin, ErrorHandlingMixin
-from ...ebird.client import EBirdClient
 from ...exceptions.ebird import EBirdAPIError
 
 
@@ -172,7 +171,7 @@ class UnifiedSpeciesValidationNode(
             return output
             
         except Exception as e:
-            error_response = self.handle_api_error(e, "species_validation")
+            self.handle_api_error(e, "species_validation")
             
             execution_time = (time.time() - start_time) * 1000
             self.log_execution_end("species_validation", False, execution_time)
@@ -194,7 +193,7 @@ class UnifiedSpeciesValidationNode(
         Returns:
             List of taxonomy entries
         """
-        cache_key = f"taxonomy_{region_code}"
+        # cache_key = f"taxonomy_{region_code}"  # For future caching implementation
         
         # Check memory cache first
         current_time = time.time()

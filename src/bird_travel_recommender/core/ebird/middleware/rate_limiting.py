@@ -9,9 +9,7 @@ import asyncio
 import time
 from collections import deque
 from typing import Dict, Any
-from ...config.settings import settings
 from ...config.logging import get_logger
-from ..protocols import MiddlewareProtocol
 
 
 class RateLimitMiddleware:

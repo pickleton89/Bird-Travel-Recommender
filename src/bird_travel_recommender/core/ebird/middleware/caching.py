@@ -10,7 +10,7 @@ import json
 from typing import Dict, Any, Optional
 from ...config.settings import settings
 from ...config.logging import get_logger
-from ..protocols import MiddlewareProtocol, CacheProtocol
+from ..protocols import CacheProtocol
 
 
 class MemoryCache:

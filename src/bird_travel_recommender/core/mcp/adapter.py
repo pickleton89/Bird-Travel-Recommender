@@ -1,20 +1,12 @@
 """Adapter layer for integrating new registry with existing MCP server."""
 
-import asyncio
 from typing import Dict, Any, List
 import logging
 
 from .registry import registry, tool
 from .middleware import error_handling_middleware, validation_middleware, performance_middleware
-from .dependencies import get_dependencies
 
 # Import existing handlers for integration
-from ...mcp.handlers.species import SpeciesHandlers
-from ...mcp.handlers.location import LocationHandlers
-from ...mcp.handlers.pipeline import PipelineHandlers
-from ...mcp.handlers.planning import PlanningHandlers
-from ...mcp.handlers.advisory import AdvisoryHandlers
-from ...mcp.handlers.community import CommunityHandlers
 
 logger = logging.getLogger(__name__)
 

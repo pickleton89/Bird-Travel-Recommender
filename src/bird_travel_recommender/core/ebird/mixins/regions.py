@@ -5,9 +5,8 @@ This module provides a single regions implementation that eliminates
 the duplication between sync and async clients.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 from ..models import RegionModel
-from ..protocols import EBirdClientProtocol
 from ...config.logging import get_logger
 
 

@@ -18,7 +18,6 @@ from ..exceptions import (
     EBirdTimeoutError,
     EBirdServerError,
 )
-from .protocols import EBirdTransportProtocol
 
 
 class HttpxTransport:

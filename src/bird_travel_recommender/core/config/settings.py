@@ -10,8 +10,7 @@ try:
 except ImportError:
     from pydantic import BaseSettings
 from pydantic import Field, validator
-from typing import Optional, Literal
-import os
+from typing import Literal
 
 
 class Settings(BaseSettings):
@@ -48,28 +47,28 @@ class Settings(BaseSettings):
     testing: bool = Field(False, env="TESTING")
     
     @validator("ebird_api_key")
-    def validate_ebird_key(cls, v):
+    def validate_ebird_key(cls, v: str) -> str:
         """Validate eBird API key format."""
         if not v or len(v) < 10:
             raise ValueError("Valid eBird API key required (minimum 10 characters)")
         return v
         
     @validator("openai_api_key")
-    def validate_openai_key(cls, v):
+    def validate_openai_key(cls, v: str) -> str:
         """Validate OpenAI API key format."""
         if not v or not v.startswith("sk-"):
             raise ValueError("Valid OpenAI API key required (must start with 'sk-')")
         return v
         
     @validator("request_timeout")
-    def validate_timeout(cls, v):
+    def validate_timeout(cls, v: int) -> int:
         """Ensure reasonable timeout values."""
         if v < 1 or v > 300:
             raise ValueError("Request timeout must be between 1 and 300 seconds")
         return v
         
     @validator("max_concurrent_requests")
-    def validate_concurrency(cls, v):
+    def validate_concurrency(cls, v: int) -> int:
         """Ensure reasonable concurrency limits."""
         if v < 1 or v > 100:
             raise ValueError("Max concurrent requests must be between 1 and 100")

@@ -6,7 +6,7 @@ replacement for the old client implementations.
 """
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from src.bird_travel_recommender.core.ebird import EBirdClient, EBirdAPIClient
 from src.bird_travel_recommender.core.ebird.adapters import create_legacy_ebird_client
 from src.bird_travel_recommender.core.config.constants import ExecutionMode

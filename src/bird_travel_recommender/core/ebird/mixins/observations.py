@@ -7,7 +7,6 @@ the duplication between sync and async clients.
 
 from typing import List, Optional
 from ..models import ObservationModel
-from ..protocols import EBirdClientProtocol
 from ...config.logging import get_logger
 from ...config.constants import EBIRD_MAX_RESULTS_DEFAULT, EBIRD_BACK_DAYS_DEFAULT
 

@@ -6,7 +6,6 @@ compatibility adapters and runtime mode selection.
 """
 
 import pytest
-from unittest.mock import Mock, patch
 from pocketflow import Flow
 
 from src.bird_travel_recommender.flow import (

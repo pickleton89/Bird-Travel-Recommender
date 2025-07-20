@@ -8,7 +8,6 @@ old interface, enabling gradual migration without breaking existing code.
 import asyncio
 from typing import Dict, Any, List, Optional
 from ..config.logging import get_logger
-from ..config.constants import ExecutionMode
 from .client import EBirdClient
 
 
