@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Defined missing `get_async_client()` function in `ebird_api.py`
   - Converted TODO comments to informational notes
 - **Import Organization**: Cleaned up unused imports and organized type checking imports
+- **MCP Server JSON-RPC Protocol Fix**: Resolved Claude Desktop integration issue
+  - Fixed "Unexpected non-whitespace character after JSON at position 4" error
+  - Redirected all logging output to stderr to prevent stdout pollution
+  - Fixed pydantic v2 deprecation warnings (allow_population_by_field_name → populate_by_name)
+  - Added BIRD_TRAVEL_MCP_SERVER environment variable for proper module detection
+  - MCP server now runs cleanly and connects successfully to Claude Desktop
 
 ### Changed - 2025-07-20
 - **Documentation Updates**: Updated README.md to accurately reflect recent refactoring achievements

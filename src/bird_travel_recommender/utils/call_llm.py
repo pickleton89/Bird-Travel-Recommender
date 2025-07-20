@@ -48,8 +48,9 @@ def call_llm(prompt, sanitize_input=True):
 
 if __name__ == "__main__":
     import logging
+    import sys
 
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 
     prompt = "What is the meaning of life?"
     result = call_llm(prompt)

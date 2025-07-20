@@ -38,8 +38,13 @@ from .handlers.advisory import AdvisoryHandlers
 from .auth import AuthManager
 from .rate_limiting import RateLimiter
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging to stderr for MCP compatibility
+import sys
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stderr,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 

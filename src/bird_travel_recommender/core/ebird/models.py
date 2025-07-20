@@ -98,7 +98,7 @@ class ChecklistModel(BaseModel):
     all_obs_reported: Optional[bool] = Field(None, description="All observations reported", alias="allObsReported")
     
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class FrequencyModel(BaseModel):
@@ -116,7 +116,7 @@ class FrequencyModel(BaseModel):
         return v
         
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class HotspotModel(BaseModel):
@@ -132,4 +132,4 @@ class HotspotModel(BaseModel):
     num_species_all_time: Optional[int] = Field(None, description="All-time species count", alias="numSpeciesAllTime")
     
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True

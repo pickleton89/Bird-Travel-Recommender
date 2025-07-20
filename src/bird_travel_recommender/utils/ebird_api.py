@@ -27,8 +27,9 @@ __all__ = ["EBirdClient", "EBirdAPIError", "get_client"]
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging to stderr to avoid interfering with MCP server stdout
+import sys
+logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger(__name__)
 
 
