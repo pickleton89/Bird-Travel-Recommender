@@ -4,12 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
+### Basic Commands
 - **Install dependencies**: `uv sync`
 - **Run the application**: `uv run python main.py` (from root) or `uv run python -m bird_travel_recommender`
 - **Run individual modules**: `uv run python -m <module_name>`
 - **Add new dependencies**: `uv add <package_name>`
 - **Activate environment**: `source .venv/bin/activate` (or use `uv run` prefix)
 - **Run tests**: `uv run pytest` (tests in `tests/` directory)
+
+### Code Quality
+- **Lint code**: `uv run ruff check src/`
+- **Format code**: `uv run ruff format src/`
+- **Fix lint issues**: `uv run ruff check src/ --fix`
+
+### Verification & Setup
+- **Verify API keys**: `uv run python scripts/check_api_keys.py`
+- **Deploy MCP server**: `uv run python scripts/deploy_mcp.py development`
+
+### MCP Server Development
+- **Run MCP server**: `uv run python src/bird_travel_recommender/mcp/server.py`
+- **Test MCP integration**: Check scripts for test_*.py files for specific testing scenarios
 
 ## Project Structure
 
@@ -142,6 +156,23 @@ The architecture leverages proven patterns from the moonbirdai/ebird-mcp-server 
 - Environment variables loaded automatically via python-dotenv
 - Default settings can be configured in `.env` file
 - MCP configurations available in `src/bird_travel_recommender/mcp/config/`
+
+## Development Guidelines
+
+### Agentic Coding Principles
+This project follows agentic coding principles from PocketFlow documentation:
+- **Human-AI Collaboration**: Humans design at high level, AI implements details
+- **Start Simple**: Begin with small, simple solutions before adding complexity
+- **Design First**: Reference `docs/design.md` before major implementation changes
+- **Frequent Feedback**: Ask humans for feedback and clarification during development
+- **Flow-Based Architecture**: Use PocketFlow's Node->Flow pattern for all workflows
+
+### Code Quality Standards
+- Follow PocketFlow's utility function separation (external APIs in `utils/`)
+- Use structured error handling and logging
+- Maintain type safety with Pydantic models
+- Implement graceful fallbacks for LLM calls
+- Keep nodes simple and focused on single responsibilities
 
 ## Memory Notes
 - When asked where we left off, check changelog, memory, and git commit
